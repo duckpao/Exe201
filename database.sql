@@ -128,12 +128,48 @@ CREATE TABLE room_pass_images (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
--- Liên hệ / hỏi thuê (áp dụng cho cả phòng trọ và pass trọ)
+-- Tìm Roommate: user đăng bài tìm người ở ghép (có phòng sẵn hoặc đang tìm phòng)
+-- ---------------------------------------------------------
+CREATE TABLE roommate_listings (
+  id                BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  posted_by         BIGINT UNSIGNED NOT NULL, -- người đăng bài tìm roommate
+  address_id        BIGINT UNSIGNED NOT NULL, -- khu vực phòng hiện có, hoặc khu vực mong muốn
+  title             VARCHAR(200) NOT NULL,
+  description       TEXT NOT NULL, -- mô tả bắt buộc: về bản thân, yêu cầu với roommate, phòng...
+  room_type         ENUM('has_room','looking_for_room') NOT NULL, -- đã có phòng cần tìm người ở ghép / đang tìm phòng + người ở ghép
+  budget_min        DECIMAL(12,2) NULL,
+  budget_max        DECIMAL(12,2) NULL,
+  move_in_date      DATE NULL,
+  gender_preference ENUM('any','male','female') NOT NULL DEFAULT 'any',
+  amenities         JSON NULL,
+  status            ENUM('active','closed') NOT NULL DEFAULT 'active',
+  created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at        TIMESTAMP NULL,
+  KEY idx_roommate_posted_by (posted_by),
+  KEY idx_roommate_address (address_id),
+  KEY idx_roommate_status (status),
+  CONSTRAINT fk_roommate_user FOREIGN KEY (posted_by) REFERENCES users(id),
+  CONSTRAINT fk_roommate_address FOREIGN KEY (address_id) REFERENCES addresses(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE roommate_images (
+  id                   BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  roommate_listing_id  BIGINT UNSIGNED NOT NULL,
+  image_url            VARCHAR(255) NOT NULL,
+  is_primary           TINYINT(1) NOT NULL DEFAULT 0,
+  created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_roommate_images_listing (roommate_listing_id),
+  CONSTRAINT fk_roommate_images_listing FOREIGN KEY (roommate_listing_id) REFERENCES roommate_listings(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Liên hệ / hỏi thuê (áp dụng cho phòng trọ, pass trọ, tìm roommate)
 -- ---------------------------------------------------------
 CREATE TABLE room_inquiries (
   id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  listing_type   ENUM('room','pass') NOT NULL,
-  listing_id     BIGINT UNSIGNED NOT NULL, -- id trong room_listings hoặc room_pass_listings tùy listing_type
+  listing_type   ENUM('room','pass','roommate') NOT NULL,
+  listing_id     BIGINT UNSIGNED NOT NULL, -- id trong room_listings/room_pass_listings/roommate_listings tùy listing_type
   user_id        BIGINT UNSIGNED NOT NULL,
   message        TEXT NULL,
   contact_phone  VARCHAR(20) NULL,
@@ -223,11 +259,26 @@ CREATE TABLE reviews (
 CREATE TABLE favorites (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id     BIGINT UNSIGNED NOT NULL,
-  target_type ENUM('room_listing','room_pass_listing','vehicle') NOT NULL,
+  target_type ENUM('room_listing','room_pass_listing','vehicle','roommate_listing') NOT NULL,
   target_id   BIGINT UNSIGNED NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_favorite (user_id, target_type, target_id),
   CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Reset mật khẩu: token gửi qua email (lưu hash, không lưu token gốc)
+-- ---------------------------------------------------------
+CREATE TABLE password_reset_tokens (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     BIGINT UNSIGNED NOT NULL,
+  token_hash  VARCHAR(255) NOT NULL,
+  expires_at  DATETIME NOT NULL,
+  used_at     DATETIME NULL,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_reset_user (user_id),
+  KEY idx_reset_token_hash (token_hash),
+  CONSTRAINT fk_reset_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
@@ -316,6 +367,29 @@ BEGIN
   INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data)
   VALUES ('room_pass_listings', OLD.id, 'DELETE', @app_user_id,
     JSON_OBJECT('title', OLD.title, 'monthly_price', OLD.monthly_price, 'status', OLD.status));
+END$$
+
+-- roommate_listings
+CREATE TRIGGER trg_roommate_after_insert AFTER INSERT ON roommate_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, new_data)
+  VALUES ('roommate_listings', NEW.id, 'INSERT', @app_user_id,
+    JSON_OBJECT('title', NEW.title, 'room_type', NEW.room_type, 'status', NEW.status));
+END$$
+
+CREATE TRIGGER trg_roommate_after_update AFTER UPDATE ON roommate_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data, new_data)
+  VALUES ('roommate_listings', NEW.id, 'UPDATE', @app_user_id,
+    JSON_OBJECT('title', OLD.title, 'room_type', OLD.room_type, 'status', OLD.status),
+    JSON_OBJECT('title', NEW.title, 'room_type', NEW.room_type, 'status', NEW.status));
+END$$
+
+CREATE TRIGGER trg_roommate_after_delete AFTER DELETE ON roommate_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data)
+  VALUES ('roommate_listings', OLD.id, 'DELETE', @app_user_id,
+    JSON_OBJECT('title', OLD.title, 'room_type', OLD.room_type, 'status', OLD.status));
 END$$
 
 -- vehicle_bookings

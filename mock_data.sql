@@ -2,24 +2,25 @@
 -- Mock data cho database `nhatro` — chỉ dùng để test
 -- Chạy sau database.sql: mysql -u root -p nhatro < mock_data.sql
 -- Mật khẩu thật của mọi user mẫu (trước khi hash): "Password123!"
--- password_hash dưới đây là chuỗi placeholder đúng định dạng bcrypt,
--- không phải hash thật — thay bằng hash thật khi test luồng đăng nhập.
+-- password_hash dưới đây là bcrypt hash thật (bcryptjs, cost 10) của "Password123!",
+-- dùng để test đăng nhập bằng tài khoản ngay được.
 -- =========================================================
 
 USE `nhatro`;
 
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ---------------------------------------------------------
 -- users
 -- ---------------------------------------------------------
 INSERT INTO users (id, full_name, email, phone, password_hash, avatar_url, role, status) VALUES
-  (1, 'Nguyễn Văn Admin', 'admin@nhatro.vn',      '0900000001', '$2b$10$mockhash.admin.0000000000000000000000000000', NULL, 'admin',    'active'),
-  (2, 'Trần Thị Lan',     'lan.tran@nhatro.vn',   '0900000002', '$2b$10$mockhash.landlord.000000000000000000000000', NULL, 'landlord', 'active'),
-  (3, 'Phạm Văn Hùng',    'hung.pham@nhatro.vn',  '0900000003', '$2b$10$mockhash.landlord.000000000000000000000001', NULL, 'landlord', 'active'),
-  (4, 'Lê Thị Mai',       'mai.le@gmail.com',     '0900000004', '$2b$10$mockhash.tenant.0000000000000000000000000', NULL, 'tenant',   'active'),
-  (5, 'Hoàng Văn Nam',    'nam.hoang@gmail.com',  '0900000005', NULL,                                                NULL, 'tenant',   'active'),
-  (6, 'Đỗ Thị Hoa',       'hoa.do@gmail.com',     '0900000006', '$2b$10$mockhash.tenant.0000000000000000000000001', NULL, 'tenant',   'locked');
+  (1, 'Nguyễn Văn Admin', 'admin@nhatro.vn',      '0900000001', '$2b$10$Nv9u0ypJ7rjM4pA3j2rERuPKAFQz6UlNHbJ.eYO0UNujSfpuyFtom', NULL, 'admin',    'active'),
+  (2, 'Trần Thị Lan',     'lan.tran@nhatro.vn',   '0900000002', '$2b$10$Nv9u0ypJ7rjM4pA3j2rERuPKAFQz6UlNHbJ.eYO0UNujSfpuyFtom', NULL, 'landlord', 'active'),
+  (3, 'Phạm Văn Hùng',    'hung.pham@nhatro.vn',  '0900000003', '$2b$10$Nv9u0ypJ7rjM4pA3j2rERuPKAFQz6UlNHbJ.eYO0UNujSfpuyFtom', NULL, 'landlord', 'active'),
+  (4, 'Lê Thị Mai',       'mai.le@gmail.com',     '0900000004', '$2b$10$Nv9u0ypJ7rjM4pA3j2rERuPKAFQz6UlNHbJ.eYO0UNujSfpuyFtom', NULL, 'tenant',   'active'),
+  (5, 'Hoàng Văn Nam',    'nam.hoang@gmail.com',  '0900000005', NULL,                                                            NULL, 'tenant',   'active'),
+  (6, 'Đỗ Thị Hoa',       'hoa.do@gmail.com',     '0900000006', '$2b$10$Nv9u0ypJ7rjM4pA3j2rERuPKAFQz6UlNHbJ.eYO0UNujSfpuyFtom', NULL, 'tenant',   'locked');
 
 -- Nam (id 5) chỉ đăng nhập bằng Google
 INSERT INTO user_oauth_accounts (id, user_id, provider, provider_uid, provider_email) VALUES
@@ -74,12 +75,35 @@ INSERT INTO room_pass_images (id, room_pass_listing_id, image_url, is_primary) V
   (2, 2, 'https://picsum.photos/seed/pass2a/800/600', 1);
 
 -- ---------------------------------------------------------
--- room_inquiries (liên hệ hỏi thuê / hỏi pass)
+-- roommate_listings (tìm người ở ghép / tìm phòng ở ghép)
+-- ---------------------------------------------------------
+INSERT INTO roommate_listings (id, posted_by, address_id, title, description, room_type, budget_min, budget_max, move_in_date, gender_preference, amenities, status) VALUES
+  (1, 4, 3, 'Có phòng trống, tìm nữ ở ghép Cầu Giấy',
+     'Mình đang thuê phòng 2 người ở Cầu Giấy, còn 1 giường trống, tìm bạn nữ ở ghép, sạch sẽ, hoà đồng.',
+     'has_room', 1100000, 1300000, '2026-10-01', 'female',
+     JSON_ARRAY('wifi', 'gio_giac_tu_do', 'may_lanh'), 'active'),
+  (2, 6, 6, 'Tìm phòng + người ở ghép khu Đống Đa',
+     'Mình mới chuyển ra Hà Nội đi làm, muốn tìm phòng và ở ghép cùng 1-2 bạn, ngân sách vừa phải.',
+     'looking_for_room', 1500000, 2500000, '2026-10-15', 'any',
+     JSON_ARRAY('wifi', 'gio_giac_tu_do'), 'active'),
+  (3, 5, 4, 'Ở ghép quận 1, cần bạn nam cùng chia phòng',
+     'Phòng 2 người trung tâm quận 1, tiện đi làm, tìm bạn nam sạch sẽ, không hút thuốc trong phòng.',
+     'has_room', 2000000, 2200000, NULL, 'male',
+     JSON_ARRAY('wifi', 'thang_may', 'an_ninh_24_7'), 'closed');
+
+INSERT INTO roommate_images (id, roommate_listing_id, image_url, is_primary) VALUES
+  (1, 1, 'https://picsum.photos/seed/roommate1a/800/600', 1),
+  (2, 2, 'https://picsum.photos/seed/roommate2a/800/600', 1),
+  (3, 3, 'https://picsum.photos/seed/roommate3a/800/600', 1);
+
+-- ---------------------------------------------------------
+-- room_inquiries (liên hệ hỏi thuê / hỏi pass / hỏi ở ghép)
 -- ---------------------------------------------------------
 INSERT INTO room_inquiries (id, listing_type, listing_id, user_id, message, contact_phone, status) VALUES
   (1, 'room', 1, 5, 'Phòng còn không ạ? Cho em xem thêm hình được không?', '0911111111', 'new'),
   (2, 'pass', 1, 6, 'Cho em hỏi phí đền bù có thương lượng được không ạ?', '0922222222', 'contacted'),
-  (3, 'room', 3, 4, 'Phòng này còn trống chưa ạ?', '0933333333', 'closed');
+  (3, 'room', 3, 4, 'Phòng này còn trống chưa ạ?', '0933333333', 'closed'),
+  (4, 'roommate', 1, 6, 'Mình quan tâm, cho mình xin thêm thông tin phòng nhé.', '0900000006', 'new');
 
 -- ---------------------------------------------------------
 -- vehicles (xe cho thuê vận chuyển đồ đạc)
@@ -116,6 +140,7 @@ INSERT INTO reviews (id, user_id, target_type, target_id, rating, comment) VALUE
 INSERT INTO favorites (id, user_id, target_type, target_id) VALUES
   (1, 4, 'room_listing',      2),
   (2, 5, 'room_pass_listing', 1),
-  (3, 6, 'vehicle',           1);
+  (3, 6, 'vehicle',           1),
+  (4, 6, 'roommate_listing',  1);
 
 SET FOREIGN_KEY_CHECKS = 1;
