@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: nhatro_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nhatro}
+      MYSQL_USER: ${MYSQL_USER:-nhatro_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nhatro_password}
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./mock_data.sql:/docker-entrypoint-initdb.d/02-mock-data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
