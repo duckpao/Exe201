@@ -1,80 +1,93 @@
-import { useEffect, useState } from 'react'
-import { getHealth, getTasks } from '../services/apiService'
+import { Link } from 'react-router-dom'
+import SiteHeader from '../components/site/SiteHeader.jsx'
+import SiteFooter from '../components/site/SiteFooter.jsx'
+import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import RoomCard from '../components/site/RoomCard.jsx'
+import { rooms } from '../data/mockListings.js'
+import '../styles/site.css'
 
-function Task({ task }) {
-  return (
-    <article className={`task ${task.done ? 'done' : ''}`}>
-      <span className="status">{task.done ? '✓' : ''}</span>
-      <span>{task.title}</span>
-      <span className="task-id">#{String(task.id).padStart(2, '0')}</span>
-    </article>
-  )
-}
+const QUICK_ACCESS = [
+  { to: '/phong-tro', label: 'Phòng trọ', icon: '/images/icon-phong-tro.svg' },
+  { to: '/tim-roommate', label: 'Tìm Roommate', icon: '/images/icon-roommate.svg' },
+  { to: '/pass-do', label: 'Pass đồ', icon: '/images/icon-pass-do.svg' },
+  { to: '/van-chuyen-do', label: 'Vận chuyển đồ', icon: '/images/icon-van-chuyen.svg' },
+]
+
+const SERVICES = [
+  { to: '/phong-tro', label: 'Phòng trọ', image: '/images/service-phong-tro.jpg' },
+  { to: '/pass-phong', label: 'Pass đồ', image: '/images/service-pass-do.jpg' },
+  { to: '/van-chuyen-do', label: 'Vận chuyển đồ', image: '/images/service-van-chuyen.jpg' },
+]
 
 export default function HomePage() {
-  const [connection, setConnection] = useState(null)
-  const [tasks, setTasks] = useState(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    let isMounted = true
-    async function load() {
-      try {
-        const [health, taskList] = await Promise.all([getHealth(), getTasks()])
-        if (!isMounted) return
-        if (health.status !== 'ok') throw new Error('API is unhealthy')
-        setConnection(true)
-        setTasks(taskList)
-      } catch {
-        if (!isMounted) return
-        setConnection(false)
-        setError(true)
-      }
-    }
-    load()
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  const featuredRooms = rooms.slice(0, 4)
 
   return (
-    <main className="shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark">EX</span>
-          <span>Execute</span>
-        </div>
-        <span className={`connection ${connection === null ? '' : connection ? 'online' : 'offline'}`}>
-          {connection === null ? 'Đang kết nối...' : connection ? '● API đang hoạt động' : '● API chưa kết nối'}
-        </span>
-      </header>
-      <section className="intro">
-        <p className="eyebrow">FULL-STACK WORKSPACE</p>
-        <h1>
-          Biến ý tưởng thành
-          <br />
-          <em>việc đã xong.</em>
-        </h1>
-        <p className="subtitle">Một ví dụ web app với Vite ở phía trước và ExpressJS ở phía sau.</p>
-      </section>
-      <section className="board">
-        <div className="board-heading">
-          <div>
-            <p className="eyebrow">TODAY / 03 TASKS</p>
-            <h2>Danh sách công việc</h2>
+    <div className="site-page">
+      <SiteHeader />
+      <main className="site-main">
+        <section className="home-hero">
+          <div className="home-hero-inner">
+            <div className="home-hero-text">
+              <h1>
+                Tìm phòng dễ dàng
+                <br />
+                <em>Sống trọn thanh xuân</em>
+              </h1>
+              <p>
+                RentMate Hola giúp bạn tìm phòng trọ, roommate, pass phòng và vận chuyển đồ đạc nhanh
+                chóng, tin cậy chỉ trong vài bước.
+              </p>
+              <Link to="/phong-tro" className="btn btn-primary">
+                Tìm phòng ngay
+              </Link>
+            </div>
+            <div className="home-hero-image">
+              <PlaceholderImage src="/images/hero-home.jpg" alt="Phòng trọ đẹp" />
+            </div>
           </div>
-          <span className="api-label">GET /api/tasks</span>
+        </section>
+
+        <div className="quick-access">
+          {QUICK_ACCESS.map((item) => (
+            <Link key={item.to} to={item.to} className="quick-access-card">
+              <PlaceholderImage src={item.icon} alt={item.label} className="quick-access-icon" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
         </div>
-        <div id="tasks" className="tasks">
-          {error && (
-            <p className="error">
-              Không thể kết nối backend. Hãy chạy <code>npm run dev</code> trong thư mục backend.
-            </p>
-          )}
-          {!error && tasks === null && <p className="loading">Đang tải dữ liệu từ Express...</p>}
-          {!error && tasks !== null && tasks.map((task) => <Task key={task.id} task={task} />)}
-        </div>
-      </section>
-    </main>
+
+        <section className="site-section">
+          <div className="site-section-header">
+            <h2>Dịch vụ nổi bật</h2>
+            <p>Mọi thứ bạn cần cho cuộc sống trọ đều có trên RentMate Hola.</p>
+          </div>
+          <div className="service-grid">
+            {SERVICES.map((service) => (
+              <Link key={service.label} to={service.to} className="service-card">
+                <PlaceholderImage src={service.image} alt={service.label} />
+                <div className="service-card-label">
+                  <span>{service.label}</span>
+                  <span className="service-card-arrow">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="site-section">
+          <div className="site-section-header">
+            <h2>Phòng trọ nổi bật</h2>
+            <p>Những phòng trọ được quan tâm nhiều nhất tuần này.</p>
+          </div>
+          <div className="room-grid">
+            {featuredRooms.map((room) => (
+              <RoomCard key={room.id} room={room} />
+            ))}
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   )
 }

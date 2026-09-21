@@ -1,0 +1,31 @@
+:root {
+  --brand-primary: #f97316;
+  --brand-primary-dark: #ea580c;
+  --brand-yellow: #fbbf24;
+  --brand-cream: #fff8f0;
+  --brand-text: #1a1a1a;
+  --brand-text-soft: #6b6355;
+  --brand-border: #f0e4d4;
+  --brand-white: #ffffff;
+  --brand-danger: #dc2626;
+  --brand-danger-bg: #fef2f2;
+  --brand-success: #15803d;
+  --brand-success-bg: #f0fdf4;
+  --brand-shadow: rgba(26, 20, 10, 0.08) 0 20px 40px -12px, rgba(26, 20, 10, 0.06) 0 4px 10px -4px;
+
+  font: 16px/150% system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--brand-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--brand-cream);
+}
+
+a {
+  color: inherit;
+}
