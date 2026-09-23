@@ -16,21 +16,24 @@ Không cần sửa code gì cả — cứ thả file đúng tên vào thư mục
 
 ---
 
-## ⚠️ Còn thiếu — cần bổ sung ngay (7 file)
+## ⚠️ Còn thiếu — cần bổ sung ngay (18 file)
 
 Đây là toàn bộ ảnh **web đang tham chiếu tới nhưng thư mục `frontend/public/images/` chưa có file**, nên hiện tại các vị trí này đang hiện khối xám placeholder:
 
 | Tên file cần đặt | Kích thước gợi ý | Tỉ lệ | Dùng ở đâu | Nội dung ảnh cần có |
 |---|---|---|---|---|
-| `avatar-owner.jpg` | 200 x 200px | Vuông 1:1 | Card "Người đăng" ở mọi trang Chi tiết phòng trọ (`/phong-tro/:id`), và avatar preview khi đăng bài tìm Roommate | Ảnh đại diện 1 người (nam hoặc nữ, đóng vai "chủ trọ"), chân dung rõ mặt, nền đơn giản, vì ảnh hiện dạng hình tròn nên nên để mặt/chủ thể ở giữa khung hình. |
-| `thumb-1.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 1 trong khu thư viện ảnh (gallery) ở mọi trang Chi tiết phòng trọ | Cận cảnh 1 góc phòng trọ khác với ảnh chính — gợi ý: khu vực giường ngủ. |
-| `thumb-2.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 2 trong gallery, dùng chung mọi trang Chi tiết phòng trọ | Cận cảnh góc khác của phòng — gợi ý: bàn học/bàn làm việc. |
-| `thumb-3.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 3 trong gallery, dùng chung mọi trang Chi tiết phòng trọ | Cận cảnh góc khác của phòng — gợi ý: cửa sổ/ban công, ánh sáng tự nhiên. |
-| `thumb-4.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 4 trong gallery, dùng chung mọi trang Chi tiết phòng trọ | Cận cảnh góc khác của phòng — gợi ý: nhà tắm/khu vực phụ. |
+| `avatar-owner.jpg` | 200 x 200px | Vuông 1:1 | Card "Người đăng" ở mọi trang chi tiết (Phòng trọ `/phong-tro/:id`, Pass phòng trọ `/pass-phong/:id`, Pass đồ `/pass-do/:id`), và avatar preview khi đăng bài tìm Roommate | Ảnh đại diện 1 người (nam hoặc nữ, đóng vai "chủ trọ"), chân dung rõ mặt, nền đơn giản, vì ảnh hiện dạng hình tròn nên nên để mặt/chủ thể ở giữa khung hình. |
+| `thumb-1.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 1 trong khu thư viện ảnh (gallery) ở mọi trang chi tiết (Phòng trọ, Pass phòng trọ, Pass đồ) | Cận cảnh 1 góc phòng trọ/sản phẩm khác với ảnh chính — gợi ý: khu vực giường ngủ. |
+| `thumb-2.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 2 trong gallery, dùng chung mọi trang chi tiết (Phòng trọ, Pass phòng trọ, Pass đồ) | Cận cảnh góc khác — gợi ý: bàn học/bàn làm việc. |
+| `thumb-3.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 3 trong gallery, dùng chung mọi trang chi tiết (Phòng trọ, Pass phòng trọ, Pass đồ) | Cận cảnh góc khác — gợi ý: cửa sổ/ban công, ánh sáng tự nhiên. |
+| `thumb-4.jpg` | 600 x 450px | 4:3 | Ảnh nhỏ số 4 trong gallery, dùng chung mọi trang chi tiết (Phòng trọ, Pass phòng trọ, Pass đồ) | Cận cảnh góc khác — gợi ý: nhà tắm/khu vực phụ. |
 | `banner-roommate.png` | 700 x 500px | ~7:5 | Ảnh minh hoạ bên phải banner đầu trang "Đăng bài tìm Roommate" (`/tim-roommate/dang-bai`) | 2 người (1 nam 1 nữ hoặc 2 bạn cùng giới) đang trò chuyện vui vẻ trong không gian phòng trọ/phòng khách, gợi cảm giác "tìm được người ở ghép hợp ý". |
 | `banner-pass-room.png` | 700 x 500px | ~7:5 | Ảnh minh hoạ bên phải banner đầu trang "Đăng bài Pass phòng trọ" (`/pass-phong/dang-bai`) | 1 phòng trọ gọn gàng, đầy đủ nội thất, ánh sáng đẹp — gợi cảm giác "phòng sẵn sàng bàn giao ngay cho người mới". |
+| `hero-pass-do.jpg` | 1600 x 600px | ~16:6 (banner ngang, dẹt) | Ảnh banner đầu trang "Pass Đồ" (`/pass-do`) | Ảnh 1 vài món đồ sinh viên hay pass lại (bàn học, quạt, nồi cơm điện...) xếp gọn, tông sáng, gợi cảm giác "đồ cũ còn tốt, đáng mua". |
+| `banner-pass-do.png` | 700 x 500px | ~7:5 | Ảnh minh hoạ bên phải banner đầu trang "Đăng bài Pass đồ" (`/pass-do/dang-bai`) | 1 người đang đóng gói/chụp ảnh sản phẩm để đăng bán, hoặc vài món đồ được xếp gọn gàng, tông sáng, gợi cảm giác "rao bán đồ cũ dễ dàng". |
+| `pass-item-1.jpg` → `pass-item-9.jpg` (9 file) | 500 x 500px mỗi ảnh | Vuông 1:1 | Ảnh sản phẩm trong lưới danh sách trang "Pass Đồ" (`/pass-do`) | 9 ảnh chụp thật các món đồ khác nhau đang được rao bán/pass lại: bàn học, quạt điện, tủ nhựa, nồi cơm điện, xe đạp, giáo trình, kệ sách, bếp gas mini, loa bluetooth — mỗi ảnh chụp rõ 1 sản phẩm, nền đơn giản, đủ sáng. |
 
-Ngoài ra còn 2 ảnh nữa (mục 6 dưới đây) cũng đang thiếu: `about-hero.jpg` và `about-story.jpg` (dùng ở trang Giới thiệu), và 1 icon mạng xã hội `tiktok.svg` (mục 7).
+Ngoài ra còn 2 ảnh nữa (mục 6 dưới đây) cũng đang thiếu: `about-hero.jpg` và `about-story.jpg` (dùng ở trang Giới thiệu), và 1 icon mạng xã hội `tiktok.svg` (mục 7) — tuy nhiên `tiktok.svg` hiện đã có file trong thư mục nên có thể đã được bổ sung, xem lại cột Trạng thái ở mục 7.
 
 ---
 
@@ -108,7 +111,17 @@ Ngoài ra, phần "Phòng trọ nổi bật" ở cuối trang chủ dùng lại 
 | `fb.svg` | ✅ Đã có | 64 x 64px | Icon Facebook, màu trắng hoặc đơn sắc, nền trong suốt (icon nằm trên nền tối). |
 | `ig.svg` | ✅ Đã có | 64 x 64px | Icon Instagram, cùng phong cách như trên. |
 | `in.svg` | ✅ Đã có | 64 x 64px | Icon LinkedIn, cùng phong cách như trên. |
-| `tiktok.svg` | ⚠️ Còn thiếu | 64 x 64px | Icon TikTok, cùng phong cách như 3 icon trên (đơn sắc, nền trong suốt, đặt trên nền tối ở footer). |
+| `tiktok.svg` | ✅ Đã có | 64 x 64px | Icon TikTok, cùng phong cách như 3 icon trên (đơn sắc, nền trong suốt, đặt trên nền tối ở footer). |
+
+---
+
+## 8. Trang "Pass Đồ" (`/pass-do`)
+
+| Tên file | Trạng thái | Kích thước gợi ý | Tỉ lệ | Nội dung |
+|---|---|---|---|---|
+| `hero-pass-do.jpg` | ⚠️ Còn thiếu | 1600 x 600px | ~16:6 (banner ngang, dẹt) | Xem mô tả chi tiết ở bảng "Còn thiếu" phía trên. |
+| `banner-pass-do.png` | ⚠️ Còn thiếu | 700 x 500px | ~7:5 | Xem mô tả chi tiết ở bảng "Còn thiếu" phía trên. Dùng ở trang "Đăng bài Pass đồ" (`/pass-do/dang-bai`). |
+| `pass-item-1.jpg` → `pass-item-9.jpg` (9 file) | ⚠️ Còn thiếu cả 9 | 500 x 500px mỗi ảnh | Vuông 1:1 | Xem mô tả chi tiết ở bảng "Còn thiếu" phía trên. |
 
 ---
 
@@ -116,5 +129,5 @@ Ngoài ra, phần "Phòng trọ nổi bật" ở cuối trang chủ dùng lại 
 
 - **Logo "RentMate Hola"**: hiện tại phần header/footer đang hiển thị logo dạng **icon vẽ bằng code** (component `BrandLogo.jsx`, không phải ảnh), nên **không cần** file `logo.png`/`logo.svg` cho bản hiện tại — file `logo.png` hiện có trong thư mục `public/images/` đang **không được web sử dụng**. Nếu bạn có sẵn logo dạng hình ảnh và muốn thay icon hiện tại bằng logo đó, cứ gửi file ảnh, mình sẽ chỉnh code để dùng ảnh logo thay vì icon vẽ.
 - Định dạng ảnh chụp/photo: nên dùng `.jpg` (dung lượng nhẹ). Icon nên dùng `.svg` (nét, không bị mờ khi phóng to); nếu không có file `.svg`, dùng `.png` nền trong suốt cũng được — chỉ cần đổi đúng đuôi file trong tên tương ứng.
-- Tổng cộng cần chuẩn bị: **1** ảnh hero trang chủ, **4** icon, **3** ảnh dịch vụ, **9** ảnh phòng trọ, **1** ảnh banner roommate, **6** avatar roommate, **1** ảnh xe vận chuyển, **1** ảnh banner pass phòng, **6** ảnh pass phòng, **4** icon mạng xã hội, **4** ảnh thumbnail chi tiết phòng, **1** avatar chủ trọ, **1** banner đăng bài roommate, **1** banner đăng bài pass phòng, **2** ảnh trang Giới thiệu.
-- **Hiện đã có 33/40 file, còn thiếu 7 file** (7 file này được liệt kê đầy đủ ở mục "⚠️ Còn thiếu" ngay đầu tài liệu này) — ưu tiên bổ sung 7 file đó trước.
+- Tổng cộng cần chuẩn bị: **1** ảnh hero trang chủ, **4** icon, **3** ảnh dịch vụ, **9** ảnh phòng trọ, **1** ảnh banner roommate, **6** avatar roommate, **1** ảnh xe vận chuyển, **1** ảnh banner pass phòng, **6** ảnh pass phòng, **4** icon mạng xã hội, **4** ảnh thumbnail chi tiết phòng, **1** avatar chủ trọ, **1** banner đăng bài roommate, **1** banner đăng bài pass phòng, **2** ảnh trang Giới thiệu, **1** ảnh hero Pass Đồ, **1** banner đăng bài Pass Đồ, **9** ảnh sản phẩm Pass Đồ.
+- **Còn thiếu 20 file** (7 file cũ + 2 ảnh trang Giới thiệu + 11 file mới cho trang "Pass Đồ" vừa hoàn thiện) — xem đầy đủ ở mục "⚠️ Còn thiếu" ngay đầu tài liệu này. Trang "Pass Đồ" (`/pass-do`) nay đã có đủ giao diện danh sách + form đăng bài, chỉ còn thiếu ảnh thật để thay placeholder xám.
