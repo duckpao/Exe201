@@ -11,6 +11,8 @@
   --brand-danger-bg: #fef2f2;
   --brand-success: #15803d;
   --brand-success-bg: #f0fdf4;
+  --brand-info: #2563eb;
+  --brand-info-bg: #eff6ff;
   --brand-shadow: rgba(26, 20, 10, 0.08) 0 20px 40px -12px, rgba(26, 20, 10, 0.06) 0 4px 10px -4px;
 
   font: 16px/150% system-ui, 'Segoe UI', Roboto, sans-serif;

@@ -31,6 +31,29 @@ export const transportServices = [
   { id: 9, title: 'Xe ba gác chở đồ giá rẻ', rating: 4.3, tags: ['Giá rẻ'], price: '90.000đ/chuyến', image: '/images/transport-van.jpg' },
 ]
 
+export const roomOwner = {
+  name: 'Nguyễn Văn Mười',
+  avatar: '/images/avatar-owner.jpg',
+  rating: 4.9,
+  reviews: 50,
+  joined: 'Đã tham gia 3 tháng trước',
+}
+
+export function getRoomDetail(id) {
+  const room = rooms.find((item) => item.id === Number(id))
+  if (!room) return null
+
+  return {
+    ...room,
+    bedrooms: 1,
+    bathrooms: 1,
+    tags: [room.tag, 'Giờ giấc tự do', 'Chung chủ'],
+    address: `${room.location}, Hòa Lạc, Hà Nội`,
+    description: `Phòng trọ ${room.area} tại ${room.location}, ${room.tag.toLowerCase()}, phù hợp cho 1-2 người ở. Khu vực an ninh, gần trường học và chợ, giờ giấc tự do, chủ nhà thân thiện. Giá thuê ${room.price} đã bao gồm các tiện ích cơ bản, chưa gồm điện nước.`,
+    gallery: ['/images/thumb-1.jpg', '/images/thumb-2.jpg', '/images/thumb-3.jpg', '/images/thumb-4.jpg'],
+  }
+}
+
 export const passRooms = [
   { id: 1, title: 'Pass phòng trọ full nội thất, còn hợp đồng 6 tháng', price: '1.800.000đ/tháng', area: '25m²', location: 'Tân Xã', status: 'Còn trống', image: '/images/pass-room-1.jpg' },
   { id: 2, title: 'Pass gấp phòng trọ gần trường, giá tốt', price: '1.600.000đ/tháng', area: '20m²', location: 'Thạch Hòa', status: 'Cần pass gấp', image: '/images/pass-room-2.jpg' },

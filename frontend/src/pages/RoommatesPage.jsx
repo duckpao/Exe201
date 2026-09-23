@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
@@ -25,9 +26,9 @@ export default function RoommatesPage() {
             <p>Kết nối với những người bạn cùng phòng phù hợp với phong cách sống của bạn.</p>
             <div className="listing-hero-image">
               <PlaceholderImage src="/images/hero-roommate.jpg" alt="Tìm roommate" />
-              <button type="button" className="listing-hero-cta">
+              <Link to="/tim-roommate/dang-bai" className="listing-hero-cta">
                 Đăng bài tìm Roommate
-              </button>
+              </Link>
             </div>
           </div>
         </section>

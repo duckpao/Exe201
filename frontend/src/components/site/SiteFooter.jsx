@@ -39,9 +39,9 @@ export default function SiteFooter() {
         <div className="footer-col">
           <h4>Về RentMate Hola</h4>
           <ul>
-            <li><Link to="/">Giới thiệu</Link></li>
-            <li><Link to="/">Điều khoản</Link></li>
-            <li><Link to="/">Chính sách</Link></li>
+            <li><Link to="/gioi-thieu">Giới thiệu</Link></li>
+            <li><Link to="/dieu-khoan">Điều khoản</Link></li>
+            <li><Link to="/dieu-khoan">Chính sách</Link></li>
           </ul>
         </div>
 

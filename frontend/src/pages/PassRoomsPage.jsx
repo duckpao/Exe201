@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
@@ -25,9 +26,9 @@ export default function PassRoomsPage() {
             <p>Sang nhượng, pass phòng nhanh chóng cho người có nhu cầu.</p>
             <div className="listing-hero-image">
               <PlaceholderImage src="/images/hero-pass-phong.jpg" alt="Pass phòng trọ" />
-              <button type="button" className="listing-hero-cta">
+              <Link to="/pass-phong/dang-bai" className="listing-hero-cta">
                 Đăng bài Pass phòng
-              </button>
+              </Link>
             </div>
           </div>
         </section>

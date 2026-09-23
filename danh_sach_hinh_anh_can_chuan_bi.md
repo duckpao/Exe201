@@ -66,7 +66,20 @@ Ngoài ra, phần "Phòng trọ nổi bật" ở cuối trang chủ dùng lại 
 
 ---
 
-## 6. Mạng xã hội (hiện ở chân trang - Footer)
+## 6. Trang chi tiết phòng trọ, Đăng bài, Giới thiệu (bổ sung mới)
+
+| Tên file | Kích thước gợi ý | Tỉ lệ | Nội dung |
+|---|---|---|---|
+| `thumb-1.jpg` → `thumb-4.jpg` (4 file) | 600 x 450px mỗi ảnh | 4:3 | 4 ảnh thumbnail dùng chung cho khu vực thư viện ảnh (gallery) ở **mọi** trang "Chi tiết phòng trọ" — góc khác của phòng (giường, bàn học, cửa sổ, nhà tắm...). Ảnh chính lớn của gallery không cần ảnh mới, web tự lấy lại đúng ảnh phòng tương ứng trong `room-1.jpg`…`room-9.jpg` đã có ở mục 2. |
+| `avatar-owner.jpg` | 200 x 200px | Vuông 1:1 | Ảnh đại diện người đăng phòng (chủ trọ), dùng chung cho mọi trang chi tiết phòng. Ảnh hiện dạng hình tròn nên để mặt ở giữa khung. |
+| `banner-roommate.png` | 700 x 500px | ~7:5 | Ảnh minh hoạ ở banner trang "Đăng bài tìm Roommate" — 2 người đang trò chuyện vui vẻ, không khí tìm bạn ở ghép. |
+| `banner-pass-room.png` | 700 x 500px | ~7:5 | Ảnh minh hoạ ở banner trang "Đăng bài Pass phòng trọ" — phòng trọ gọn gàng, sẵn sàng bàn giao. |
+| `about-hero.jpg` | 900 x 700px | 4:3 | Ảnh lớn ở đầu trang "Giới thiệu" — hình ảnh đại diện cho RentMate Hola (có thể là sinh viên/phòng trọ/không khí năng động). |
+| `about-story.jpg` | 900 x 700px | 4:3 | Ảnh minh hoạ phần "Câu chuyện của chúng tôi" ở trang "Giới thiệu" — có thể là hình nhóm sáng lập/không gian làm việc. |
+
+---
+
+## 7. Mạng xã hội (hiện ở chân trang - Footer)
 
 | Tên file | Kích thước gợi ý | Nội dung |
 |---|---|---|
@@ -81,4 +94,4 @@ Ngoài ra, phần "Phòng trọ nổi bật" ở cuối trang chủ dùng lại 
 
 - **Logo "RentMate Hola"**: hiện tại phần header/footer đang hiển thị logo dạng **chữ** (không phải ảnh), nên **không cần** file `logo.png`/`logo.svg` cho bản hiện tại. Nếu bạn có sẵn logo dạng hình ảnh và muốn thay chữ bằng logo đó, cứ gửi file ảnh, mình sẽ chỉnh code để dùng ảnh logo thay vì chữ.
 - Định dạng ảnh chụp/photo: nên dùng `.jpg` (dung lượng nhẹ). Icon nên dùng `.svg` (nét, không bị mờ khi phóng to); nếu không có file `.svg`, dùng `.png` nền trong suốt cũng được — chỉ cần đổi đúng đuôi file trong tên tương ứng.
-- Tổng cộng cần chuẩn bị: **1** ảnh hero trang chủ, **4** icon, **3** ảnh dịch vụ, **9** ảnh phòng trọ, **1** ảnh banner roommate, **6** avatar roommate, **1** ảnh xe vận chuyển, **1** ảnh banner pass phòng, **6** ảnh pass phòng, **4** icon mạng xã hội.
+- Tổng cộng cần chuẩn bị: **1** ảnh hero trang chủ, **4** icon, **3** ảnh dịch vụ, **9** ảnh phòng trọ, **1** ảnh banner roommate, **6** avatar roommate, **1** ảnh xe vận chuyển, **1** ảnh banner pass phòng, **6** ảnh pass phòng, **4** icon mạng xã hội, **4** ảnh thumbnail chi tiết phòng, **1** avatar chủ trọ, **1** banner đăng bài roommate, **1** banner đăng bài pass phòng, **2** ảnh trang Giới thiệu.
