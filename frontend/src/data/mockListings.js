@@ -62,3 +62,43 @@ export const passRooms = [
   { id: 5, title: 'Pass phòng khép kín, có điều hòa', price: '2.300.000đ/tháng', area: '26m²', location: 'Tân Xã', status: 'Còn trống', image: '/images/pass-room-5.jpg' },
   { id: 6, title: 'Pass phòng trọ giá sinh viên', price: '1.300.000đ/tháng', area: '18m²', location: 'Thạch Hòa', status: 'Cần pass gấp', image: '/images/pass-room-6.jpg' },
 ]
+
+export function getPassRoomDetail(id) {
+  const room = passRooms.find((item) => item.id === Number(id))
+  if (!room) return null
+
+  return {
+    ...room,
+    bedrooms: 1,
+    bathrooms: 1,
+    tags: [room.status, 'Còn thời hạn hợp đồng', 'Chung chủ'],
+    address: `${room.location}, Hòa Lạc, Hà Nội`,
+    description: `Cần pass lại phòng trọ ${room.area} tại ${room.location}, ${room.status === 'Cần pass gấp' ? 'cần pass gấp do có việc đột xuất' : 'còn thời hạn hợp đồng, chuyển đi vì lý do cá nhân'}. Phòng còn mới, đầy đủ nội thất cơ bản, an ninh tốt, gần trường học và chợ. Giá ${room.price} đã bao gồm các tiện ích cơ bản, chưa gồm điện nước.`,
+    gallery: ['/images/thumb-1.jpg', '/images/thumb-2.jpg', '/images/thumb-3.jpg', '/images/thumb-4.jpg'],
+  }
+}
+
+export const passItems = [
+  { id: 1, title: 'Bàn học gỗ + ghế xoay, còn mới 90%', price: '350.000đ', category: 'Nội thất', condition: 'Mới 90%', location: 'Tân Xã', status: 'Còn hàng', image: '/images/pass-item-1.jpg' },
+  { id: 2, title: 'Quạt điện Panasonic 3 tốc độ', price: '180.000đ', category: 'Đồ điện tử', condition: 'Đã dùng', location: 'Thạch Hòa', status: 'Cần bán gấp', image: '/images/pass-item-2.jpg' },
+  { id: 3, title: 'Tủ nhựa 5 tầng đựng quần áo', price: '150.000đ', category: 'Nội thất', condition: 'Đã dùng', location: 'Tân Xã', status: 'Còn hàng', image: '/images/pass-item-3.jpg' },
+  { id: 4, title: 'Nồi cơm điện Sharp 1.8L', price: '250.000đ', category: 'Đồ gia dụng', condition: 'Mới 95%', location: 'Thạch Thất', status: 'Cần bán gấp', image: '/images/pass-item-4.jpg' },
+  { id: 5, title: 'Xe đạp cào cào cho sinh viên', price: '600.000đ', category: 'Xe cộ', condition: 'Đã dùng', location: 'Tân Xã', status: 'Còn hàng', image: '/images/pass-item-5.jpg' },
+  { id: 6, title: 'Bộ giáo trình Đại học Kinh tế năm 2', price: '120.000đ', category: 'Sách - Giáo trình', condition: 'Đã dùng', location: 'Thạch Hòa', status: 'Còn hàng', image: '/images/pass-item-6.jpg' },
+  { id: 7, title: 'Kệ sách mini treo tường', price: '90.000đ', category: 'Nội thất', condition: 'Mới 90%', location: 'Tân Xã', status: 'Còn hàng', image: '/images/pass-item-7.jpg' },
+  { id: 8, title: 'Bếp gas mini du lịch còn hộp', price: '200.000đ', category: 'Đồ gia dụng', condition: 'Mới 95%', location: 'Thạch Thất', status: 'Cần bán gấp', image: '/images/pass-item-8.jpg' },
+  { id: 9, title: 'Loa bluetooth mini nghe nhạc', price: '160.000đ', category: 'Đồ điện tử', condition: 'Đã dùng', location: 'Tân Xã', status: 'Còn hàng', image: '/images/pass-item-9.jpg' },
+]
+
+export function getPassItemDetail(id) {
+  const item = passItems.find((entry) => entry.id === Number(id))
+  if (!item) return null
+
+  return {
+    ...item,
+    tags: [item.category, item.condition, item.status],
+    address: `${item.location}, Hòa Lạc, Hà Nội`,
+    description: `${item.title}, tình trạng ${item.condition.toLowerCase()}, thuộc nhóm ${item.category.toLowerCase()}. ${item.status === 'Cần bán gấp' ? 'Cần bán gấp do chuyển đi/không còn nhu cầu sử dụng.' : 'Còn dùng tốt, bán lại cho ai cần với giá hợp lý.'} Giá ${item.price}, có thể trao đổi trực tiếp tại ${item.location}.`,
+    gallery: ['/images/thumb-1.jpg', '/images/thumb-2.jpg', '/images/thumb-3.jpg', '/images/thumb-4.jpg'],
+  }
+}

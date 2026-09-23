@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
 
 export default function PassRoomCard({ room }) {
@@ -13,9 +14,9 @@ export default function PassRoomCard({ room }) {
         <p className="pass-room-card-meta">
           {room.area} | {room.location}
         </p>
-        <button type="button" className="btn btn-primary pass-room-card-cta">
+        <Link to={`/pass-phong/${room.id}`} className="btn btn-primary pass-room-card-cta">
           Xem chi tiết
-        </button>
+        </Link>
       </div>
     </article>
   )
