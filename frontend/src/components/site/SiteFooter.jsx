@@ -22,15 +22,14 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="footer-col footer-brand">
-          <div className="site-logo">
-            <span className="site-logo-mark">RentMate</span>
-            <span className="site-logo-accent">Hola</span>
+          <div className="site-logo footer-logo-chip">
+            <PlaceholderImage src="/images/logo.png" alt="RentMate Hola" className="site-logo-image" />
           </div>
           <p>Nền tảng tìm phòng trọ, roommate, pass phòng và vận chuyển đồ dành cho sinh viên.</p>
           <div className="footer-socials">
             {SOCIALS.map((social) => (
               <a key={social.name} href="#" aria-label={social.name} className="footer-social-icon">
-                <PlaceholderImage src={social.src} alt={social.name} />
+                <PlaceholderImage src={social.src} alt={social.name} className="footer-social-img" />
               </a>
             ))}
           </div>

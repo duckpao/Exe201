@@ -77,19 +77,10 @@
   margin-bottom: 20px;
 }
 
-.brand-logo-icon {
+.brand-logo-image {
+  height: 44px;
+  width: auto;
   display: block;
-}
-
-.brand-word {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--brand-text);
-}
-
-.brand-word em {
-  font-style: normal;
-  color: var(--brand-primary);
 }
 
 .auth-card h2 {

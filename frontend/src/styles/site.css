@@ -29,20 +29,22 @@
 
 .site-logo {
   display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
   text-decoration: none;
-  font-size: 20px;
-  font-weight: 800;
   white-space: nowrap;
 }
 
-.site-logo-mark {
-  color: var(--brand-primary-dark);
+.site-logo-image {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
-.site-logo-accent {
-  color: var(--brand-primary);
+.footer-logo-chip {
+  background: var(--brand-white);
+  border-radius: 12px;
+  padding: 6px 12px;
+  width: fit-content;
 }
 
 .site-nav {
@@ -774,10 +776,6 @@
   gap: 32px;
 }
 
-.site-footer .site-logo-mark {
-  color: #fff;
-}
-
 .footer-brand p {
   color: #b8b0a1;
   font-size: 14px;
@@ -794,7 +792,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--brand-white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -806,6 +804,13 @@
   height: 100%;
   font-size: 8px;
   background: transparent;
+}
+
+.footer-social-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
 }
 
 .footer-col h4 {
