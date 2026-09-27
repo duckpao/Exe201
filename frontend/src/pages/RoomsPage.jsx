@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import FilterSidebar from '../components/site/FilterSidebar.jsx'
 import RoomCard from '../components/site/RoomCard.jsx'
-import { rooms } from '../data/mockListings.js'
+import { listRooms } from '../services/roomService.js'
 import '../styles/site.css'
 
 const FILTER_GROUPS = [
@@ -15,6 +15,27 @@ const FILTER_GROUPS = [
 
 export default function RoomsPage() {
   const [keyword, setKeyword] = useState('')
+  const [rooms, setRooms] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let ignore = false
+    setLoading(true)
+    listRooms()
+      .then((data) => {
+        if (!ignore) setRooms(data.data || [])
+      })
+      .catch((err) => {
+        if (!ignore) setError(err.message)
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   return (
     <div className="site-page">
@@ -42,18 +63,18 @@ export default function RoomsPage() {
         <div className="listing-page-body">
           <FilterSidebar groups={FILTER_GROUPS} />
           <div>
-            <div className="listing-grid">
-              {rooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
-              ))}
-            </div>
-            <div className="pagination">
-              <button type="button">←</button>
-              <button type="button" className="active">1</button>
-              <button type="button">2</button>
-              <button type="button">3</button>
-              <button type="button">→</button>
-            </div>
+            {loading && <p className="listing-status">Đang tải danh sách phòng trọ...</p>}
+            {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
+            {!loading && !error && rooms.length === 0 && (
+              <p className="listing-status">Chưa có phòng trọ nào được đăng.</p>
+            )}
+            {!loading && !error && rooms.length > 0 && (
+              <div className="listing-grid">
+                {rooms.map((room) => (
+                  <RoomCard key={room.id} room={room} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

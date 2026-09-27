@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login, loginWithGoogle } from '../services/authService'
+import { useAuth } from '../context/AuthContext.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
 import '../styles/auth.css'
 
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [googleUnavailable, setGoogleUnavailable] = useState(false)
   const googleButtonRef = useRef(null)
   const navigate = useNavigate()
+  const { login, loginWithGoogle } = useAuth()
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
@@ -121,6 +122,9 @@ export default function LoginPage() {
             <div className="form-row-between">
               <Link className="auth-link" to="/forgot-password">
                 Quên mật khẩu?
+              </Link>
+              <Link className="auth-link" to="/dang-ky">
+                Chưa có tài khoản? Đăng ký
               </Link>
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>

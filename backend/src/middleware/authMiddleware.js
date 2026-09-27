@@ -16,4 +16,13 @@ function requireAuth(request, response, next) {
   }
 }
 
-module.exports = { requireAuth }
+function requireRole(...roles) {
+  return function (request, response, next) {
+    if (!roles.includes(request.user?.role)) {
+      return response.status(403).json({ message: 'Bạn không có quyền thực hiện hành động này' })
+    }
+    next()
+  }
+}
+
+module.exports = { requireAuth, requireRole }

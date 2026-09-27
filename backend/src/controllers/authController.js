@@ -28,7 +28,7 @@ function setAuthCookie(response, token) {
 }
 
 async function register(request, response) {
-  const { fullName, email, phone, password } = request.body || {}
+  const { fullName, email, phone, password, role } = request.body || {}
 
   if (!fullName || !email || !password) {
     return response.status(400).json({ message: 'Vui lòng nhập họ tên, email và mật khẩu' })
@@ -39,8 +39,9 @@ async function register(request, response) {
     return response.status(409).json({ message: 'Email này đã được sử dụng' })
   }
 
+  const safeRole = role === 'landlord' ? 'landlord' : 'tenant'
   const passwordHash = await hashPassword(password)
-  const user = await userModel.createUser({ fullName, email, phone, passwordHash })
+  const user = await userModel.createUser({ fullName, email, phone, passwordHash, role: safeRole })
 
   const token = signAuthToken({ id: user.id, email: user.email, role: user.role })
   setAuthCookie(response, token)
