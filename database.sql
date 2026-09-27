@@ -50,7 +50,7 @@ CREATE TABLE addresses (
   province       VARCHAR(100) NOT NULL,
   district       VARCHAR(100) NOT NULL,
   ward           VARCHAR(100) NULL,
-  street_address VARCHAR(255) NOT NULL,
+  street_address VARCHAR(255) NULL,
   latitude       DECIMAL(10,7) NULL,
   longitude      DECIMAL(10,7) NULL,
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -65,6 +65,7 @@ CREATE TABLE room_listings (
   address_id      BIGINT UNSIGNED NOT NULL,
   title           VARCHAR(200) NOT NULL,
   description     TEXT NULL,
+  property_type   ENUM('phong_tro','chung_cu_mini','nha_nguyen_can') NOT NULL DEFAULT 'phong_tro',
   price_per_month DECIMAL(12,2) NOT NULL,
   deposit_amount  DECIMAL(12,2) NULL,
   area_m2         DECIMAL(6,2) NULL,
@@ -84,7 +85,8 @@ CREATE TABLE room_listings (
 CREATE TABLE room_images (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   room_listing_id BIGINT UNSIGNED NOT NULL,
-  image_url       VARCHAR(255) NOT NULL,
+  media_url       VARCHAR(255) NOT NULL,
+  media_type      ENUM('image','video') NOT NULL DEFAULT 'image',
   is_primary      TINYINT(1) NOT NULL DEFAULT 0,
   created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_room_images_listing (room_listing_id),
@@ -101,11 +103,16 @@ CREATE TABLE room_pass_listings (
   address_id        BIGINT UNSIGNED NOT NULL,
   title             VARCHAR(200) NOT NULL,
   description       TEXT NULL,
+  pass_type         ENUM('pass','transfer') NOT NULL DEFAULT 'pass',
+  property_type     ENUM('phong_tro','chung_cu_mini','nha_nguyen_can') NULL,
+  area_m2           DECIMAL(6,2) NULL,
+  max_occupants     SMALLINT UNSIGNED NULL,
+  amenities         JSON NULL,
   monthly_price     DECIMAL(12,2) NOT NULL,
   compensation_fee  DECIMAL(12,2) NULL, -- phí đền bù/hoàn cọc cho người pass
-  contract_end_date DATE NOT NULL,
+  contract_end_date DATE NULL, -- tái dùng để lưu ngày muốn pass (passDate) từ form đăng bài
   reason            VARCHAR(255) NULL,
-  status            ENUM('active','completed','cancelled') NOT NULL DEFAULT 'active',
+  status            ENUM('pending','active','urgent','completed','cancelled') NOT NULL DEFAULT 'pending',
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at        TIMESTAMP NULL,
@@ -120,7 +127,8 @@ CREATE TABLE room_pass_listings (
 CREATE TABLE room_pass_images (
   id                    BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   room_pass_listing_id  BIGINT UNSIGNED NOT NULL,
-  image_url             VARCHAR(255) NOT NULL,
+  media_url             VARCHAR(255) NOT NULL,
+  media_type            ENUM('image','video') NOT NULL DEFAULT 'image',
   is_primary            TINYINT(1) NOT NULL DEFAULT 0,
   created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_pass_images_listing (room_pass_listing_id),
@@ -135,13 +143,18 @@ CREATE TABLE roommate_listings (
   posted_by         BIGINT UNSIGNED NOT NULL, -- người đăng bài tìm roommate
   address_id        BIGINT UNSIGNED NOT NULL, -- khu vực phòng hiện có, hoặc khu vực mong muốn
   title             VARCHAR(200) NOT NULL,
-  description       TEXT NOT NULL, -- mô tả bắt buộc: về bản thân, yêu cầu với roommate, phòng...
+  description       TEXT NULL, -- mô tả về bản thân (form không bắt buộc)
+  place_info        TEXT NULL, -- thông tin về chỗ ở, tách riêng khỏi description
+  age               SMALLINT UNSIGNED NULL, -- tuổi người đăng bài, hiển thị trên thẻ roommate
   room_type         ENUM('has_room','looking_for_room') NOT NULL, -- đã có phòng cần tìm người ở ghép / đang tìm phòng + người ở ghép
+  property_type     ENUM('phong_tro','chung_cu_mini','nha_nguyen_can') NULL,
+  area_m2           DECIMAL(6,2) NULL,
   budget_min        DECIMAL(12,2) NULL,
   budget_max        DECIMAL(12,2) NULL,
   move_in_date      DATE NULL,
   gender_preference ENUM('any','male','female') NOT NULL DEFAULT 'any',
   amenities         JSON NULL,
+  publish_at        DATETIME NULL, -- NULL = đăng ngay, có giá trị = đăng theo lịch
   status            ENUM('active','closed') NOT NULL DEFAULT 'active',
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -156,11 +169,46 @@ CREATE TABLE roommate_listings (
 CREATE TABLE roommate_images (
   id                   BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   roommate_listing_id  BIGINT UNSIGNED NOT NULL,
-  image_url            VARCHAR(255) NOT NULL,
+  media_url            VARCHAR(255) NOT NULL,
+  media_type           ENUM('image','video') NOT NULL DEFAULT 'image',
   is_primary           TINYINT(1) NOT NULL DEFAULT 0,
   created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_roommate_images_listing (roommate_listing_id),
   CONSTRAINT fk_roommate_images_listing FOREIGN KEY (roommate_listing_id) REFERENCES roommate_listings(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Pass Đồ: rao bán đồ cũ (nội thất, đồ điện tử, đồ gia dụng, xe cộ, sách...)
+-- ---------------------------------------------------------
+CREATE TABLE item_listings (
+  id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  posted_by      BIGINT UNSIGNED NOT NULL,
+  address_id     BIGINT UNSIGNED NOT NULL,
+  title          VARCHAR(200) NOT NULL,
+  description    TEXT NULL,
+  category       VARCHAR(50) NOT NULL, -- 'Nội thất'|'Đồ điện tử'|'Đồ gia dụng'|'Xe cộ'|'Sách - Giáo trình'
+  item_condition VARCHAR(50) NULL,     -- 'Mới 90%'|'Mới 95%'|'Đã dùng'
+  price          DECIMAL(12,2) NOT NULL,
+  status         ENUM('pending','available','urgent','sold') NOT NULL DEFAULT 'pending',
+  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at     TIMESTAMP NULL,
+  KEY idx_item_posted_by (posted_by),
+  KEY idx_item_address (address_id),
+  KEY idx_item_status (status),
+  CONSTRAINT fk_item_user FOREIGN KEY (posted_by) REFERENCES users(id),
+  CONSTRAINT fk_item_address FOREIGN KEY (address_id) REFERENCES addresses(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE item_images (
+  id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  item_listing_id  BIGINT UNSIGNED NOT NULL,
+  media_url        VARCHAR(255) NOT NULL,
+  media_type       ENUM('image','video') NOT NULL DEFAULT 'image',
+  is_primary       TINYINT(1) NOT NULL DEFAULT 0,
+  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_item_images_listing (item_listing_id),
+  CONSTRAINT fk_item_images_listing FOREIGN KEY (item_listing_id) REFERENCES item_listings(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
@@ -188,12 +236,14 @@ CREATE TABLE vehicles (
   id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   owner_id       BIGINT UNSIGNED NOT NULL,
   vehicle_type   ENUM('motorbike','van','truck') NOT NULL,
+  service_type   VARCHAR(50) NULL, -- 'Xe tải nhỏ'|'Xe máy kéo'|'Chuyển nhà trọn gói' (khớp filter Loại dịch vụ)
   name           VARCHAR(150) NOT NULL,
   license_plate  VARCHAR(20) NOT NULL,
   capacity_kg    DECIMAL(8,2) NULL,
   price_per_hour DECIMAL(12,2) NULL,
   price_per_trip DECIMAL(12,2) NULL,
   description    TEXT NULL,
+  tags           JSON NULL,
   status         ENUM('available','busy','hidden') NOT NULL DEFAULT 'available',
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -207,7 +257,8 @@ CREATE TABLE vehicles (
 CREATE TABLE vehicle_images (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   vehicle_id  BIGINT UNSIGNED NOT NULL,
-  image_url   VARCHAR(255) NOT NULL,
+  media_url   VARCHAR(255) NOT NULL,
+  media_type  ENUM('image','video') NOT NULL DEFAULT 'image',
   is_primary  TINYINT(1) NOT NULL DEFAULT 0,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_vehicle_images_vehicle (vehicle_id),
@@ -390,6 +441,29 @@ BEGIN
   INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data)
   VALUES ('roommate_listings', OLD.id, 'DELETE', @app_user_id,
     JSON_OBJECT('title', OLD.title, 'room_type', OLD.room_type, 'status', OLD.status));
+END$$
+
+-- item_listings
+CREATE TRIGGER trg_item_listings_after_insert AFTER INSERT ON item_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, new_data)
+  VALUES ('item_listings', NEW.id, 'INSERT', @app_user_id,
+    JSON_OBJECT('title', NEW.title, 'price', NEW.price, 'status', NEW.status));
+END$$
+
+CREATE TRIGGER trg_item_listings_after_update AFTER UPDATE ON item_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data, new_data)
+  VALUES ('item_listings', NEW.id, 'UPDATE', @app_user_id,
+    JSON_OBJECT('title', OLD.title, 'price', OLD.price, 'status', OLD.status),
+    JSON_OBJECT('title', NEW.title, 'price', NEW.price, 'status', NEW.status));
+END$$
+
+CREATE TRIGGER trg_item_listings_after_delete AFTER DELETE ON item_listings FOR EACH ROW
+BEGIN
+  INSERT INTO audit_logs (table_name, record_id, action, changed_by, old_data)
+  VALUES ('item_listings', OLD.id, 'DELETE', @app_user_id,
+    JSON_OBJECT('title', OLD.title, 'price', OLD.price, 'status', OLD.status));
 END$$
 
 -- vehicle_bookings

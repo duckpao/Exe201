@@ -1,0 +1,23 @@
+const pool = require('../config/db')
+
+async function findOrCreateWard({ ward, province = 'Hà Nội', district = 'Thạch Thất' }) {
+  const [existingRows] = await pool.query(
+    'SELECT * FROM addresses WHERE province = ? AND district = ? AND ward = ? LIMIT 1',
+    [province, district, ward]
+  )
+  if (existingRows[0]) return existingRows[0]
+
+  const [result] = await pool.query(
+    'INSERT INTO addresses (province, district, ward) VALUES (?, ?, ?)',
+    [province, district, ward]
+  )
+  const [rows] = await pool.query('SELECT * FROM addresses WHERE id = ?', [result.insertId])
+  return rows[0]
+}
+
+async function findById(id) {
+  const [rows] = await pool.query('SELECT * FROM addresses WHERE id = ? LIMIT 1', [id])
+  return rows[0] || null
+}
+
+module.exports = { findOrCreateWard, findById }
