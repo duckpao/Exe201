@@ -1122,6 +1122,12 @@
   margin-bottom: 18px;
 }
 
+.price-note {
+  color: var(--brand-text-soft);
+  font-size: 13.5px;
+  margin: -8px 0 14px;
+}
+
 .price-actions {
   display: flex;
   flex-direction: column;

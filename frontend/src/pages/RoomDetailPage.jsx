@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getRoom } from '../services/roomService.js'
 import { startConversation } from '../services/conversationService.js'
@@ -15,8 +16,6 @@ const QUICK_FACTS = (room) => [
   { icon: '🛋️', label: 'Nội thất', value: room.tag },
   { icon: '💰', label: 'Giá thuê', value: room.price },
 ]
-
-const embedKey = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY
 
 export default function RoomDetailPage() {
   const { roomId } = useParams()
@@ -54,7 +53,7 @@ export default function RoomDetailPage() {
     setContactError('')
     setStarting(true)
     try {
-      const conversation = await startConversation(room.id)
+      const conversation = await startConversation('room', room.id)
       navigate(`/tin-nhan/${conversation.id}`)
     } catch (err) {
       setContactError(err.message)
@@ -178,34 +177,8 @@ export default function RoomDetailPage() {
                 </div>
               </div>
 
-              <div className="sidebar-card address-card">
-                <p className="address-card-title">Địa chỉ</p>
-                {room.latitude != null && room.longitude != null && embedKey ? (
-                  <iframe
-                    className="map-embed"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${embedKey}&q=${room.latitude},${room.longitude}&zoom=16`}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`Bản đồ vị trí ${room.title}`}
-                  />
-                ) : (
-                  <div className="map-placeholder">Bản đồ Google Map</div>
-                )}
-                {room.latitude != null && room.longitude != null ? (
-                  <a
-                    className="btn btn-outline"
-                    href={`https://www.google.com/maps?q=${room.latitude},${room.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Xem Map
-                  </a>
-                ) : (
-                  <button type="button" className="btn btn-outline" disabled>
-                    Xem Map
-                  </button>
-                )}
-              </div>
+              <ListingMapCard title={room.title} latitude={room.latitude} longitude={room.longitude} />
+
             </aside>
           </div>
         </div>

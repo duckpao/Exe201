@@ -1,19 +1,28 @@
 const conversationModel = require('../models/conversationModel')
 const messageModel = require('../models/messageModel')
-const roomModel = require('../models/roomModel')
+const listingModel = require('../models/listingModel')
+const { getListingType, LISTING_TYPE_KEYS } = require('../models/listingRegistry')
 const messagingService = require('../services/messagingService')
 const { getIO } = require('../realtime/socket')
 
+function listingUrl(listingType, listingId) {
+  const config = getListingType(listingType)
+  if (!config) return null
+  return `${config.path}/${listingId}`
+}
+
 function toConversationCard(row, userId) {
-  const isLandlord = row.landlord_id === userId
+  const isOwner = row.owner_id === userId
   return {
     id: row.id,
-    roomListingId: row.room_listing_id,
-    roomTitle: row.room_title,
-    roomImage: row.room_image,
-    counterpart: isLandlord
-      ? { id: row.tenant_id, name: row.tenant_name, avatar: row.tenant_avatar }
-      : { id: row.landlord_id, name: row.landlord_name, avatar: row.landlord_avatar },
+    listingType: row.listing_type,
+    listingId: row.listing_id,
+    listingTitle: row.listing_title || 'Bài đăng đã bị gỡ',
+    listingImage: row.listing_image,
+    listingUrl: row.listing_title ? listingUrl(row.listing_type, row.listing_id) : null,
+    counterpart: isOwner
+      ? { id: row.inquirer_id, name: row.inquirer_name, avatar: row.inquirer_avatar }
+      : { id: row.owner_id, name: row.owner_name, avatar: row.owner_avatar },
     lastMessage: row.last_message,
     lastMessageAt: row.last_message_at,
     unreadCount: row.unread_count,
@@ -21,31 +30,43 @@ function toConversationCard(row, userId) {
 }
 
 async function startConversation(request, response) {
-  const { roomListingId } = request.body || {}
-  if (!roomListingId) {
-    return response.status(400).json({ message: 'Thiếu roomListingId' })
+  const { listingType, listingId, roomListingId } = request.body || {}
+
+  // roomListingId là dạng cũ (chỉ dành cho phòng trọ), vẫn nhận để không phá client cũ.
+  const type = listingType || (roomListingId ? 'room' : null)
+  const id = listingId || roomListingId
+
+  if (!type || !id) {
+    return response.status(400).json({ message: 'Thiếu loại bài đăng hoặc mã bài đăng' })
+  }
+  const config = getListingType(type)
+  if (!config) {
+    return response.status(400).json({ message: `Loại bài đăng không hợp lệ (${LISTING_TYPE_KEYS.join(', ')})` })
   }
 
-  const room = await roomModel.findById(roomListingId)
-  if (!room) {
-    return response.status(404).json({ message: 'Không tìm thấy phòng trọ' })
+  const listing = await listingModel.findOwner(type, id)
+  if (!listing) {
+    return response.status(404).json({ message: `Không tìm thấy ${config.label}` })
   }
 
-  if (room.landlord_id === request.user.id) {
+  if (listing.owner_id === request.user.id) {
     return response.status(400).json({ message: 'Bạn không thể tự nhắn tin cho chính mình' })
   }
 
   const conversation = await conversationModel.findOrCreate({
-    roomListingId: room.id,
-    landlordId: room.landlord_id,
-    tenantId: request.user.id,
+    listingType: type,
+    listingId: listing.id,
+    ownerId: listing.owner_id,
+    inquirerId: request.user.id,
   })
 
   response.status(201).json({
     id: conversation.id,
-    roomListingId: conversation.room_listing_id,
-    roomTitle: room.title,
-    counterpart: { id: room.landlord_user_id, name: room.landlord_name, avatar: room.landlord_avatar },
+    listingType: conversation.listing_type,
+    listingId: conversation.listing_id,
+    listingTitle: listing.title,
+    listingUrl: listingUrl(type, listing.id),
+    counterpart: { id: listing.owner_id, name: listing.owner_name, avatar: listing.owner_avatar },
   })
 }
 

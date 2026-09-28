@@ -1,21 +1,29 @@
 const conversationModel = require('../models/conversationModel')
 const messageModel = require('../models/messageModel')
 const userModel = require('../models/userModel')
+const listingModel = require('../models/listingModel')
+const { getListingType } = require('../models/listingRegistry')
 const { sendMail } = require('../config/mailer')
 
-async function notifyLandlordByEmail({ conversation, message }) {
+async function notifyOwnerByEmail({ conversation, message }) {
   try {
-    const landlord = await userModel.findById(conversation.landlord_id)
-    const tenant = await userModel.findById(conversation.tenant_id)
-    if (!landlord?.email) return
+    const owner = await userModel.findById(conversation.owner_id)
+    const inquirer = await userModel.findById(conversation.inquirer_id)
+    if (!owner?.email) return
+
+    const config = getListingType(conversation.listing_type)
+    const listing = await listingModel.findOwner(conversation.listing_type, conversation.listing_id)
+    const listingLabel = config?.label || 'bài đăng'
 
     await sendMail({
-      to: landlord.email,
-      subject: 'Bạn có tin nhắn mới về phòng trọ đang đăng',
-      html: `<p>Xin chào ${landlord.full_name},</p>
-             <p>${tenant?.full_name || 'Một người thuê'} vừa gửi cho bạn một tin nhắn mới:</p>
+      to: owner.email,
+      subject: `Bạn có tin nhắn mới về ${listingLabel} đang đăng`,
+      html: `<p>Xin chào ${owner.full_name},</p>
+             <p>${inquirer?.full_name || 'Một người dùng'} vừa gửi cho bạn một tin nhắn mới${
+               listing?.title ? ` về "${listing.title}"` : ''
+             }:</p>
              <p style="padding:12px;background:#f5f5f5;border-radius:8px">${message.body}</p>
-             <p>Đăng nhập vào website để trả lời người thuê.</p>`,
+             <p>Đăng nhập vào website để trả lời.</p>`,
     })
   } catch (error) {
     console.error('Gửi email thông báo tin nhắn mới thất bại:', error.message)
@@ -27,7 +35,7 @@ async function sendMessage({ conversationId, senderId, body, io }) {
   if (!conversation) {
     throw Object.assign(new Error('Không tìm thấy cuộc trò chuyện'), { http_code: 404 })
   }
-  if (conversation.landlord_id !== senderId && conversation.tenant_id !== senderId) {
+  if (conversation.owner_id !== senderId && conversation.inquirer_id !== senderId) {
     throw Object.assign(new Error('Bạn không thuộc cuộc trò chuyện này'), { http_code: 403 })
   }
   if (!body || !body.trim()) {
@@ -40,8 +48,8 @@ async function sendMessage({ conversationId, senderId, body, io }) {
     io.to(`conv:${conversationId}`).emit('message:new', message)
   }
 
-  if (senderId !== conversation.landlord_id) {
-    notifyLandlordByEmail({ conversation, message })
+  if (senderId !== conversation.owner_id) {
+    notifyOwnerByEmail({ conversation, message })
   }
 
   return message

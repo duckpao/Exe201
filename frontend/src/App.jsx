@@ -5,7 +5,10 @@ import PostRoomPage from './pages/PostRoomPage.jsx'
 import RoomDetailPage from './pages/RoomDetailPage.jsx'
 import RoommatesPage from './pages/RoommatesPage.jsx'
 import PostRoommatePage from './pages/PostRoommatePage.jsx'
+import RoommateDetailPage from './pages/RoommateDetailPage.jsx'
 import TransportPage from './pages/TransportPage.jsx'
+import PostTransportPage from './pages/PostTransportPage.jsx'
+import TransportDetailPage from './pages/TransportDetailPage.jsx'
 import PassRoomsPage from './pages/PassRoomsPage.jsx'
 import PostPassRoomPage from './pages/PostPassRoomPage.jsx'
 import PassRoomDetailPage from './pages/PassRoomDetailPage.jsx'
@@ -29,7 +32,10 @@ export default function App() {
       <Route path="/phong-tro/:roomId" element={<RoomDetailPage />} />
       <Route path="/tim-roommate" element={<RoommatesPage />} />
       <Route path="/tim-roommate/dang-bai" element={<PostRoommatePage />} />
+      <Route path="/tim-roommate/:roommateId" element={<RoommateDetailPage />} />
       <Route path="/van-chuyen-do" element={<TransportPage />} />
+      <Route path="/van-chuyen-do/dang-bai" element={<PostTransportPage />} />
+      <Route path="/van-chuyen-do/:vehicleId" element={<TransportDetailPage />} />
       <Route path="/pass-phong" element={<PassRoomsPage />} />
       <Route path="/pass-phong/dang-bai" element={<PostPassRoomPage />} />
       <Route path="/pass-phong/:roomId" element={<PassRoomDetailPage />} />

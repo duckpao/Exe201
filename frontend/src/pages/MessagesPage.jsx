@@ -129,7 +129,7 @@ export default function MessagesPage() {
                     />
                     <div className="conversation-item-body">
                       <p className="conversation-item-name">{item.counterpart.name}</p>
-                      <p className="conversation-item-room">{item.roomTitle}</p>
+                      <p className="conversation-item-room">{item.listingTitle}</p>
                       <p className="conversation-item-last">{item.lastMessage || 'Chưa có tin nhắn'}</p>
                     </div>
                     {item.unreadCount > 0 && <span className="conversation-badge">{item.unreadCount}</span>}
@@ -145,10 +145,13 @@ export default function MessagesPage() {
               <>
                 <div className="messages-thread-header">
                   <p className="messages-thread-title">{activeConversation?.counterpart.name || 'Trò chuyện'}</p>
-                  {activeConversation?.roomTitle && (
-                    <Link to={`/phong-tro/${activeConversation.roomListingId}`} className="messages-thread-room">
-                      {activeConversation.roomTitle}
+                  {activeConversation?.listingUrl && (
+                    <Link to={activeConversation.listingUrl} className="messages-thread-room">
+                      {activeConversation.listingTitle}
                     </Link>
+                  )}
+                  {activeConversation && !activeConversation.listingUrl && (
+                    <span className="messages-thread-room">{activeConversation.listingTitle}</span>
                   )}
                 </div>
                 <div className="messages-thread-body" ref={bodyRef}>

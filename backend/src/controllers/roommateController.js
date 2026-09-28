@@ -1,7 +1,7 @@
 const roommateModel = require('../models/roommateModel')
-const addressModel = require('../models/addressModel')
+const { resolveAddress } = require('../services/addressService')
 const { uploadFiles } = require('../utils/cloudinaryUpload')
-const { formatVnd, formatDateVn, formatArea } = require('../utils/format')
+const { formatVnd, formatDateVn, formatArea, formatAddress } = require('../utils/format')
 const { normalizePropertyType, normalizeGender, genderLabel } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 
@@ -49,6 +49,7 @@ async function getRoommate(request, response) {
 
   response.json({
     id: roommate.id,
+    ownerId: roommate.posted_by,
     title: roommate.title,
     name: roommate.poster_name,
     age: roommate.age,
@@ -58,7 +59,10 @@ async function getRoommate(request, response) {
     price: formatVnd(roommate.budget_max || roommate.budget_min, '/tháng'),
     date: formatDateVn(roommate.created_at),
     avatar: roommate.poster_avatar || null,
-    address: `${roommate.ward ? roommate.ward + ', ' : ''}${roommate.district}, ${roommate.province}`,
+    address: formatAddress(roommate),
+    streetAddress: roommate.street_address,
+    latitude: roommate.latitude != null ? Number(roommate.latitude) : null,
+    longitude: roommate.longitude != null ? Number(roommate.longitude) : null,
     propertyType: roommate.property_type,
     area: formatArea(roommate.area_m2),
     roomType: roommate.room_type,
@@ -70,15 +74,15 @@ async function getRoommate(request, response) {
 
 async function createRoommate(request, response) {
   const {
-    title, gender, ward, province, district, budget, aboutText, placeText, age,
-    roomType, timing, scheduledDate,
+    title, gender, ward, province, provinceCode, wardCode, streetAddress,
+    budget, aboutText, placeText, age, roomType, timing, scheduledDate,
   } = request.body || {}
 
-  if (!title || !ward) {
+  if (!title || !ward || !province) {
     return response.status(400).json({ message: 'Vui lòng nhập tiêu đề và khu vực' })
   }
 
-  const address = await addressModel.findOrCreateWard({ ward, province, district })
+  const address = await resolveAddress({ ward, province, provinceCode, wardCode, streetAddress })
 
   const budgetValue = budget ? Number(String(budget).replace(/[^\d]/g, '')) : null
   const publishAt = timing === 'scheduled' && scheduledDate ? new Date(scheduledDate) : null

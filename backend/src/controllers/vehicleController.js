@@ -50,7 +50,12 @@ async function getVehicle(request, response) {
 
   response.json({
     id: vehicle.id,
+    ownerId: vehicle.owner_id,
     title: vehicle.name,
+    licensePlate: vehicle.license_plate,
+    capacity: vehicle.capacity_kg != null ? `${Number(vehicle.capacity_kg)}kg` : null,
+    pricePerHour: formatVnd(vehicle.price_per_hour, '/giờ'),
+    pricePerTrip: formatVnd(vehicle.price_per_trip, '/chuyến'),
     rating: vehicle.avg_rating ? Number(vehicle.avg_rating).toFixed(1) : null,
     reviews: vehicle.review_count,
     tags: vehicle.tags || [],

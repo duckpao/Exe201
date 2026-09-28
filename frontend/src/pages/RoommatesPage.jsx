@@ -4,7 +4,8 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import FilterSidebar from '../components/site/FilterSidebar.jsx'
 import RoommateCard from '../components/site/RoommateCard.jsx'
-import { roommates } from '../data/mockListings.js'
+import { useListingList } from '../hooks/useListingList.js'
+import { listRoommates } from '../services/roommateService.js'
 import '../styles/site.css'
 
 const FILTER_GROUPS = [
@@ -16,6 +17,8 @@ const FILTER_GROUPS = [
 ]
 
 export default function RoommatesPage() {
+  const { items: roommates, loading, error } = useListingList(listRoommates)
+
   return (
     <div className="site-page">
       <SiteHeader />
@@ -36,17 +39,18 @@ export default function RoommatesPage() {
         <div className="listing-page-body">
           <FilterSidebar groups={FILTER_GROUPS} />
           <div>
-            <div className="listing-grid cols-2">
-              {roommates.map((roommate) => (
-                <RoommateCard key={roommate.id} roommate={roommate} />
-              ))}
-            </div>
-            <div className="pagination">
-              <button type="button">←</button>
-              <button type="button" className="active">1</button>
-              <button type="button">2</button>
-              <button type="button">→</button>
-            </div>
+            {loading && <p className="listing-status">Đang tải danh sách bài tìm roommate...</p>}
+            {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
+            {!loading && !error && roommates.length === 0 && (
+              <p className="listing-status">Chưa có bài tìm roommate nào được đăng.</p>
+            )}
+            {!loading && !error && roommates.length > 0 && (
+              <div className="listing-grid cols-2">
+                {roommates.map((roommate) => (
+                  <RoommateCard key={roommate.id} roommate={roommate} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

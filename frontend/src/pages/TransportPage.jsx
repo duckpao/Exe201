@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom'
+import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import FilterSidebar from '../components/site/FilterSidebar.jsx'
 import TransportCard from '../components/site/TransportCard.jsx'
-import { transportServices } from '../data/mockListings.js'
+import { useListingList } from '../hooks/useListingList.js'
+import { listVehicles } from '../services/vehicleService.js'
 import '../styles/site.css'
 
 const FILTER_GROUPS = [
@@ -13,6 +16,8 @@ const FILTER_GROUPS = [
 ]
 
 export default function TransportPage() {
+  const { items: transportServices, loading, error } = useListingList(listVehicles)
+
   return (
     <div className="site-page">
       <SiteHeader />
@@ -21,24 +26,30 @@ export default function TransportPage() {
           <div className="listing-page-hero-inner">
             <h1>Vận chuyển đồ</h1>
             <p>Đặt dịch vụ vận chuyển đồ đạc nhanh chóng, an toàn với giá hợp lý.</p>
+            <div className="listing-hero-image">
+              <PlaceholderImage src="/images/hero-van-chuyen.jpg" alt="Vận chuyển đồ" />
+              <Link to="/van-chuyen-do/dang-bai" className="listing-hero-cta">
+                Đăng dịch vụ vận chuyển
+              </Link>
+            </div>
           </div>
         </section>
 
         <div className="listing-page-body">
           <FilterSidebar groups={FILTER_GROUPS} />
           <div>
-            <div className="listing-grid">
-              {transportServices.map((service) => (
-                <TransportCard key={service.id} service={service} />
-              ))}
-            </div>
-            <div className="pagination">
-              <button type="button">←</button>
-              <button type="button" className="active">1</button>
-              <button type="button">2</button>
-              <button type="button">3</button>
-              <button type="button">→</button>
-            </div>
+            {loading && <p className="listing-status">Đang tải danh sách dịch vụ vận chuyển...</p>}
+            {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
+            {!loading && !error && transportServices.length === 0 && (
+              <p className="listing-status">Chưa có dịch vụ vận chuyển nào được đăng.</p>
+            )}
+            {!loading && !error && transportServices.length > 0 && (
+              <div className="listing-grid">
+                {transportServices.map((service) => (
+                  <TransportCard key={service.id} service={service} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

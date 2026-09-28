@@ -25,8 +25,9 @@ export function listConversations() {
   return getJson('/api/conversations')
 }
 
-export function startConversation(roomListingId) {
-  return postJson('/api/conversations', { roomListingId })
+// listingType: 'room' | 'roommate' | 'pass_room' | 'item' | 'vehicle'
+export function startConversation(listingType, listingId) {
+  return postJson('/api/conversations', { listingType, listingId })
 }
 
 export function getMessages(conversationId) {
