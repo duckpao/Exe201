@@ -12,6 +12,15 @@ async function postJson(path, body) {
   return data
 }
 
+async function getJson(path) {
+  const response = await fetch(`${apiUrl}${path}`, {
+    credentials: 'include',
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.message || `Request failed: ${response.status}`)
+  return data
+}
+
 export function login(email, password) {
   return postJson('/api/auth/login', { email, password })
 }
@@ -26,4 +35,12 @@ export function forgotPassword(email) {
 
 export function resetPassword(token, newPassword) {
   return postJson('/api/auth/reset-password', { token, newPassword })
+}
+
+export function me() {
+  return getJson('/api/auth/me')
+}
+
+export function logout() {
+  return postJson('/api/auth/logout', {})
 }

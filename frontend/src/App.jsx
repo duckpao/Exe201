@@ -16,6 +16,12 @@ import TermsOfUsePage from './pages/TermsOfUsePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
+import AdminLoginPage from './pages/admin/AdminLoginPage.jsx'
+import AdminOverviewPage from './pages/admin/AdminOverviewPage.jsx'
+import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
+import AdminListingsPage from './pages/admin/AdminListingsPage.jsx'
+import AdminRoute from './components/admin/AdminRoute.jsx'
+import { AdminAuthProvider } from './context/AdminAuthContext.jsx'
 
 export default function App() {
   return (
@@ -37,6 +43,19 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminAuthProvider>
+            <AdminRoute />
+          </AdminAuthProvider>
+        }
+      >
+        <Route index element={<AdminOverviewPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="listings" element={<AdminListingsPage />} />
+      </Route>
     </Routes>
   )
 }
