@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import LocationSelect from '../components/site/LocationSelect.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { useLocationSelect } from '../hooks/useLocationSelect.js'
+import { createPassRoom } from '../services/passRoomService.js'
 import '../styles/site.css'
 
-const AREAS = ['Tân Xã', 'Thạch Hòa', 'Thạch Thất']
 const ROOM_TYPES = ['Phòng trọ', 'Chung cư mini', 'Nhà nguyên căn']
 const AMENITIES = ['WiFi', 'Máy lạnh', 'Máy giặt', 'Bếp', 'Nội thất']
 
@@ -17,10 +20,14 @@ const TIPS = [
 ]
 
 export default function PostPassRoomPage() {
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
+  const location = useLocationSelect()
+
   const [postType, setPostType] = useState('pass')
   const [title, setTitle] = useState('')
   const [price, setPrice] = useState('')
-  const [address, setAddress] = useState('')
+  const [streetAddress, setStreetAddress] = useState('')
   const [area, setArea] = useState('')
   const [passDate, setPassDate] = useState('')
   const [roomType, setRoomType] = useState('')
@@ -28,13 +35,20 @@ export default function PostPassRoomPage() {
   const [amenities, setAmenities] = useState([])
   const [description, setDescription] = useState('')
   const [images, setImages] = useState([])
-  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     return () => {
       images.forEach((image) => URL.revokeObjectURL(image.url))
     }
   }, [images])
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login')
+    }
+  }, [authLoading, user, navigate])
 
   function toggleAmenity(amenity) {
     setAmenities((prev) => (prev.includes(amenity) ? prev.filter((item) => item !== amenity) : [...prev, amenity]))
@@ -43,7 +57,7 @@ export default function PostPassRoomPage() {
   function handleImageChange(event) {
     const files = Array.from(event.target.files ?? [])
     if (files.length === 0) return
-    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), name: file.name }))])
+    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), file }))])
     event.target.value = ''
   }
 
@@ -52,9 +66,36 @@ export default function PostPassRoomPage() {
     URL.revokeObjectURL(url)
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    setSubmitted(true)
+    setError('')
+    setSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.set('postType', postType)
+      formData.set('title', title)
+      formData.set('price', price)
+      location.appendTo(formData)
+      if (streetAddress.trim()) formData.set('streetAddress', streetAddress.trim())
+      if (area) formData.set('area', area)
+      if (passDate) formData.set('passDate', passDate)
+      if (roomType) formData.set('roomType', roomType)
+      if (occupants) formData.set('occupants', occupants)
+      formData.set('amenities', amenities.join(','))
+      formData.set('description', description)
+      images.forEach((image) => formData.append('images', image.file))
+
+      const passRoom = await createPassRoom(formData)
+      navigate(`/pass-phong/${passRoom.id}`)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (authLoading || !user) {
+    return null
   }
 
   return (
@@ -73,14 +114,7 @@ export default function PostPassRoomPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {submitted && (
-              <div className="notice-box success">
-                <p>Đăng bài thành công! Bài đăng sẽ hiển thị sau khi được kiểm duyệt.</p>
-                <Link to="/pass-phong" className="btn btn-primary">
-                  Về trang Pass Phòng Trọ
-                </Link>
-              </div>
-            )}
+            {error && <div className="banner banner-error visible">{error}</div>}
 
             <h2 className="form-step-title">Loại bài đăng</h2>
             <div className="tab-switcher">
@@ -115,11 +149,11 @@ export default function PostPassRoomPage() {
             </div>
             <div className="form-row form-row-split">
               <label>
-                Giá phòng
+                Giá phòng (đ/tháng)
                 <input
                   type="text"
                   required
-                  placeholder="VD: 1.800.000đ/tháng"
+                  placeholder="VD: 1.800.000"
                   value={price}
                   onChange={(event) => setPrice(event.target.value)}
                 />
@@ -134,19 +168,18 @@ export default function PostPassRoomPage() {
                 />
               </label>
             </div>
+
+            <LocationSelect location={location} />
+
             <div className="form-row form-row-split">
               <label>
-                Địa chỉ
-                <select value={address} onChange={(event) => setAddress(event.target.value)} required>
-                  <option value="" disabled>
-                    Chọn khu vực
-                  </option>
-                  {AREAS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
+                Địa chỉ cụ thể (không bắt buộc)
+                <input
+                  type="text"
+                  placeholder="VD: Số 12, ngõ 5, đường Phùng Khoang"
+                  value={streetAddress}
+                  onChange={(event) => setStreetAddress(event.target.value)}
+                />
               </label>
               <label>
                 Loại phòng
@@ -206,7 +239,7 @@ export default function PostPassRoomPage() {
                 <div className="upload-preview-grid">
                   {images.map((image) => (
                     <div key={image.url} className="upload-preview-item">
-                      <img src={image.url} alt={image.name} />
+                      <img src={image.url} alt={image.file.name} />
                       <button type="button" onClick={() => handleRemoveImage(image.url)} aria-label="Xoá ảnh">
                         ×
                       </button>
@@ -232,8 +265,8 @@ export default function PostPassRoomPage() {
               <Link to="/pass-phong" className="btn btn-outline">
                 Hủy
               </Link>
-              <button type="submit" className="btn btn-primary">
-                Đăng bài
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Đang đăng bài...' : 'Đăng bài'}
               </button>
             </div>
           </form>
@@ -257,7 +290,7 @@ export default function PostPassRoomPage() {
                 <p className="preview-title">{title || 'Tiêu đề bài đăng sẽ hiện ở đây'}</p>
                 <p className="preview-price">{price || 'Giá phòng chưa nhập'}</p>
                 <p className="preview-desc">
-                  {area || 'Diện tích'} | {address || 'Khu vực'}
+                  {area || 'Diện tích'} | {location.selectedWard?.name || 'Khu vực'}
                 </p>
                 {amenities.length > 0 && (
                   <div className="detail-tags">
@@ -271,7 +304,7 @@ export default function PostPassRoomPage() {
                 {images.length > 0 ? (
                   <div className="preview-thumb-grid">
                     {images.slice(0, 4).map((image) => (
-                      <img key={image.url} src={image.url} alt={image.name} />
+                      <img key={image.url} src={image.url} alt={image.file.name} />
                     ))}
                   </div>
                 ) : (

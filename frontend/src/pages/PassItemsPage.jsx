@@ -4,7 +4,8 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import FilterSidebar from '../components/site/FilterSidebar.jsx'
 import PassItemCard from '../components/site/PassItemCard.jsx'
-import { passItems } from '../data/mockListings.js'
+import { useListingList } from '../hooks/useListingList.js'
+import { listItems } from '../services/itemService.js'
 import '../styles/site.css'
 
 const FILTER_GROUPS = [
@@ -15,6 +16,8 @@ const FILTER_GROUPS = [
 ]
 
 export default function PassItemsPage() {
+  const { items: passItems, loading, error } = useListingList(listItems)
+
   return (
     <div className="site-page">
       <SiteHeader />
@@ -35,17 +38,18 @@ export default function PassItemsPage() {
         <div className="listing-page-body">
           <FilterSidebar groups={FILTER_GROUPS} />
           <div>
-            <div className="listing-grid cols-2">
-              {passItems.map((item) => (
-                <PassItemCard key={item.id} item={item} />
-              ))}
-            </div>
-            <div className="pagination">
-              <button type="button">←</button>
-              <button type="button" className="active">1</button>
-              <button type="button">2</button>
-              <button type="button">→</button>
-            </div>
+            {loading && <p className="listing-status">Đang tải danh sách đồ pass...</p>}
+            {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
+            {!loading && !error && passItems.length === 0 && (
+              <p className="listing-status">Chưa có bài pass đồ nào được duyệt.</p>
+            )}
+            {!loading && !error && passItems.length > 0 && (
+              <div className="listing-grid cols-2">
+                {passItems.map((item) => (
+                  <PassItemCard key={item.id} item={item} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

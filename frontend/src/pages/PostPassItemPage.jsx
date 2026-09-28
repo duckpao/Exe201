@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import LocationSelect from '../components/site/LocationSelect.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { useLocationSelect } from '../hooks/useLocationSelect.js'
+import { createItem } from '../services/itemService.js'
 import '../styles/site.css'
 
-const AREAS = ['Tân Xã', 'Thạch Hòa', 'Thạch Thất']
 const CATEGORIES = ['Nội thất', 'Đồ điện tử', 'Đồ gia dụng', 'Xe cộ', 'Sách - Giáo trình']
 const CONDITIONS = ['Mới 90%', 'Mới 95%', 'Đã dùng']
 
@@ -17,14 +20,19 @@ const TIPS = [
 ]
 
 export default function PostPassItemPage() {
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
+  const location = useLocationSelect()
+
   const [title, setTitle] = useState('')
   const [price, setPrice] = useState('')
   const [category, setCategory] = useState('')
   const [condition, setCondition] = useState('')
-  const [address, setAddress] = useState('')
+  const [streetAddress, setStreetAddress] = useState('')
   const [description, setDescription] = useState('')
   const [images, setImages] = useState([])
-  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     return () => {
@@ -32,10 +40,16 @@ export default function PostPassItemPage() {
     }
   }, [images])
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login')
+    }
+  }, [authLoading, user, navigate])
+
   function handleImageChange(event) {
     const files = Array.from(event.target.files ?? [])
     if (files.length === 0) return
-    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), name: file.name }))])
+    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), file }))])
     event.target.value = ''
   }
 
@@ -44,9 +58,32 @@ export default function PostPassItemPage() {
     URL.revokeObjectURL(url)
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    setSubmitted(true)
+    setError('')
+    setSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.set('title', title)
+      formData.set('price', price)
+      formData.set('category', category)
+      if (condition) formData.set('condition', condition)
+      location.appendTo(formData)
+      if (streetAddress.trim()) formData.set('streetAddress', streetAddress.trim())
+      formData.set('description', description)
+      images.forEach((image) => formData.append('images', image.file))
+
+      const item = await createItem(formData)
+      navigate(`/pass-do/${item.id}`)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (authLoading || !user) {
+    return null
   }
 
   return (
@@ -65,14 +102,7 @@ export default function PostPassItemPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {submitted && (
-              <div className="notice-box success">
-                <p>Đăng bài thành công! Bài đăng sẽ hiển thị sau khi được kiểm duyệt.</p>
-                <Link to="/pass-do" className="btn btn-primary">
-                  Về trang Pass Đồ
-                </Link>
-              </div>
-            )}
+            {error && <div className="banner banner-error visible">{error}</div>}
 
             <h2 className="form-step-title">Thông tin sản phẩm</h2>
             <div className="form-row">
@@ -89,29 +119,28 @@ export default function PostPassItemPage() {
             </div>
             <div className="form-row form-row-split">
               <label>
-                Giá bán
+                Giá bán (đ)
                 <input
                   type="text"
                   required
-                  placeholder="VD: 350.000đ"
+                  placeholder="VD: 350.000"
                   value={price}
                   onChange={(event) => setPrice(event.target.value)}
                 />
               </label>
               <label>
-                Khu vực
-                <select value={address} onChange={(event) => setAddress(event.target.value)} required>
-                  <option value="" disabled>
-                    Chọn khu vực
-                  </option>
-                  {AREAS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
+                Địa chỉ cụ thể (không bắt buộc)
+                <input
+                  type="text"
+                  placeholder="VD: Số 12, ngõ 5, đường Phùng Khoang"
+                  value={streetAddress}
+                  onChange={(event) => setStreetAddress(event.target.value)}
+                />
               </label>
             </div>
+
+            <LocationSelect location={location} />
+
             <div className="form-row form-row-split">
               <label>
                 Loại đồ
@@ -154,7 +183,7 @@ export default function PostPassItemPage() {
                 <div className="upload-preview-grid">
                   {images.map((image) => (
                     <div key={image.url} className="upload-preview-item">
-                      <img src={image.url} alt={image.name} />
+                      <img src={image.url} alt={image.file.name} />
                       <button type="button" onClick={() => handleRemoveImage(image.url)} aria-label="Xoá ảnh">
                         ×
                       </button>
@@ -180,8 +209,8 @@ export default function PostPassItemPage() {
               <Link to="/pass-do" className="btn btn-outline">
                 Hủy
               </Link>
-              <button type="submit" className="btn btn-primary">
-                Đăng bài
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Đang đăng bài...' : 'Đăng bài'}
               </button>
             </div>
           </form>
@@ -203,7 +232,7 @@ export default function PostPassItemPage() {
                 <p className="preview-title">{title || 'Tiêu đề bài đăng sẽ hiện ở đây'}</p>
                 <p className="preview-price">{price || 'Giá bán chưa nhập'}</p>
                 <p className="preview-desc">
-                  {category || 'Loại đồ'} | {address || 'Khu vực'}
+                  {category || 'Loại đồ'} | {location.selectedWard?.name || 'Khu vực'}
                 </p>
                 {condition && (
                   <div className="detail-tags">
@@ -213,7 +242,7 @@ export default function PostPassItemPage() {
                 {images.length > 0 ? (
                   <div className="preview-thumb-grid">
                     {images.slice(0, 4).map((image) => (
-                      <img key={image.url} src={image.url} alt={image.name} />
+                      <img key={image.url} src={image.url} alt={image.file.name} />
                     ))}
                   </div>
                 ) : (

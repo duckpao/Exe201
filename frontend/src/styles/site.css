@@ -114,6 +114,56 @@
   justify-content: center;
   font-weight: 700;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.site-avatar-menu {
+  position: relative;
+}
+
+.site-avatar-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  border-radius: 14px;
+  box-shadow: var(--brand-shadow);
+  padding: 12px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 30;
+}
+
+.site-avatar-dropdown-name {
+  font-weight: 700;
+  margin: 0 0 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.site-avatar-dropdown a,
+.site-avatar-dropdown button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 6px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--brand-text);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.site-avatar-dropdown a:hover,
+.site-avatar-dropdown button:hover {
+  background: var(--brand-cream);
 }
 
 @media (max-width: 900px) {
@@ -1072,6 +1122,12 @@
   margin-bottom: 18px;
 }
 
+.price-note {
+  color: var(--brand-text-soft);
+  font-size: 13.5px;
+  margin: -8px 0 14px;
+}
+
 .price-actions {
   display: flex;
   flex-direction: column;
@@ -1140,6 +1196,15 @@
   color: var(--brand-text-soft);
   font-size: 13.5px;
   margin-bottom: 14px;
+}
+
+.map-embed {
+  width: 100%;
+  height: 140px;
+  border: 0;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  display: block;
 }
 
 /* Post pages (Roommate / Pass room) */
@@ -1794,4 +1859,202 @@
     flex-direction: row;
     flex-wrap: wrap;
   }
+}
+
+/* Listing loading/empty/error status */
+.listing-status {
+  color: var(--brand-text-soft);
+  text-align: center;
+  padding: 40px 0;
+}
+
+.listing-status-error {
+  color: #c0392b;
+}
+
+/* Messages page */
+.messages-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  min-height: 560px;
+}
+
+@media (max-width: 900px) {
+  .messages-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.messages-sidebar {
+  background: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  border-radius: 18px;
+  padding: 20px;
+  align-self: start;
+}
+
+.messages-sidebar-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.conversation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--brand-text);
+}
+
+.conversation-item:hover,
+.conversation-item.active {
+  background: var(--brand-cream);
+}
+
+.conversation-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.conversation-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-item-name {
+  font-weight: 700;
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.conversation-item-room {
+  color: var(--brand-text-soft);
+  font-size: 12.5px;
+  margin: 2px 0 0;
+}
+
+.conversation-item-last {
+  color: var(--brand-text-soft);
+  font-size: 12.5px;
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-badge {
+  background: var(--brand-primary);
+  color: var(--brand-white);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+.messages-thread {
+  background: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-thread-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--brand-border);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+
+.messages-thread-title {
+  font-weight: 700;
+  margin: 0;
+}
+
+.messages-thread-room {
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.messages-thread-body {
+  flex: 1;
+  min-height: 360px;
+  max-height: 480px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14.5px;
+  line-height: 145%;
+}
+
+.message-bubble.mine {
+  align-self: flex-end;
+  background: var(--brand-primary);
+  color: var(--brand-white);
+}
+
+.message-bubble.theirs {
+  align-self: flex-start;
+  background: var(--brand-cream);
+  color: var(--brand-text);
+}
+
+.messages-thread-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.messages-thread-form input {
+  flex: 1;
+  border: 1.5px solid var(--brand-border);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-family: inherit;
+}
+
+/* Register page checkbox */
+.form-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.form-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-primary);
 }

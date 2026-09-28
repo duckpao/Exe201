@@ -48,12 +48,15 @@ CREATE TABLE user_oauth_accounts (
 CREATE TABLE addresses (
   id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   province       VARCHAR(100) NOT NULL,
-  district       VARCHAR(100) NOT NULL,
+  district       VARCHAR(100) NULL,
   ward           VARCHAR(100) NULL,
+  province_code  INT UNSIGNED NULL,
+  ward_code      INT UNSIGNED NULL,
   street_address VARCHAR(255) NULL,
   latitude       DECIMAL(10,7) NULL,
   longitude      DECIMAL(10,7) NULL,
-  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_addresses_ward_code (ward_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
@@ -490,3 +493,36 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ---------------------------------------------------------
+-- Nhắn tin: người quan tâm nhắn tin trực tiếp với người đăng, theo từng bài đăng
+-- Áp dụng cho cả 5 loại bài đăng (phòng trọ, tìm roommate, pass phòng, pass đồ, vận chuyển đồ)
+-- nên (listing_type, listing_id) là khoá đa hình: không thể đặt FOREIGN KEY vì trỏ tới nhiều bảng.
+-- Không có audit trigger cho 2 bảng này (dữ liệu chat, không phải dữ liệu nghiệp vụ cần audit)
+-- ---------------------------------------------------------
+CREATE TABLE conversations (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  listing_type ENUM('room','roommate','pass_room','item','vehicle') NOT NULL DEFAULT 'room',
+  listing_id   BIGINT UNSIGNED NOT NULL,
+  owner_id     BIGINT UNSIGNED NOT NULL, -- người đăng bài
+  inquirer_id  BIGINT UNSIGNED NOT NULL, -- người chủ động nhắn tin
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_listing_inquirer (listing_type, listing_id, inquirer_id),
+  KEY idx_conversation_owner (owner_id),
+  KEY idx_conversation_inquirer (inquirer_id),
+  CONSTRAINT fk_conversation_owner FOREIGN KEY (owner_id) REFERENCES users(id),
+  CONSTRAINT fk_conversation_inquirer FOREIGN KEY (inquirer_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE messages (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  conversation_id BIGINT UNSIGNED NOT NULL,
+  sender_id       BIGINT UNSIGNED NOT NULL,
+  body            TEXT NOT NULL,
+  is_read         TINYINT(1) NOT NULL DEFAULT 0,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_conversation_created (conversation_id, created_at),
+  CONSTRAINT fk_message_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_message_sender FOREIGN KEY (sender_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

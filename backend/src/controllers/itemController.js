@@ -1,7 +1,7 @@
 const itemModel = require('../models/itemModel')
-const addressModel = require('../models/addressModel')
+const { resolveAddress } = require('../services/addressService')
 const { uploadFiles } = require('../utils/cloudinaryUpload')
-const { formatVnd, parseVndAmount } = require('../utils/format')
+const { formatVnd, parseVndAmount, formatAddress } = require('../utils/format')
 const { ITEM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 
@@ -48,6 +48,7 @@ async function getItem(request, response) {
 
   response.json({
     id: item.id,
+    ownerId: item.posted_by,
     title: item.title,
     price: formatVnd(item.price),
     category: item.category,
@@ -56,7 +57,10 @@ async function getItem(request, response) {
     status: statusLabel,
     image: gallery[0]?.media_url || null,
     tags: [item.category, item.item_condition, statusLabel],
-    address: `${item.ward ? item.ward + ', ' : ''}${item.district}, ${item.province}`,
+    address: formatAddress(item),
+    streetAddress: item.street_address,
+    latitude: item.latitude != null ? Number(item.latitude) : null,
+    longitude: item.longitude != null ? Number(item.longitude) : null,
     description: item.description,
     gallery: gallery.map((entry) => entry.media_url),
     poster: { name: item.poster_name, avatar: item.poster_avatar },
@@ -64,13 +68,16 @@ async function getItem(request, response) {
 }
 
 async function createItem(request, response) {
-  const { title, price, category, condition, ward, province, district, description } = request.body || {}
+  const {
+    title, price, category, condition, description,
+    ward, province, provinceCode, wardCode, streetAddress,
+  } = request.body || {}
 
-  if (!title || !price || !category || !ward) {
+  if (!title || !price || !category || !ward || !province) {
     return response.status(400).json({ message: 'Vui lòng nhập tiêu đề, giá, loại đồ và khu vực' })
   }
 
-  const address = await addressModel.findOrCreateWard({ ward, province, district })
+  const address = await resolveAddress({ ward, province, provinceCode, wardCode, streetAddress })
 
   const itemId = await itemModel.create({
     postedBy: request.user.id,

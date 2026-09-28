@@ -1,8 +1,12 @@
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
-import { getRoomDetail, roomOwner } from '../data/mockListings.js'
+import ListingMapCard from '../components/site/ListingMapCard.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { getRoom } from '../services/roomService.js'
+import { startConversation } from '../services/conversationService.js'
 import '../styles/site.css'
 
 const QUICK_FACTS = (room) => [
@@ -15,9 +19,62 @@ const QUICK_FACTS = (room) => [
 
 export default function RoomDetailPage() {
   const { roomId } = useParams()
-  const room = getRoomDetail(roomId)
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [room, setRoom] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [contactError, setContactError] = useState('')
+  const [starting, setStarting] = useState(false)
 
-  if (!room) {
+  useEffect(() => {
+    let ignore = false
+    setLoading(true)
+    getRoom(roomId)
+      .then((data) => {
+        if (!ignore) setRoom(data)
+      })
+      .catch((err) => {
+        if (!ignore) setError(err.message)
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [roomId])
+
+  async function handleMessage() {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    setContactError('')
+    setStarting(true)
+    try {
+      const conversation = await startConversation('room', room.id)
+      navigate(`/tin-nhan/${conversation.id}`)
+    } catch (err) {
+      setContactError(err.message)
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="site-page">
+        <SiteHeader />
+        <main className="site-main">
+          <p className="listing-status">Đang tải thông tin phòng trọ...</p>
+        </main>
+        <SiteFooter />
+      </div>
+    )
+  }
+
+  if (error || !room) {
     return (
       <div className="site-page">
         <SiteHeader />
@@ -95,37 +152,33 @@ export default function RoomDetailPage() {
                   <span>🛏️ {room.bedrooms} PN</span>
                   <span>🚿 {room.bathrooms} WC</span>
                 </div>
+                {contactError && <p className="banner banner-error visible">{contactError}</p>}
                 <div className="price-actions">
-                  <button type="button" className="btn btn-primary">
-                    Liên hệ ngay
-                  </button>
-                  <button type="button" className="btn btn-outline">
-                    Nhắn tin
+                  {room.owner.phone ? (
+                    <a href={`tel:${room.owner.phone}`} className="btn btn-primary">
+                      Liên hệ ngay
+                    </a>
+                  ) : null}
+                  <button type="button" className="btn btn-outline" onClick={handleMessage} disabled={starting}>
+                    {starting ? 'Đang mở...' : 'Nhắn tin'}
                   </button>
                 </div>
               </div>
 
               <div className="sidebar-card owner-card">
-                <PlaceholderImage src={roomOwner.avatar} alt={roomOwner.name} className="owner-avatar" />
+                <PlaceholderImage src={room.owner.avatar} alt={room.owner.name} className="owner-avatar" />
                 <div>
-                  <p className="owner-name">{roomOwner.name}</p>
+                  <p className="owner-name">{room.owner.name}</p>
                   <p className="owner-rating">
-                    ⭐ {roomOwner.rating} · {roomOwner.reviews} đánh giá
+                    ⭐ {room.owner.rating || 'Chưa có đánh giá'}
+                    {room.owner.rating ? ` · ${room.owner.reviews} đánh giá` : ''}
                   </p>
-                  <p className="owner-joined">{roomOwner.joined}</p>
+                  <p className="owner-joined">{room.owner.joined}</p>
                 </div>
-                <button type="button" className="btn btn-outline owner-more">
-                  Xem thêm
-                </button>
               </div>
 
-              <div className="sidebar-card address-card">
-                <p className="address-card-title">Địa chỉ</p>
-                <div className="map-placeholder">Bản đồ Google Map</div>
-                <button type="button" className="btn btn-outline">
-                  Xem Map
-                </button>
-              </div>
+              <ListingMapCard title={room.title} latitude={room.latitude} longitude={room.longitude} />
+
             </aside>
           </div>
         </div>

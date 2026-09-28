@@ -10,6 +10,7 @@ const roommateRoutes = require('./src/routes/roommateRoutes')
 const passRoomRoutes = require('./src/routes/passRoomRoutes')
 const itemRoutes = require('./src/routes/itemRoutes')
 const vehicleRoutes = require('./src/routes/vehicleRoutes')
+const conversationRoutes = require('./src/routes/conversationRoutes')
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.use('/api/roommates', roommateRoutes)
 app.use('/api/pass-phong', passRoomRoutes)
 app.use('/api/pass-do', itemRoutes)
 app.use('/api/transport', vehicleRoutes)
+app.use('/api/conversations', conversationRoutes)
 
 app.use((request, response) => {
   response.status(404).json({ message: 'Không tìm thấy endpoint' })

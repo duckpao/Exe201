@@ -52,7 +52,7 @@ async function list(query, { limit, offset }) {
 
 async function findById(id) {
   const [rows] = await pool.query(
-    `SELECT it.*, a.province, a.district, a.ward,
+    `SELECT it.*, a.province, a.district, a.ward, a.street_address, a.latitude, a.longitude,
        u.full_name AS poster_name, u.avatar_url AS poster_avatar
      FROM item_listings it
      JOIN addresses a ON a.id = it.address_id

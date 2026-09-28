@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import LocationSelect from '../components/site/LocationSelect.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { useLocationSelect } from '../hooks/useLocationSelect.js'
+import { createRoommate } from '../services/roommateService.js'
 import '../styles/site.css'
 
-const AREAS = ['Tân Xã', 'Thạch Hòa', 'Thạch Thất']
 const GENDERS = ['Nam', 'Nữ', 'Không yêu cầu']
+
+const ROOM_TYPES = [
+  { value: 'has_room', label: 'Đã có phòng, cần tìm người ở ghép' },
+  { value: 'looking_for_room', label: 'Đang tìm phòng và người ở ghép' },
+]
 
 const FEATURES = [
   { icon: '🛡️', label: 'An toàn & tin cậy' },
@@ -23,18 +31,24 @@ const TIPS = [
 ]
 
 export default function PostRoommatePage() {
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
+  const location = useLocationSelect()
   const previewRef = useRef(null)
 
   const [title, setTitle] = useState('')
   const [gender, setGender] = useState(GENDERS[2])
-  const [address, setAddress] = useState('')
+  const [roomType, setRoomType] = useState(ROOM_TYPES[1].value)
+  const [age, setAge] = useState('')
+  const [streetAddress, setStreetAddress] = useState('')
   const [budget, setBudget] = useState('')
   const [aboutText, setAboutText] = useState('')
   const [placeText, setPlaceText] = useState('')
   const [images, setImages] = useState([])
   const [timing, setTiming] = useState('now')
   const [scheduledDate, setScheduledDate] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     return () => {
@@ -42,10 +56,16 @@ export default function PostRoommatePage() {
     }
   }, [images])
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login')
+    }
+  }, [authLoading, user, navigate])
+
   function handleImageChange(event) {
     const files = Array.from(event.target.files ?? [])
     if (files.length === 0) return
-    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), name: file.name }))])
+    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), file }))])
     event.target.value = ''
   }
 
@@ -58,9 +78,36 @@ export default function PostRoommatePage() {
     previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    setSubmitted(true)
+    setError('')
+    setSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.set('title', title)
+      formData.set('gender', gender)
+      formData.set('roomType', roomType)
+      if (age) formData.set('age', age)
+      location.appendTo(formData)
+      if (streetAddress.trim()) formData.set('streetAddress', streetAddress.trim())
+      if (budget) formData.set('budget', budget)
+      formData.set('aboutText', aboutText)
+      formData.set('placeText', placeText)
+      formData.set('timing', timing)
+      if (timing === 'scheduled' && scheduledDate) formData.set('scheduledDate', scheduledDate)
+      images.forEach((image) => formData.append('images', image.file))
+
+      const roommate = await createRoommate(formData)
+      navigate(`/tim-roommate/${roommate.id}`)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (authLoading || !user) {
+    return null
   }
 
   return (
@@ -87,14 +134,7 @@ export default function PostRoommatePage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {submitted && (
-              <div className="notice-box success">
-                <p>Đăng tin thành công! Bài đăng của bạn sẽ hiển thị ở trang Tìm Roommate.</p>
-                <Link to="/tim-roommate" className="btn btn-primary">
-                  Về trang Tìm Roommate
-                </Link>
-              </div>
-            )}
+            {error && <div className="banner banner-error visible">{error}</div>}
 
             <h2 className="form-step-title">1. Thông tin cơ bản</h2>
             <div className="form-row">
@@ -126,28 +166,56 @@ export default function PostRoommatePage() {
                 ))}
               </div>
             </div>
+            <div className="form-row">
+              <span className="form-label">Bạn đang</span>
+              <div className="radio-pill-group">
+                {ROOM_TYPES.map((option) => (
+                  <label key={option.value} className={`radio-pill ${roomType === option.value ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="roomType"
+                      checked={roomType === option.value}
+                      onChange={() => setRoomType(option.value)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <LocationSelect location={location} />
+
             <div className="form-row form-row-split">
               <label>
-                Địa chỉ
-                <select value={address} onChange={(event) => setAddress(event.target.value)} required>
-                  <option value="" disabled>
-                    Chọn khu vực
-                  </option>
-                  {AREAS.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </select>
+                Địa chỉ cụ thể (không bắt buộc)
+                <input
+                  type="text"
+                  placeholder="VD: Số 12, ngõ 5, đường Phùng Khoang"
+                  value={streetAddress}
+                  onChange={(event) => setStreetAddress(event.target.value)}
+                />
               </label>
               <label>
-                Ngân sách
+                Ngân sách (đ/tháng)
                 <input
                   type="text"
                   required
-                  placeholder="VD: 1.200.000đ/tháng"
+                  placeholder="VD: 1.200.000"
                   value={budget}
                   onChange={(event) => setBudget(event.target.value)}
+                />
+              </label>
+            </div>
+            <div className="form-row form-row-split">
+              <label>
+                Tuổi (không bắt buộc)
+                <input
+                  type="number"
+                  min="16"
+                  max="99"
+                  placeholder="VD: 21"
+                  value={age}
+                  onChange={(event) => setAge(event.target.value)}
                 />
               </label>
             </div>
@@ -185,7 +253,7 @@ export default function PostRoommatePage() {
                 <div className="upload-preview-grid">
                   {images.map((image) => (
                     <div key={image.url} className="upload-preview-item">
-                      <img src={image.url} alt={image.name} />
+                      <img src={image.url} alt={image.file.name} />
                       <button type="button" onClick={() => handleRemoveImage(image.url)} aria-label="Xoá ảnh">
                         ×
                       </button>
@@ -222,12 +290,16 @@ export default function PostRoommatePage() {
               )}
             </div>
 
+            <div className="notice-box info">
+              ℹ️ Bài đăng hiển thị công khai ngay sau khi đăng (hoặc đúng ngày bạn đã hẹn).
+            </div>
+
             <div className="form-actions">
               <button type="button" className="btn btn-outline" onClick={handlePreviewScroll}>
                 Xem trước
               </button>
-              <button type="submit" className="btn btn-primary">
-                Đăng tin ✈️
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Đang đăng tin...' : 'Đăng tin ✈️'}
               </button>
             </div>
           </form>
@@ -246,26 +318,26 @@ export default function PostRoommatePage() {
               <h3>Xem trước bài đăng</h3>
               <div className="preview-card-inner">
                 <div className="preview-card-head">
-                  <PlaceholderImage src="/images/avatar-owner.jpg" alt="Bạn" className="preview-avatar" />
+                  <PlaceholderImage src={user.avatar_url} alt={user.full_name || 'Bạn'} className="preview-avatar" />
                   <div>
-                    <p className="preview-name">Bạn</p>
+                    <p className="preview-name">{user.full_name || 'Bạn'}</p>
                     <span className="preview-tag">Tìm roommate</span>
                   </div>
                 </div>
                 <p className="preview-title">{title || 'Tiêu đề bài đăng sẽ hiện ở đây'}</p>
-                <p className="preview-price">{budget || 'Ngân sách chưa nhập'}</p>
-                <p className="preview-desc">{aboutText || 'Mô tả về bản thân sẽ hiện ở đây...'}</p>
+                <p className="preview-price">{budget ? `${budget}đ/tháng` : 'Ngân sách chưa nhập'}</p>
+                <p className="preview-desc">
+                  {location.selectedWard?.name || 'Khu vực'} · {aboutText || 'Mô tả về bản thân sẽ hiện ở đây...'}
+                </p>
                 {images.length > 0 && (
                   <div className="preview-thumb-grid">
                     {images.slice(0, 4).map((image) => (
-                      <img key={image.url} src={image.url} alt={image.name} />
+                      <img key={image.url} src={image.url} alt={image.file.name} />
                     ))}
                   </div>
                 )}
                 <div className="preview-card-actions">
-                  <span>🤍 Yêu thích</span>
-                  <span>💬 Bình luận</span>
-                  <span>↗️ Chia sẻ</span>
+                  <Link to="/tim-roommate">Xem tất cả bài tìm roommate</Link>
                 </div>
               </div>
             </div>

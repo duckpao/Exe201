@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import RoomCard from '../components/site/RoomCard.jsx'
-import { rooms } from '../data/mockListings.js'
+import { listRooms } from '../services/roomService.js'
 import '../styles/site.css'
 
 const QUICK_ACCESS = [
@@ -20,7 +21,21 @@ const SERVICES = [
 ]
 
 export default function HomePage() {
-  const featuredRooms = rooms.slice(0, 4)
+  const [featuredRooms, setFeaturedRooms] = useState([])
+
+  useEffect(() => {
+    let ignore = false
+    listRooms({ limit: 4 })
+      .then((data) => {
+        if (!ignore) setFeaturedRooms(data.data || [])
+      })
+      .catch(() => {
+        if (!ignore) setFeaturedRooms([])
+      })
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   return (
     <div className="site-page">
@@ -80,11 +95,15 @@ export default function HomePage() {
             <h2>Phòng trọ nổi bật</h2>
             <p>Những phòng trọ được quan tâm nhiều nhất tuần này.</p>
           </div>
-          <div className="room-grid">
-            {featuredRooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
-            ))}
-          </div>
+          {featuredRooms.length > 0 ? (
+            <div className="room-grid">
+              {featuredRooms.map((room) => (
+                <RoomCard key={room.id} room={room} />
+              ))}
+            </div>
+          ) : (
+            <p className="listing-status">Chưa có phòng trọ nào được đăng.</p>
+          )}
         </section>
       </main>
       <SiteFooter />

@@ -43,4 +43,20 @@ function formatDateVn(value) {
   return `${day}/${month}/${year}`
 }
 
-module.exports = { parseVndAmount, formatVnd, parseAreaM2, formatArea, formatJoinedDuration, formatDateVn }
+// Ghép địa chỉ từ các phần có thể NULL. Từ khi Việt Nam bỏ cấp huyện (7/2025),
+// addresses.district là NULL với bài đăng mới nên không được nối thẳng vào chuỗi.
+// Nhận cả row từ DB (street_address) và object camelCase.
+function formatAddress(source = {}) {
+  const { street_address: streetSnake, streetAddress, ward, district, province } = source
+  return [streetAddress || streetSnake, ward, district, province].filter(Boolean).join(', ') || null
+}
+
+module.exports = {
+  parseVndAmount,
+  formatVnd,
+  parseAreaM2,
+  formatArea,
+  formatJoinedDuration,
+  formatDateVn,
+  formatAddress,
+}

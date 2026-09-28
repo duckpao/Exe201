@@ -2,21 +2,36 @@ import { Link, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
-import { getPassRoomDetail, roomOwner } from '../data/mockListings.js'
+import ListingMapCard from '../components/site/ListingMapCard.jsx'
+import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
+import { useListingDetail } from '../hooks/useListingDetail.js'
+import { getPassRoom } from '../services/passRoomService.js'
 import '../styles/site.css'
 
 const QUICK_FACTS = (room) => [
-  { icon: '📐', label: 'Diện tích', value: room.area },
-  { icon: '📍', label: 'Khu vực', value: room.location },
+  { icon: '📐', label: 'Diện tích', value: room.area || 'Chưa cập nhật' },
+  { icon: '📍', label: 'Khu vực', value: room.location || 'Chưa cập nhật' },
   { icon: '🏷️', label: 'Trạng thái', value: room.status },
-  { icon: '💰', label: 'Giá thuê', value: room.price },
+  { icon: '💰', label: 'Giá thuê', value: room.price || 'Liên hệ' },
 ]
 
 export default function PassRoomDetailPage() {
   const { roomId } = useParams()
-  const room = getPassRoomDetail(roomId)
+  const { data: room, loading, error } = useListingDetail(getPassRoom, roomId)
 
-  if (!room) {
+  if (loading) {
+    return (
+      <div className="site-page">
+        <SiteHeader />
+        <main className="site-main">
+          <p className="listing-status">Đang tải thông tin bài pass phòng...</p>
+        </main>
+        <SiteFooter />
+      </div>
+    )
+  }
+
+  if (error || !room) {
     return (
       <div className="site-page">
         <SiteHeader />
@@ -44,24 +59,24 @@ export default function PassRoomDetailPage() {
             <span>/</span>
             <Link to="/pass-phong">Pass Phòng Trọ</Link>
             <span>/</span>
-            <span>
-              {room.area} - {room.location}
-            </span>
+            <span>{room.title}</span>
           </nav>
 
           <div className="detail-layout">
             <div className="detail-main">
               <div className="detail-gallery">
                 <PlaceholderImage src={room.image} alt={room.title} className="detail-gallery-main" />
-                <div className="detail-gallery-thumbs">
-                  {room.gallery.map((src, index) => (
-                    <PlaceholderImage key={src} src={src} alt={`${room.title} - ảnh ${index + 1}`} />
-                  ))}
-                </div>
+                {room.gallery.length > 1 && (
+                  <div className="detail-gallery-thumbs">
+                    {room.gallery.map((src, index) => (
+                      <PlaceholderImage key={src} src={src} alt={`${room.title} - ảnh ${index + 1}`} />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <h1 className="detail-title">{room.title}</h1>
-              <p className="detail-address">📍 {room.address}</p>
+              <p className="detail-address">📍 {room.address || 'Chưa cập nhật địa chỉ'}</p>
               <div className="detail-tags">
                 {room.tags.map((tag) => (
                   <span key={tag} className="detail-tag">
@@ -82,49 +97,39 @@ export default function PassRoomDetailPage() {
 
               <div className="detail-description">
                 <h2>Mô tả</h2>
-                <p>{room.description}</p>
+                <p>{room.description || 'Người đăng chưa bổ sung mô tả.'}</p>
+                {room.reason && <p>Lý do pass: {room.reason}</p>}
               </div>
             </div>
 
             <aside className="detail-sidebar">
               <div className="sidebar-card price-card">
-                <p className="price-amount">{room.price}</p>
+                <p className="price-amount">{room.price || 'Liên hệ'}</p>
                 <div className="price-stats">
-                  <span>📐 {room.area}</span>
-                  <span>📍 {room.location}</span>
+                  {room.area && <span>📐 {room.area}</span>}
+                  {room.maxOccupants && <span>👥 {room.maxOccupants} người</span>}
                   <span>🏷️ {room.status}</span>
                 </div>
+                {room.compensationFee && <p className="price-note">Phí bù: {room.compensationFee}</p>}
                 <div className="price-actions">
-                  <button type="button" className="btn btn-primary">
-                    Liên hệ ngay
-                  </button>
-                  <button type="button" className="btn btn-outline">
-                    Nhắn tin
-                  </button>
+                  <MessageOwnerButton
+                    listingType="pass_room"
+                    listingId={room.id}
+                    ownerId={room.ownerId}
+                    className="btn btn-primary"
+                  />
                 </div>
               </div>
 
               <div className="sidebar-card owner-card">
-                <PlaceholderImage src={roomOwner.avatar} alt={roomOwner.name} className="owner-avatar" />
+                <PlaceholderImage src={room.poster.avatar} alt={room.poster.name} className="owner-avatar" />
                 <div>
-                  <p className="owner-name">{roomOwner.name}</p>
-                  <p className="owner-rating">
-                    ⭐ {roomOwner.rating} · {roomOwner.reviews} đánh giá
-                  </p>
-                  <p className="owner-joined">{roomOwner.joined}</p>
+                  <p className="owner-name">{room.poster.name}</p>
+                  <p className="owner-joined">Người đăng bài</p>
                 </div>
-                <button type="button" className="btn btn-outline owner-more">
-                  Xem thêm
-                </button>
               </div>
 
-              <div className="sidebar-card address-card">
-                <p className="address-card-title">Địa chỉ</p>
-                <div className="map-placeholder">Bản đồ Google Map</div>
-                <button type="button" className="btn btn-outline">
-                  Xem Map
-                </button>
-              </div>
+              <ListingMapCard title={room.title} latitude={room.latitude} longitude={room.longitude} />
             </aside>
           </div>
         </div>

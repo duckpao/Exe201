@@ -1,7 +1,7 @@
 const passRoomModel = require('../models/passRoomModel')
-const addressModel = require('../models/addressModel')
+const { resolveAddress } = require('../services/addressService')
 const { uploadFiles } = require('../utils/cloudinaryUpload')
-const { formatVnd, formatArea, parseVndAmount, parseAreaM2 } = require('../utils/format')
+const { formatVnd, formatArea, parseVndAmount, parseAreaM2, formatAddress } = require('../utils/format')
 const { normalizePropertyType, PASS_ROOM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 
@@ -49,6 +49,7 @@ async function getPassRoom(request, response) {
 
   response.json({
     id: passRoom.id,
+    ownerId: passRoom.posted_by,
     title: passRoom.title,
     price: formatVnd(passRoom.monthly_price, '/tháng'),
     area: formatArea(passRoom.area_m2),
@@ -58,7 +59,10 @@ async function getPassRoom(request, response) {
     bedrooms: 1,
     bathrooms: 1,
     tags: [statusLabel, ...(passRoom.amenities || [])],
-    address: `${passRoom.ward ? passRoom.ward + ', ' : ''}${passRoom.district}, ${passRoom.province}`,
+    address: formatAddress(passRoom),
+    streetAddress: passRoom.street_address,
+    latitude: passRoom.latitude != null ? Number(passRoom.latitude) : null,
+    longitude: passRoom.longitude != null ? Number(passRoom.longitude) : null,
     description: passRoom.description,
     gallery: gallery.map((item) => item.media_url),
     passType: passRoom.pass_type,
@@ -72,15 +76,15 @@ async function getPassRoom(request, response) {
 
 async function createPassRoom(request, response) {
   const {
-    postType, title, price, ward, province, district, area, passDate, roomType,
-    occupants, amenities, description,
+    postType, title, price, area, passDate, roomType, occupants, amenities, description,
+    ward, province, provinceCode, wardCode, streetAddress,
   } = request.body || {}
 
-  if (!title || !price || !ward) {
+  if (!title || !price || !ward || !province) {
     return response.status(400).json({ message: 'Vui lòng nhập tiêu đề, giá và khu vực' })
   }
 
-  const address = await addressModel.findOrCreateWard({ ward, province, district })
+  const address = await resolveAddress({ ward, province, provinceCode, wardCode, streetAddress })
 
   const parsedAmenities = amenities
     ? Array.isArray(amenities) ? amenities : String(amenities).split(',').map((item) => item.trim())

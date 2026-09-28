@@ -12,12 +12,31 @@ async function postJson(path, body) {
   return data
 }
 
+async function getJson(path) {
+  const response = await fetch(`${apiUrl}${path}`, { credentials: 'include' })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.message || `Request failed: ${response.status}`)
+  return data
+}
+
 export function login(email, password) {
   return postJson('/api/auth/login', { email, password })
 }
 
 export function loginWithGoogle(idToken) {
   return postJson('/api/auth/google', { idToken })
+}
+
+export function register({ fullName, email, phone, password, role }) {
+  return postJson('/api/auth/register', { fullName, email, phone, password, role })
+}
+
+export function me() {
+  return getJson('/api/auth/me')
+}
+
+export function logout() {
+  return postJson('/api/auth/logout', {})
 }
 
 export function forgotPassword(email) {
