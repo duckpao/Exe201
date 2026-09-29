@@ -22,6 +22,12 @@ import RegisterPage from './pages/RegisterPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import MessagesPage from './pages/MessagesPage.jsx'
+import AdminLoginPage from './pages/admin/AdminLoginPage.jsx'
+import AdminOverviewPage from './pages/admin/AdminOverviewPage.jsx'
+import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
+import AdminListingsPage from './pages/admin/AdminListingsPage.jsx'
+import AdminRoute from './components/admin/AdminRoute.jsx'
+import { AdminAuthProvider } from './context/AdminAuthContext.jsx'
 
 export default function App() {
   return (
@@ -50,6 +56,21 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/tin-nhan" element={<MessagesPage />} />
       <Route path="/tin-nhan/:conversationId" element={<MessagesPage />} />
+
+      {/* Admin routes */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminAuthProvider>
+            <AdminRoute />
+          </AdminAuthProvider>
+        }
+      >
+        <Route index element={<AdminOverviewPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="listings" element={<AdminListingsPage />} />
+      </Route>
     </Routes>
   )
 }
