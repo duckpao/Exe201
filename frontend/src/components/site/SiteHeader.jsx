@@ -4,6 +4,7 @@ import PlaceholderImage from './PlaceholderImage.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSocket } from '../../context/SocketContext.jsx'
 import { listConversations } from '../../services/conversationService.js'
+import { Bell, Settings } from 'lucide-react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Trang chủ' },
@@ -74,12 +75,12 @@ export default function SiteHeader() {
 
         <div className="site-header-actions">
           <Link to="/tin-nhan" className="icon-btn" aria-label="Tin nhắn">
-            🔔
+            <Bell size={16} />
             {unreadCount > 0 && <span className="icon-badge">{unreadCount}</span>}
           </Link>
-          <button type="button" className="icon-btn" aria-label="Cài đặt">
-            ⚙️
-          </button>
+          <Link to="/settings" className="icon-btn" aria-label="Cài đặt">
+            <Settings size={16} />
+          </Link>
           {user ? (
             <div className="site-avatar-menu">
               <button
@@ -88,13 +89,20 @@ export default function SiteHeader() {
                 onClick={() => setMenuOpen((prev) => !prev)}
                 aria-label="Tài khoản"
               >
-                <span>{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="Avatar" style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}} />
+                ) : (
+                  <span>{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
+                )}
               </button>
               {menuOpen && (
                 <div className="site-avatar-dropdown">
                   <p className="site-avatar-dropdown-name">{user.full_name}</p>
                   <Link to="/tin-nhan" onClick={() => setMenuOpen(false)}>
                     Nhắn tin
+                  </Link>
+                  <Link to="/settings" onClick={() => setMenuOpen(false)}>
+                    Cài đặt
                   </Link>
                   <button type="button" onClick={handleLogout}>
                     Đăng xuất
@@ -103,8 +111,8 @@ export default function SiteHeader() {
               )}
             </div>
           ) : (
-            <Link to="/login" className="site-avatar" aria-label="Đăng nhập">
-              <span>U</span>
+            <Link to="/login" className="site-header-login-btn" aria-label="Đăng nhập">
+              Đăng nhập
             </Link>
           )}
         </div>

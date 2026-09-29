@@ -3,9 +3,11 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
+import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getVehicle } from '../services/vehicleService.js'
 import '../styles/site.css'
+import { Star, Home, Truck, Briefcase, Scale, Bookmark, Timer, Map } from 'lucide-react';
 
 // Khớp ENUM vehicles.vehicle_type
 const VEHICLE_TYPE_LABELS = {
@@ -15,10 +17,10 @@ const VEHICLE_TYPE_LABELS = {
 }
 
 const QUICK_FACTS = (vehicle) => [
-  { icon: '🚚', label: 'Loại xe', value: VEHICLE_TYPE_LABELS[vehicle.vehicleType] || 'Chưa cập nhật' },
-  { icon: '🧰', label: 'Loại dịch vụ', value: vehicle.serviceType || 'Chưa cập nhật' },
-  { icon: '⚖️', label: 'Tải trọng', value: vehicle.capacity || 'Chưa cập nhật' },
-  { icon: '🔖', label: 'Biển số', value: vehicle.licensePlate },
+  { icon: <Truck size={16} />, label: 'Loại xe', value: VEHICLE_TYPE_LABELS[vehicle.vehicleType] || 'Chưa cập nhật' },
+  { icon: <Briefcase size={16} />, label: 'Loại dịch vụ', value: vehicle.serviceType || 'Chưa cập nhật' },
+  { icon: <Scale size={16} />, label: 'Tải trọng', value: vehicle.capacity || 'Chưa cập nhật' },
+  { icon: <Bookmark size={16} />, label: 'Biển số', value: vehicle.licensePlate },
 ]
 
 export default function TransportDetailPage() {
@@ -61,7 +63,7 @@ export default function TransportDetailPage() {
       <main className="site-main">
         <div className="detail-page-inner">
           <nav className="breadcrumb">
-            <Link to="/">🏠</Link>
+            <Link to="/"><Home size={16} /></Link>
             <span>/</span>
             <Link to="/van-chuyen-do">Vận chuyển đồ</Link>
             <span>/</span>
@@ -83,7 +85,7 @@ export default function TransportDetailPage() {
 
               <h1 className="detail-title">{vehicle.title}</h1>
               <p className="detail-address">
-                ⭐ {vehicle.rating || 'Chưa có đánh giá'}
+                <Star size={16} /> {vehicle.rating || 'Chưa có đánh giá'}
                 {vehicle.rating ? ` · ${vehicle.reviews} đánh giá` : ''}
               </p>
               {vehicle.tags.length > 0 && (
@@ -116,17 +118,18 @@ export default function TransportDetailPage() {
               <div className="sidebar-card price-card">
                 <p className="price-amount">{vehicle.price || 'Liên hệ để báo giá'}</p>
                 <div className="price-stats">
-                  {vehicle.pricePerHour && <span>⏱️ {vehicle.pricePerHour}</span>}
-                  {vehicle.pricePerTrip && <span>🛣️ {vehicle.pricePerTrip}</span>}
-                  {vehicle.capacity && <span>⚖️ {vehicle.capacity}</span>}
+                  {vehicle.pricePerHour && <span><Timer size={16} /> {vehicle.pricePerHour}</span>}
+                  {vehicle.pricePerTrip && <span><Map size={16} /> {vehicle.pricePerTrip}</span>}
+                  {vehicle.capacity && <span><Scale size={16} /> {vehicle.capacity}</span>}
                 </div>
-                <div className="price-actions">
+                <div className="price-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <MessageOwnerButton
                     listingType="vehicle"
                     listingId={vehicle.id}
                     ownerId={vehicle.ownerId}
                     className="btn btn-primary"
                   />
+                  <FavoriteButton entityType="vehicle" entityId={vehicle.id} />
                 </div>
               </div>
 

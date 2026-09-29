@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
+import { Star } from 'lucide-react';
 
 export default function TransportCard({ service }) {
   return (
@@ -11,7 +12,7 @@ export default function TransportCard({ service }) {
         <h3 className="transport-card-title">
           <Link to={`/van-chuyen-do/${service.id}`}>{service.title}</Link>
         </h3>
-        <p className="transport-card-rating">⭐ {service.rating || 'Chưa có đánh giá'}</p>
+        <p className="transport-card-rating"><Star size={16} /> {service.rating || 'Chưa có đánh giá'}</p>
         <div className="transport-card-tags">
           {(service.tags || []).map((tag) => (
             <span key={tag} className="transport-card-tag">

@@ -1,5 +1,6 @@
 import { mockAdminUsers } from '../../data/mockAdminUsers.js'
 import { LISTING_TYPE_LABELS, mockAdminListings } from '../../data/mockAdminListings.js'
+import { Users, FolderOpen, Hourglass, Lock } from 'lucide-react';
 
 const ROLE_LABELS = { tenant: 'Người thuê', landlord: 'Chủ trọ', admin: 'Quản trị viên' }
 
@@ -26,22 +27,22 @@ export default function AdminOverviewPage() {
 
       <div className="stat-grid">
         <div className="stat-card">
-          <span className="stat-card-icon">👥</span>
+          <span className="stat-card-icon"><Users size={16} /></span>
           <div className="stat-card-value">{totalUsers}</div>
           <div className="stat-card-label">Tổng người dùng</div>
         </div>
         <div className="stat-card">
-          <span className="stat-card-icon">🗂️</span>
+          <span className="stat-card-icon"><FolderOpen size={16} />️</span>
           <div className="stat-card-value">{totalListings}</div>
           <div className="stat-card-label">Tổng tin đăng</div>
         </div>
         <div className="stat-card">
-          <span className="stat-card-icon">⏳</span>
+          <span className="stat-card-icon"><Hourglass size={16} /></span>
           <div className="stat-card-value">{pendingListings}</div>
           <div className="stat-card-label">Tin chờ duyệt</div>
         </div>
         <div className="stat-card">
-          <span className="stat-card-icon">🔒</span>
+          <span className="stat-card-icon"><Lock size={16} /></span>
           <div className="stat-card-value">{lockedUsers}</div>
           <div className="stat-card-label">Tài khoản bị khoá</div>
         </div>

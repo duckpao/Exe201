@@ -4,15 +4,17 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
+import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getPassRoom } from '../services/passRoomService.js'
 import '../styles/site.css'
+import { Users, Tag, MapPin, BadgeDollarSign, Home, Maximize } from 'lucide-react';
 
 const QUICK_FACTS = (room) => [
-  { icon: '📐', label: 'Diện tích', value: room.area || 'Chưa cập nhật' },
-  { icon: '📍', label: 'Khu vực', value: room.location || 'Chưa cập nhật' },
-  { icon: '🏷️', label: 'Trạng thái', value: room.status },
-  { icon: '💰', label: 'Giá thuê', value: room.price || 'Liên hệ' },
+  { icon: <Maximize size={16} />, label: 'Diện tích', value: room.area || 'Chưa cập nhật' },
+  { icon: <MapPin size={16} />, label: 'Khu vực', value: room.location || 'Chưa cập nhật' },
+  { icon: <Tag size={16} />, label: 'Trạng thái', value: room.status },
+  { icon: <BadgeDollarSign size={16} />, label: 'Giá thuê', value: room.price || 'Liên hệ' },
 ]
 
 export default function PassRoomDetailPage() {
@@ -55,7 +57,7 @@ export default function PassRoomDetailPage() {
       <main className="site-main">
         <div className="detail-page-inner">
           <nav className="breadcrumb">
-            <Link to="/">🏠</Link>
+            <Link to="/"><Home size={16} /></Link>
             <span>/</span>
             <Link to="/pass-phong">Pass Phòng Trọ</Link>
             <span>/</span>
@@ -76,7 +78,7 @@ export default function PassRoomDetailPage() {
               </div>
 
               <h1 className="detail-title">{room.title}</h1>
-              <p className="detail-address">📍 {room.address || 'Chưa cập nhật địa chỉ'}</p>
+              <p className="detail-address"><MapPin size={16} /> {room.address || 'Chưa cập nhật địa chỉ'}</p>
               <div className="detail-tags">
                 {room.tags.map((tag) => (
                   <span key={tag} className="detail-tag">
@@ -106,18 +108,19 @@ export default function PassRoomDetailPage() {
               <div className="sidebar-card price-card">
                 <p className="price-amount">{room.price || 'Liên hệ'}</p>
                 <div className="price-stats">
-                  {room.area && <span>📐 {room.area}</span>}
-                  {room.maxOccupants && <span>👥 {room.maxOccupants} người</span>}
-                  <span>🏷️ {room.status}</span>
+                  {room.area && <span><Maximize size={16} /> {room.area}</span>}
+                  {room.maxOccupants && <span><Users size={16} /> {room.maxOccupants} người</span>}
+                  <span><Tag size={16} /> {room.status}</span>
                 </div>
                 {room.compensationFee && <p className="price-note">Phí bù: {room.compensationFee}</p>}
-                <div className="price-actions">
+                <div className="price-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <MessageOwnerButton
                     listingType="pass_room"
                     listingId={room.id}
                     ownerId={room.ownerId}
                     className="btn btn-primary"
                   />
+                  <FavoriteButton entityType="pass_room" entityId={room.id} />
                 </div>
               </div>
 

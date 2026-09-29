@@ -47,12 +47,22 @@ export default function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  function handleSuccessfulLogin(user) {
+    if (user?.role === 'admin') {
+      navigate('/admin')
+    } else if (user?.role === 'landlord') {
+      navigate('/phong-tro/dang-bai')
+    } else {
+      navigate('/')
+    }
+  }
+
   async function handleGoogleCredential(credentialResponse) {
     setError('')
     setLoading(true)
     try {
-      await loginWithGoogle(credentialResponse.credential)
-      navigate('/')
+      const user = await loginWithGoogle(credentialResponse.credential)
+      handleSuccessfulLogin(user)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -65,8 +75,8 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await login(email.trim(), password)
-      navigate('/')
+      const user = await login(email.trim(), password)
+      handleSuccessfulLogin(user)
     } catch (err) {
       setError(err.message)
     } finally {

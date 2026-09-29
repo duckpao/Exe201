@@ -22,6 +22,7 @@ import RegisterPage from './pages/RegisterPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import MessagesPage from './pages/MessagesPage.jsx'
+import SettingsPage from './pages/SettingsPage.jsx'
 import AdminLoginPage from './pages/admin/AdminLoginPage.jsx'
 import AdminOverviewPage from './pages/admin/AdminOverviewPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
@@ -56,6 +57,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/tin-nhan" element={<MessagesPage />} />
       <Route path="/tin-nhan/:conversationId" element={<MessagesPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
 
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLoginPage />} />

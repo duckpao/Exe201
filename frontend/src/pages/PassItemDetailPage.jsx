@@ -4,15 +4,17 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
+import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getItem } from '../services/itemService.js'
 import '../styles/site.css'
+import { Tag, Sparkles, MapPin, BadgeDollarSign, Home, Pin } from 'lucide-react';
 
 const QUICK_FACTS = (item) => [
-  { icon: '🏷️', label: 'Loại đồ', value: item.category },
-  { icon: '✨', label: 'Tình trạng', value: item.condition || 'Chưa cập nhật' },
-  { icon: '📍', label: 'Khu vực', value: item.location || 'Chưa cập nhật' },
-  { icon: '💰', label: 'Giá bán', value: item.price || 'Liên hệ' },
+  { icon: <Tag size={16} />, label: 'Loại đồ', value: item.category },
+  { icon: <Sparkles size={16} />, label: 'Tình trạng', value: item.condition || 'Chưa cập nhật' },
+  { icon: <MapPin size={16} />, label: 'Khu vực', value: item.location || 'Chưa cập nhật' },
+  { icon: <BadgeDollarSign size={16} />, label: 'Giá bán', value: item.price || 'Liên hệ' },
 ]
 
 export default function PassItemDetailPage() {
@@ -55,7 +57,7 @@ export default function PassItemDetailPage() {
       <main className="site-main">
         <div className="detail-page-inner">
           <nav className="breadcrumb">
-            <Link to="/">🏠</Link>
+            <Link to="/"><Home size={16} /></Link>
             <span>/</span>
             <Link to="/pass-do">Pass Đồ</Link>
             <span>/</span>
@@ -76,7 +78,7 @@ export default function PassItemDetailPage() {
               </div>
 
               <h1 className="detail-title">{item.title}</h1>
-              <p className="detail-address">📍 {item.address || 'Chưa cập nhật địa chỉ'}</p>
+              <p className="detail-address"><MapPin size={16} /> {item.address || 'Chưa cập nhật địa chỉ'}</p>
               <div className="detail-tags">
                 {item.tags.filter(Boolean).map((tag) => (
                   <span key={tag} className="detail-tag">
@@ -105,17 +107,18 @@ export default function PassItemDetailPage() {
               <div className="sidebar-card price-card">
                 <p className="price-amount">{item.price || 'Liên hệ'}</p>
                 <div className="price-stats">
-                  <span>🏷️ {item.category}</span>
-                  {item.condition && <span>✨ {item.condition}</span>}
-                  <span>📌 {item.status}</span>
+                  <span><Tag size={16} /> {item.category}</span>
+                  {item.condition && <span><Sparkles size={16} /> {item.condition}</span>}
+                  <span><Pin size={16} /> {item.status}</span>
                 </div>
-                <div className="price-actions">
+                <div className="price-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <MessageOwnerButton
                     listingType="item"
                     listingId={item.id}
                     ownerId={item.ownerId}
                     className="btn btn-primary"
                   />
+                  <FavoriteButton entityType="item" entityId={item.id} />
                 </div>
               </div>
 

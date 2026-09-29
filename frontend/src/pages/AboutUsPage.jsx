@@ -3,12 +3,13 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import '../styles/site.css'
+import { ShieldCheck, Zap, Building, Headphones } from 'lucide-react';
 
 const VALUES = [
-  { icon: '🛡️', title: 'An toàn', desc: 'Thông tin phòng trọ và người dùng được kiểm duyệt kỹ càng.' },
-  { icon: '⚡', title: 'Nhanh chóng', desc: 'Tìm phòng, tìm roommate hay pass phòng chỉ trong vài bước.' },
-  { icon: '🏘️', title: 'Đa dạng', desc: 'Hàng trăm phòng trọ, dịch vụ vận chuyển ở nhiều khu vực.' },
-  { icon: '🎧', title: 'Hỗ trợ', desc: 'Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc.' },
+  { icon: <ShieldCheck size={16} />, title: 'An toàn', desc: 'Thông tin phòng trọ và người dùng được kiểm duyệt kỹ càng.' },
+  { icon: <Zap size={16} />, title: 'Nhanh chóng', desc: 'Tìm phòng, tìm roommate hay pass phòng chỉ trong vài bước.' },
+  { icon: <Building size={16} />, title: 'Đa dạng', desc: 'Hàng trăm phòng trọ, dịch vụ vận chuyển ở nhiều khu vực.' },
+  { icon: <Headphones size={16} />, title: 'Hỗ trợ', desc: 'Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc.' },
 ]
 
 export default function AboutUsPage() {

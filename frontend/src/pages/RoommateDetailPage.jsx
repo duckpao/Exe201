@@ -4,9 +4,11 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
+import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getRoommate } from '../services/roommateService.js'
 import '../styles/site.css'
+import { MapPin, BadgeDollarSign, Home, Maximize, Bed, User, Users, Calendar } from 'lucide-react';
 
 // Khớp ENUM roommate_listings.room_type
 const ROOM_TYPE_LABELS = {
@@ -15,10 +17,10 @@ const ROOM_TYPE_LABELS = {
 }
 
 const QUICK_FACTS = (roommate) => [
-  { icon: '🧑', label: 'Tuổi', value: roommate.age ? `${roommate.age} tuổi` : 'Chưa cập nhật' },
-  { icon: '🚻', label: 'Giới tính mong muốn', value: roommate.gender },
-  { icon: '🛏️', label: 'Nhu cầu', value: ROOM_TYPE_LABELS[roommate.roomType] || 'Chưa cập nhật' },
-  { icon: '💰', label: 'Ngân sách', value: roommate.price || 'Chưa cập nhật' },
+  { icon: <User size={16} />, label: 'Tuổi', value: roommate.age ? `${roommate.age} tuổi` : 'Chưa cập nhật' },
+  { icon: <Users size={16} />, label: 'Giới tính mong muốn', value: roommate.gender },
+  { icon: <Bed size={16} />, label: 'Nhu cầu', value: ROOM_TYPE_LABELS[roommate.roomType] || 'Chưa cập nhật' },
+  { icon: <BadgeDollarSign size={16} />, label: 'Ngân sách', value: roommate.price || 'Chưa cập nhật' },
 ]
 
 export default function RoommateDetailPage() {
@@ -61,7 +63,7 @@ export default function RoommateDetailPage() {
       <main className="site-main">
         <div className="detail-page-inner">
           <nav className="breadcrumb">
-            <Link to="/">🏠</Link>
+            <Link to="/"><Home size={16} /></Link>
             <span>/</span>
             <Link to="/tim-roommate">Tìm Roommate</Link>
             <span>/</span>
@@ -88,7 +90,7 @@ export default function RoommateDetailPage() {
               )}
 
               <h1 className="detail-title">{roommate.title}</h1>
-              <p className="detail-address">📍 {roommate.address || 'Chưa cập nhật địa chỉ'}</p>
+              <p className="detail-address"><MapPin size={16} /> {roommate.address || 'Chưa cập nhật địa chỉ'}</p>
               {roommate.tags.length > 0 && (
                 <div className="detail-tags">
                   {roommate.tags.map((tag) => (
@@ -126,17 +128,18 @@ export default function RoommateDetailPage() {
               <div className="sidebar-card price-card">
                 <p className="price-amount">{roommate.price || 'Chưa có ngân sách'}</p>
                 <div className="price-stats">
-                  {roommate.area && <span>📐 {roommate.area}</span>}
-                  <span>🚻 {roommate.gender}</span>
-                  {roommate.moveInDate && <span>📅 {roommate.moveInDate}</span>}
+                  {roommate.area && <span><Maximize size={16} /> {roommate.area}</span>}
+                  <span><Users size={16} /> {roommate.gender}</span>
+                  {roommate.moveInDate && <span><Calendar size={16} /> {roommate.moveInDate}</span>}
                 </div>
-                <div className="price-actions">
+                <div className="price-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <MessageOwnerButton
                     listingType="roommate"
                     listingId={roommate.id}
                     ownerId={roommate.ownerId}
                     className="btn btn-primary"
                   />
+                  <FavoriteButton entityType="roommate" entityId={roommate.id} />
                 </div>
               </div>
 

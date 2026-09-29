@@ -4,17 +4,19 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
+import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getRoom } from '../services/roomService.js'
 import { startConversation } from '../services/conversationService.js'
 import '../styles/site.css'
+import { Star, MapPin, BadgeDollarSign, Home, Maximize, Bed, Bath, Armchair } from 'lucide-react';
 
 const QUICK_FACTS = (room) => [
-  { icon: '📐', label: 'Diện tích', value: room.area },
-  { icon: '🛏️', label: 'Phòng ngủ', value: `${room.bedrooms} phòng` },
-  { icon: '🚿', label: 'Phòng tắm', value: `${room.bathrooms} phòng` },
-  { icon: '🛋️', label: 'Nội thất', value: room.tag },
-  { icon: '💰', label: 'Giá thuê', value: room.price },
+  { icon: <Maximize size={16} />, label: 'Diện tích', value: room.area },
+  { icon: <Bed size={16} />, label: 'Phòng ngủ', value: `${room.bedrooms} phòng` },
+  { icon: <Bath size={16} />, label: 'Phòng tắm', value: `${room.bathrooms} phòng` },
+  { icon: <Armchair size={16} />, label: 'Nội thất', value: room.tag },
+  { icon: <BadgeDollarSign size={16} />, label: 'Giá thuê', value: room.price },
 ]
 
 export default function RoomDetailPage() {
@@ -98,7 +100,7 @@ export default function RoomDetailPage() {
       <main className="site-main">
         <div className="detail-page-inner">
           <nav className="breadcrumb">
-            <Link to="/">🏠</Link>
+            <Link to="/"><Home size={16} /></Link>
             <span>/</span>
             <Link to="/phong-tro">Phòng trọ</Link>
             <span>/</span>
@@ -119,7 +121,7 @@ export default function RoomDetailPage() {
               </div>
 
               <h1 className="detail-title">{room.title}</h1>
-              <p className="detail-address">📍 {room.address}</p>
+              <p className="detail-address"><MapPin size={16} /> {room.address}</p>
               <div className="detail-tags">
                 {room.tags.map((tag) => (
                   <span key={tag} className="detail-tag">
@@ -148,9 +150,9 @@ export default function RoomDetailPage() {
               <div className="sidebar-card price-card">
                 <p className="price-amount">{room.price}</p>
                 <div className="price-stats">
-                  <span>📐 {room.area}</span>
-                  <span>🛏️ {room.bedrooms} PN</span>
-                  <span>🚿 {room.bathrooms} WC</span>
+                  <span><Maximize size={16} /> {room.area}</span>
+                  <span><Bed size={16} /> {room.bedrooms} PN</span>
+                  <span><Bath size={16} /> {room.bathrooms} WC</span>
                 </div>
                 {contactError && <p className="banner banner-error visible">{contactError}</p>}
                 <div className="price-actions">
@@ -162,6 +164,7 @@ export default function RoomDetailPage() {
                   <button type="button" className="btn btn-outline" onClick={handleMessage} disabled={starting}>
                     {starting ? 'Đang mở...' : 'Nhắn tin'}
                   </button>
+                  <FavoriteButton entityType="room" entityId={room.id} />
                 </div>
               </div>
 
@@ -170,7 +173,7 @@ export default function RoomDetailPage() {
                 <div>
                   <p className="owner-name">{room.owner.name}</p>
                   <p className="owner-rating">
-                    ⭐ {room.owner.rating || 'Chưa có đánh giá'}
+                    <Star size={16} /> {room.owner.rating || 'Chưa có đánh giá'}
                     {room.owner.rating ? ` · ${room.owner.reviews} đánh giá` : ''}
                   </p>
                   <p className="owner-joined">{room.owner.joined}</p>

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createItem } from '../services/itemService.js'
 import '../styles/site.css'
+import { Camera, Lightbulb } from 'lucide-react';
 
 const CATEGORIES = ['Nội thất', 'Đồ điện tử', 'Đồ gia dụng', 'Xe cộ', 'Sách - Giáo trình']
 const CONDITIONS = ['Mới 90%', 'Mới 95%', 'Đã dùng']
@@ -175,7 +176,7 @@ export default function PostPassItemPage() {
               <label>
                 Hình ảnh
                 <label className="upload-box">
-                  <span>📷 Kéo thả hoặc chọn ảnh để tải lên</span>
+                  <span><Camera size={16} /> Kéo thả hoặc chọn ảnh để tải lên</span>
                   <input type="file" accept="image/*" multiple onChange={handleImageChange} hidden />
                 </label>
               </label>
@@ -217,7 +218,7 @@ export default function PostPassItemPage() {
 
           <aside className="post-sidebar">
             <div className="sidebar-card tips-card">
-              <h3>💡 Một vài lưu ý</h3>
+              <h3><Lightbulb size={16} /> Một vài lưu ý</h3>
               <ul>
                 {TIPS.map((tip) => (
                   <li key={tip}>{tip}</li>

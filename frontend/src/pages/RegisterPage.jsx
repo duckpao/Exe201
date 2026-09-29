@@ -20,14 +20,21 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
     try {
-      await register({
+      const user = await register({
         fullName: fullName.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
         password,
         role: isLandlord ? 'landlord' : 'tenant',
       })
-      navigate('/')
+      
+      if (user?.role === 'admin') {
+        navigate('/admin')
+      } else if (user?.role === 'landlord') {
+        navigate('/phong-tro/dang-bai')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError(err.message)
     } finally {

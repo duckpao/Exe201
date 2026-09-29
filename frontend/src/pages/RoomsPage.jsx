@@ -37,6 +37,17 @@ export default function RoomsPage() {
     }
   }, [])
 
+  const [sortBy, setSortBy] = useState('newest')
+
+  const sortedRooms = [...rooms].sort((a, b) => {
+    // a.price is string like "2.000.000/tháng", so we parse it
+    const priceA = parseInt(a.price.replace(/\D/g, '')) || 0
+    const priceB = parseInt(b.price.replace(/\D/g, '')) || 0
+    if (sortBy === 'price_asc') return priceA - priceB
+    if (sortBy === 'price_desc') return priceB - priceA
+    return 0 // 'newest' uses default API order
+  })
+
   return (
     <div className="site-page">
       <SiteHeader />
@@ -62,15 +73,31 @@ export default function RoomsPage() {
 
         <div className="listing-page-body">
           <FilterSidebar groups={FILTER_GROUPS} />
-          <div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 20, margin: 0 }}>Kết quả tìm kiếm</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <label style={{ fontWeight: 500, color: '#555' }}>Sắp xếp:</label>
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: 8, outline: 'none' }}
+                >
+                  <option value="newest">Mới nhất</option>
+                  <option value="price_asc">Giá: Thấp đến cao</option>
+                  <option value="price_desc">Giá: Cao đến thấp</option>
+                </select>
+              </div>
+            </div>
+
             {loading && <p className="listing-status">Đang tải danh sách phòng trọ...</p>}
             {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
-            {!loading && !error && rooms.length === 0 && (
+            {!loading && !error && sortedRooms.length === 0 && (
               <p className="listing-status">Chưa có phòng trọ nào được đăng.</p>
             )}
-            {!loading && !error && rooms.length > 0 && (
+            {!loading && !error && sortedRooms.length > 0 && (
               <div className="listing-grid">
-                {rooms.map((room) => (
+                {sortedRooms.map((room) => (
                   <RoomCard key={room.id} room={room} />
                 ))}
               </div>

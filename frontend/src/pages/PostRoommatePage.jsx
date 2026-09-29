@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createRoommate } from '../services/roommateService.js'
 import '../styles/site.css'
+import { ShieldCheck, Zap, Camera, Lightbulb, Target, MessageSquare, Send } from 'lucide-react';
 
 const GENDERS = ['Nam', 'Nữ', 'Không yêu cầu']
 
@@ -17,10 +18,10 @@ const ROOM_TYPES = [
 ]
 
 const FEATURES = [
-  { icon: '🛡️', label: 'An toàn & tin cậy' },
-  { icon: '⚡', label: 'Đăng tin nhanh' },
-  { icon: '🎯', label: 'Đúng nhu cầu' },
-  { icon: '💬', label: 'Kết nối trực tiếp' },
+  { icon: <ShieldCheck size={16} />, label: 'An toàn & tin cậy' },
+  { icon: <Zap size={16} />, label: 'Đăng tin nhanh' },
+  { icon: <Target size={16} />, label: 'Đúng nhu cầu' },
+  { icon: <MessageSquare size={16} />, label: 'Kết nối trực tiếp' },
 ]
 
 const TIPS = [
@@ -246,7 +247,7 @@ export default function PostRoommatePage() {
             <div className="form-row">
               <span className="form-label">Hình ảnh</span>
               <label className="upload-box">
-                <span>📷 Kéo thả hoặc chọn ảnh để tải lên</span>
+                <span><Camera size={16} /> Kéo thả hoặc chọn ảnh để tải lên</span>
                 <input type="file" accept="image/*" multiple onChange={handleImageChange} hidden />
               </label>
               {images.length > 0 && (
@@ -299,14 +300,14 @@ export default function PostRoommatePage() {
                 Xem trước
               </button>
               <button type="submit" className="btn btn-primary" disabled={submitting}>
-                {submitting ? 'Đang đăng tin...' : 'Đăng tin ✈️'}
+                {submitting ? 'Đang đăng tin...' : <><span style={{marginRight: 5}}>Đăng tin</span> <Send size={16} /></>}
               </button>
             </div>
           </form>
 
           <aside className="post-sidebar">
             <div className="sidebar-card tips-card">
-              <h3>💡 Một vài lưu ý</h3>
+              <h3><Lightbulb size={16} /> Một vài lưu ý</h3>
               <ul>
                 {TIPS.map((tip) => (
                   <li key={tip}>{tip}</li>

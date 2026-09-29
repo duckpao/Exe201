@@ -11,6 +11,8 @@ const passRoomRoutes = require('./src/routes/passRoomRoutes')
 const itemRoutes = require('./src/routes/itemRoutes')
 const vehicleRoutes = require('./src/routes/vehicleRoutes')
 const conversationRoutes = require('./src/routes/conversationRoutes')
+const userRoutes = require('./src/routes/userRoutes')
+const favoriteRoutes = require('./src/routes/favoriteRoutes')
 
 const app = express()
 
@@ -27,6 +29,8 @@ app.use('/api/pass-phong', passRoomRoutes)
 app.use('/api/pass-do', itemRoutes)
 app.use('/api/transport', vehicleRoutes)
 app.use('/api/conversations', conversationRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/favorites', favoriteRoutes)
 
 app.use((request, response) => {
   response.status(404).json({ message: 'Không tìm thấy endpoint' })

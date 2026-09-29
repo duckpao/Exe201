@@ -310,14 +310,16 @@ CREATE TABLE reviews (
   CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- entity_type dùng đúng 5 khóa của listingRegistry.js (giống conversations.listing_type)
+-- để nhắn tin, yêu thích và "bài đăng của tôi" chỉ có một bộ từ vựng duy nhất.
 CREATE TABLE favorites (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id     BIGINT UNSIGNED NOT NULL,
-  target_type ENUM('room_listing','room_pass_listing','vehicle','roommate_listing') NOT NULL,
-  target_id   BIGINT UNSIGNED NOT NULL,
+  entity_type ENUM('room','roommate','pass_room','item','vehicle') NOT NULL,
+  entity_id   BIGINT UNSIGNED NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_favorite (user_id, target_type, target_id),
-  CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users(id)
+  UNIQUE KEY uq_favorite (user_id, entity_type, entity_id),
+  CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------

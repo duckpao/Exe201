@@ -165,10 +165,10 @@ INSERT INTO reviews (id, user_id, target_type, target_id, rating, comment) VALUE
 -- ---------------------------------------------------------
 -- favorites
 -- ---------------------------------------------------------
-INSERT INTO favorites (id, user_id, target_type, target_id) VALUES
-  (1, 4, 'room_listing',      2),
-  (2, 5, 'room_pass_listing', 1),
-  (3, 6, 'vehicle',           1),
-  (4, 6, 'roommate_listing',  1);
+INSERT INTO favorites (id, user_id, entity_type, entity_id) VALUES
+  (1, 4, 'room',      2),
+  (2, 5, 'pass_room', 1),
+  (3, 6, 'vehicle',   1),
+  (4, 6, 'roommate',  1);
 
 SET FOREIGN_KEY_CHECKS = 1;
