@@ -4,6 +4,7 @@ const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, formatArea, parseVndAmount, parseAreaM2, formatAddress } = require('../utils/format')
 const { normalizePropertyType, PASS_ROOM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
+const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 
 function toPassRoomCard(row) {
   return {
@@ -108,6 +109,8 @@ async function createPassRoom(request, response) {
     const uploaded = await uploadFiles(request.files, 'pass-phong')
     await passRoomModel.addImages(passRoomId, uploaded)
   }
+
+  await consumePostingCredit(request, 'pass_room', passRoomId)
 
   response.status(201).json({ id: passRoomId, title, status: 'pending' })
 }

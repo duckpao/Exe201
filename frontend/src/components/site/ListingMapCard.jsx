@@ -1,38 +1,65 @@
-// Khối "Địa chỉ" dùng chung cho các trang chi tiết bài đăng.
-// Khi VITE_GOOGLE_MAPS_EMBED_KEY còn trống thì tự fallback về placeholder,
-// nhưng link "Xem Map" (không cần API key) vẫn dùng được nếu có toạ độ.
-const embedKey = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY
+import { useEffect, useRef } from 'react'
+import '@vietmap/vietmap-gl-js/dist/vietmap-gl.css'
 
-export default function ListingMapCard({ title, latitude, longitude }) {
-  const hasCoords = latitude != null && longitude != null
+const tileKey = import.meta.env.VITE_VIETMAP_TILE_KEY
+
+export default function ListingMapCard({ title, address, latitude, longitude, compact = false }) {
+  const mapContainer = useRef(null)
+  const lat = Number(latitude)
+  const lng = Number(longitude)
+  const hasCoords = latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
+
+  useEffect(() => {
+    if (!mapContainer.current || !tileKey || !hasCoords) return undefined
+
+    let map
+    let disposed = false
+
+    import('@vietmap/vietmap-gl-js/dist/vietmap-gl').then(({ default: vietmapgl }) => {
+      if (disposed || !mapContainer.current) return
+
+      map = new vietmapgl.Map({
+        container: mapContainer.current,
+        style: `https://maps.vietmap.vn/maps/styles/tm/style.json?apikey=${encodeURIComponent(tileKey)}`,
+        center: [lng, lat],
+        zoom: 15,
+      })
+
+      map.addControl(new vietmapgl.NavigationControl(), 'top-right')
+      new vietmapgl.Marker().setLngLat([lng, lat]).addTo(map)
+    })
+
+    return () => {
+      disposed = true
+      map?.remove()
+    }
+  }, [hasCoords, lat, lng])
 
   return (
-    <div className="sidebar-card address-card">
-      <p className="address-card-title">Địa chỉ</p>
-      {hasCoords && embedKey ? (
-        <iframe
+    <div className={compact ? 'address-card address-card-compact' : 'sidebar-card address-card'}>
+      {!compact && <p className="address-card-title">Địa chỉ</p>}
+      {address && <p className="address-card-text">{address}</p>}
+      {hasCoords && tileKey ? (
+        <div
+          ref={mapContainer}
           className="map-embed"
-          src={`https://www.google.com/maps/embed/v1/place?key=${embedKey}&q=${latitude},${longitude}&zoom=16`}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title={`Bản đồ vị trí ${title}`}
+          role="img"
+          aria-label={`Bản đồ VietMap vị trí ${title}`}
         />
       ) : (
-        <div className="map-placeholder">Bản đồ Google Map</div>
+        <div className="map-placeholder">
+          {hasCoords ? 'Chưa cấu hình VietMap Tile API key' : 'Chưa có tọa độ vị trí'}
+        </div>
       )}
-      {hasCoords ? (
+      {hasCoords && (
         <a
-          className="btn btn-outline"
-          href={`https://www.google.com/maps?q=${latitude},${longitude}`}
+          className="btn btn-outline map-directions-link"
+          href={`https://maps.vietmap.vn/?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&zoom=17`}
           target="_blank"
           rel="noreferrer"
         >
-          Xem Map
+          Mở bản đồ lớn
         </a>
-      ) : (
-        <button type="button" className="btn btn-outline" disabled>
-          Xem Map
-        </button>
       )}
     </div>
   )

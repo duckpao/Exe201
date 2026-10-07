@@ -4,6 +4,7 @@ const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, parseVndAmount, formatAddress } = require('../utils/format')
 const { ITEM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
+const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 
 function toItemCard(row) {
   return {
@@ -93,6 +94,8 @@ async function createItem(request, response) {
     const uploaded = await uploadFiles(request.files, 'pass-do')
     await itemModel.addImages(itemId, uploaded)
   }
+
+  await consumePostingCredit(request, 'item', itemId)
 
   response.status(201).json({ id: itemId, title, status: 'pending' })
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { resetPassword } from '../services/authService'
 import BrandLogo from '../components/BrandLogo.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import '../styles/auth.css'
 
 export default function ResetPasswordPage() {
@@ -15,6 +16,7 @@ export default function ResetPasswordPage() {
   )
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const toast = useToast()
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -22,6 +24,7 @@ export default function ResetPasswordPage() {
 
     if (newPassword !== confirmPassword) {
       setError('Mật khẩu xác nhận không khớp')
+      toast.error('Mật khẩu xác nhận không khớp')
       return
     }
 
@@ -29,8 +32,10 @@ export default function ResetPasswordPage() {
     try {
       const data = await resetPassword(token, newPassword)
       setSuccess(data.message)
+      toast.success(data.message)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -53,9 +58,6 @@ export default function ResetPasswordPage() {
             <h2>Đặt lại mật khẩu</h2>
             <p className="auth-subtitle">Nhập mật khẩu mới cho tài khoản của bạn</p>
           </div>
-
-          <div className={`banner banner-error ${error ? 'visible' : ''}`}>{error}</div>
-          <div className={`banner banner-success ${success ? 'visible' : ''}`}>{success}</div>
 
           {showForm && (
             <form className="auth-form" onSubmit={handleSubmit} noValidate>

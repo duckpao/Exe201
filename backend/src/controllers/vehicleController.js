@@ -3,6 +3,7 @@ const addressModel = require('../models/addressModel')
 const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, formatJoinedDuration } = require('../utils/format')
 const { parsePagination, buildPagination } = require('../utils/pagination')
+const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 
 function priceOf(row) {
   if (row.price_per_trip) return formatVnd(row.price_per_trip, '/chuyến')
@@ -100,6 +101,8 @@ async function createVehicle(request, response) {
     const uploaded = await uploadFiles(request.files, 'transport')
     await vehicleModel.addImages(vehicleId, uploaded)
   }
+
+  await consumePostingCredit(request, 'vehicle', vehicleId)
 
   response.status(201).json({ id: vehicleId, name })
 }

@@ -5,6 +5,7 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import LocationSelect from '../components/site/LocationSelect.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createRoommate } from '../services/roommateService.js'
 import '../styles/site.css'
@@ -34,6 +35,7 @@ const TIPS = [
 export default function PostRoommatePage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
   const location = useLocationSelect()
   const previewRef = useRef(null)
 
@@ -101,7 +103,8 @@ export default function PostRoommatePage() {
       const roommate = await createRoommate(formData)
       navigate(`/tim-roommate/${roommate.id}`)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 402) navigate(`/thanh-toan/dang-bai?returnTo=${encodeURIComponent('/tim-roommate/dang-bai')}`)
+      else { setError(err.message); toast.error(err.message) }
     } finally {
       setSubmitting(false)
     }
@@ -135,8 +138,6 @@ export default function PostRoommatePage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {error && <div className="banner banner-error visible">{error}</div>}
-
             <h2 className="form-step-title">1. Thông tin cơ bản</h2>
             <div className="form-row">
               <label>

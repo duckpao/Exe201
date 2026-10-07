@@ -4,6 +4,7 @@ const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, formatDateVn, formatArea, formatAddress } = require('../utils/format')
 const { normalizePropertyType, normalizeGender, genderLabel } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
+const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 
 function toRoommateCard(row) {
   return {
@@ -105,6 +106,8 @@ async function createRoommate(request, response) {
     const uploaded = await uploadFiles(request.files, 'roommates')
     await roommateModel.addImages(roommateId, uploaded)
   }
+
+  await consumePostingCredit(request, 'roommate', roommateId)
 
   response.status(201).json({ id: roommateId, title })
 }

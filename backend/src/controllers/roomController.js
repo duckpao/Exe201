@@ -1,10 +1,10 @@
 const roomModel = require('../models/roomModel')
-const addressModel = require('../models/addressModel')
-const mapService = require('../services/mapService')
+const { resolveAddress } = require('../services/addressService')
 const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, formatArea, formatJoinedDuration } = require('../utils/format')
 const { normalizePropertyType } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
+const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 
 function toRoomCard(row) {
   const amenities = row.amenities || []
@@ -69,7 +69,7 @@ async function getRoom(request, response) {
     bedrooms: 1,
     bathrooms: 1,
     tags: amenities,
-    address: `${room.ward ? room.ward + ', ' : ''}${room.district ? room.district + ', ' : ''}${room.province}`,
+    address: room.formatted_address || `${room.ward ? room.ward + ', ' : ''}${room.district ? room.district + ', ' : ''}${room.province}`,
     streetAddress: room.street_address,
     latitude: room.latitude != null ? Number(room.latitude) : null,
     longitude: room.longitude != null ? Number(room.longitude) : null,
@@ -93,24 +93,15 @@ async function getRoom(request, response) {
 async function createRoom(request, response) {
   const {
     title, description, propertyType, pricePerMonth, depositAmount, areaM2, maxOccupants, amenities,
-    ward, province, provinceCode, wardCode, streetAddress,
+    ward, province, provinceCode, wardCode, streetAddress, formattedAddress, vietmapRefId, latitude, longitude,
   } = request.body || {}
 
   if (!title || !pricePerMonth || !ward || !province) {
     return response.status(400).json({ message: 'Vui lòng nhập tiêu đề, giá thuê và khu vực' })
   }
 
-  const coords = await mapService.geocodeAddress({ streetAddress, ward, province })
-
-  const address = await addressModel.findOrCreateWard({
-    ward,
-    province,
-    district: null,
-    provinceCode: provinceCode ? Number(provinceCode) : null,
-    wardCode: wardCode ? Number(wardCode) : null,
-    streetAddress: streetAddress || null,
-    latitude: coords?.lat ?? null,
-    longitude: coords?.lng ?? null,
+  const address = await resolveAddress({
+    ward, province, provinceCode, wardCode, streetAddress, formattedAddress, vietmapRefId, latitude, longitude,
   })
 
   const parsedAmenities = amenities
@@ -134,6 +125,8 @@ async function createRoom(request, response) {
     const uploaded = await uploadFiles(request.files, 'rooms')
     await roomModel.addImages(roomId, uploaded)
   }
+
+  await consumePostingCredit(request, 'room', roomId)
 
   const room = await roomModel.findById(roomId)
   response.status(201).json({ id: room.id, title: room.title })

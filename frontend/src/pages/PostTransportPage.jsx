@@ -4,6 +4,7 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { createVehicle } from '../services/vehicleService.js'
 import '../styles/site.css'
 import { Camera, Lightbulb } from 'lucide-react';
@@ -30,6 +31,7 @@ const TIPS = [
 export default function PostTransportPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
 
   const [name, setName] = useState('')
   const [vehicleType, setVehicleType] = useState('')
@@ -92,7 +94,8 @@ export default function PostTransportPage() {
       const vehicle = await createVehicle(formData)
       navigate(`/van-chuyen-do/${vehicle.id}`)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 402) navigate(`/thanh-toan/dang-bai?returnTo=${encodeURIComponent('/van-chuyen-do/dang-bai')}`)
+      else { setError(err.message); toast.error(err.message) }
     } finally {
       setSubmitting(false)
     }
@@ -124,8 +127,6 @@ export default function PostTransportPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {error && <div className="banner banner-error visible">{error}</div>}
-
             <h2 className="form-step-title">Thông tin dịch vụ</h2>
             <div className="form-row">
               <label>

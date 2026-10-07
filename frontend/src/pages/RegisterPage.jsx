@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import '../styles/auth.css'
 
 export default function RegisterPage() {
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { register } = useAuth()
+  const toast = useToast()
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -37,6 +39,7 @@ export default function RegisterPage() {
       }
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -57,8 +60,6 @@ export default function RegisterPage() {
             <h2>Đăng ký</h2>
             <p className="auth-subtitle">Tạo tài khoản mới cho RentMate Hola</p>
           </div>
-
-          <div className={`banner banner-error ${error ? 'visible' : ''}`}>{error}</div>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="form-group">
@@ -123,6 +124,7 @@ export default function RegisterPage() {
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Đang tạo tài khoản...' : 'Đăng ký'}
             </button>
+            <p className="auth-consent">Khi đăng ký, bạn xác nhận đã đọc và đồng ý với <Link className="auth-link" to="/dieu-khoan">Điều khoản sử dụng</Link>.</p>
           </form>
 
           <p className="auth-footer">

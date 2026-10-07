@@ -30,10 +30,10 @@ INSERT INTO user_oauth_accounts (id, user_id, provider, provider_uid, provider_e
 -- ---------------------------------------------------------
 -- addresses (chỉ khu vực cấp xã, khớp form đăng bài — Tân Xã / Thạch Hòa / Thạch Thất)
 -- ---------------------------------------------------------
-INSERT INTO addresses (id, province, district, ward) VALUES
-  (1, 'Hà Nội', 'Thạch Thất', 'Tân Xã'),
-  (2, 'Hà Nội', 'Thạch Thất', 'Thạch Hòa'),
-  (3, 'Hà Nội', 'Thạch Thất', 'Thạch Thất');
+INSERT INTO addresses (id, province, district, ward, formatted_address, latitude, longitude, location_source) VALUES
+  (1, 'Hà Nội', 'Thạch Thất', 'Tân Xã', 'Tân Xã, Thạch Thất, Hà Nội', 21.0147000, 105.5265000, 'manual'),
+  (2, 'Hà Nội', 'Thạch Thất', 'Thạch Hòa', 'Thạch Hòa, Thạch Thất, Hà Nội', 21.0069000, 105.5412000, 'manual'),
+  (3, 'Hà Nội', 'Thạch Thất', 'Thạch Thất', 'Thạch Thất, Hà Nội', 21.0282000, 105.5815000, 'manual');
 
 -- ---------------------------------------------------------
 -- room_listings (phòng trọ cho thuê)

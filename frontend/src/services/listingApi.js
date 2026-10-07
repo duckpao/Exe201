@@ -2,7 +2,12 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 async function handleJson(response) {
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.message || `Request failed: ${response.status}`)
+  if (!response.ok) {
+    const error = new Error(data.message || `Request failed: ${response.status}`)
+    error.status = response.status
+    error.code = data.code
+    throw error
+  }
   return data
 }
 

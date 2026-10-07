@@ -137,6 +137,16 @@
   font-size: 14px;
 }
 
+.auth-action-links {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 2px 0 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
 .auth-link {
   color: var(--brand-primary);
   text-decoration: none;
@@ -214,6 +224,16 @@
   margin-top: 24px;
   font-size: 14px;
   color: var(--brand-text-soft);
+}
+
+.auth-consent,
+.auth-helper {
+  margin: 2px 0 0;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: center;
+  letter-spacing: 0.01em;
 }
 
 .banner {

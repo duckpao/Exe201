@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import '../styles/auth.css'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const googleButtonRef = useRef(null)
   const navigate = useNavigate()
   const { login, loginWithGoogle } = useAuth()
+  const toast = useToast()
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
@@ -65,6 +67,7 @@ export default function LoginPage() {
       handleSuccessfulLogin(user)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -79,6 +82,7 @@ export default function LoginPage() {
       handleSuccessfulLogin(user)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -99,8 +103,6 @@ export default function LoginPage() {
             <h2>Đăng nhập</h2>
             <p className="auth-subtitle">Chào mừng bạn quay lại RentMate Hola</p>
           </div>
-
-          <div className={`banner banner-error ${error ? 'visible' : ''}`}>{error}</div>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="form-group">
@@ -129,12 +131,12 @@ export default function LoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
               />
             </div>
-            <div className="form-row-between">
+            <div className="auth-action-links">
               <Link className="auth-link" to="/forgot-password">
                 Quên mật khẩu?
               </Link>
               <Link className="auth-link" to="/dang-ky">
-                Chưa có tài khoản? Đăng ký
+                Chưa có tài khoản? <strong>Đăng ký ngay</strong>
               </Link>
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>
@@ -151,7 +153,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <p className="auth-footer">Bằng việc đăng nhập, bạn đồng ý với điều khoản sử dụng của RentMate Hola.</p>
+          <p className="auth-footer">Bằng việc đăng nhập, bạn đồng ý với <Link className="auth-link" to="/dieu-khoan">Điều khoản sử dụng</Link> của RentMate Hola.</p>
         </div>
       </main>
     </div>

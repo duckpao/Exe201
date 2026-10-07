@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ImageGallery from '../components/site/ImageGallery.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
@@ -72,16 +73,7 @@ export default function TransportDetailPage() {
 
           <div className="detail-layout">
             <div className="detail-main">
-              <div className="detail-gallery">
-                <PlaceholderImage src={vehicle.image} alt={vehicle.title} className="detail-gallery-main" />
-                {vehicle.gallery.length > 1 && (
-                  <div className="detail-gallery-thumbs">
-                    {vehicle.gallery.map((src, index) => (
-                      <PlaceholderImage key={src} src={src} alt={`${vehicle.title} - ảnh ${index + 1}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImageGallery primaryImage={vehicle.image} images={vehicle.gallery} title={vehicle.title} />
 
               <h1 className="detail-title">{vehicle.title}</h1>
               <p className="detail-address">

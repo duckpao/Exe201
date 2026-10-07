@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { forgotPassword } from '../services/authService'
 import BrandLogo from '../components/BrandLogo.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import '../styles/auth.css'
 
 export default function ForgotPasswordPage() {
@@ -9,6 +10,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const toast = useToast()
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -17,8 +19,10 @@ export default function ForgotPasswordPage() {
     try {
       const data = await forgotPassword(email.trim())
       setSuccess(data.message)
+      toast.success(data.message)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -40,9 +44,6 @@ export default function ForgotPasswordPage() {
             <p className="auth-subtitle">Nhập email để nhận link đặt lại mật khẩu</p>
           </div>
 
-          <div className={`banner banner-error ${error ? 'visible' : ''}`}>{error}</div>
-          <div className={`banner banner-success ${success ? 'visible' : ''}`}>{success}</div>
-
           {!success && (
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
               <div className="form-group">
@@ -63,6 +64,7 @@ export default function ForgotPasswordPage() {
               </button>
             </form>
           )}
+          <p className="auth-helper">Lưu ý: tài khoản đăng nhập duy nhất bằng Google không sử dụng chức năng quên mật khẩu.</p>
 
           <p className="back-to-login">
             <Link className="auth-link" to="/login">

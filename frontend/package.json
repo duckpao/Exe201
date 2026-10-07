@@ -13,6 +13,7 @@
     "vite": "^8.3.0"
   },
   "dependencies": {
+    "@vietmap/vietmap-gl-js": "^7.0.0-pre.1",
     "lucide-react": "^1.48.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

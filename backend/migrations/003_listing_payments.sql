@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS listing_payments (
+  id                   BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id              BIGINT UNSIGNED NOT NULL,
+  txn_ref              VARCHAR(100) NOT NULL,
+  amount               DECIMAL(12,2) NOT NULL,
+  provider             ENUM('vnpay') NOT NULL DEFAULT 'vnpay',
+  status               ENUM('pending','paid','failed','cancelled') NOT NULL DEFAULT 'pending',
+  provider_transaction VARCHAR(100) NULL,
+  response_code        VARCHAR(10) NULL,
+  paid_at              DATETIME NULL,
+  consumed_at          DATETIME NULL,
+  listing_type         ENUM('room','roommate','pass_room','item','vehicle') NULL,
+  listing_id           BIGINT UNSIGNED NULL,
+  created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_listing_payment_txn_ref (txn_ref),
+  KEY idx_listing_payment_credit (user_id, status, consumed_at),
+  CONSTRAINT fk_listing_payment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

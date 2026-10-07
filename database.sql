@@ -53,10 +53,16 @@ CREATE TABLE addresses (
   province_code  INT UNSIGNED NULL,
   ward_code      INT UNSIGNED NULL,
   street_address VARCHAR(255) NULL,
+  formatted_address VARCHAR(500) NULL, -- địa chỉ đầy đủ do VietMap chuẩn hóa để hiển thị
+  vietmap_ref_id VARCHAR(500) NULL, -- ref_id opaque từ Autocomplete/Place v4
   latitude       DECIMAL(10,7) NULL,
   longitude      DECIMAL(10,7) NULL,
+  location_source ENUM('manual','vietmap') NOT NULL DEFAULT 'manual',
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_addresses_ward_code (ward_code)
+  updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_addresses_ward_code (ward_code),
+  KEY idx_addresses_coordinates (latitude, longitude),
+  KEY idx_addresses_vietmap_ref (vietmap_ref_id(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
@@ -335,6 +341,30 @@ CREATE TABLE password_reset_tokens (
   KEY idx_reset_user (user_id),
   KEY idx_reset_token_hash (token_hash),
   CONSTRAINT fk_reset_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Thanh toán phí đăng bài: mỗi giao dịch thành công cấp 1 lượt đăng.
+-- Tài khoản trong 2 tháng đầu được middleware miễn phí, không tạo giao dịch.
+-- ---------------------------------------------------------
+CREATE TABLE listing_payments (
+  id                   BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id              BIGINT UNSIGNED NOT NULL,
+  txn_ref              VARCHAR(100) NOT NULL,
+  amount               DECIMAL(12,2) NOT NULL,
+  provider             ENUM('vnpay') NOT NULL DEFAULT 'vnpay',
+  status               ENUM('pending','paid','failed','cancelled') NOT NULL DEFAULT 'pending',
+  provider_transaction VARCHAR(100) NULL,
+  response_code        VARCHAR(10) NULL,
+  paid_at              DATETIME NULL,
+  consumed_at          DATETIME NULL,
+  listing_type         ENUM('room','roommate','pass_room','item','vehicle') NULL,
+  listing_id           BIGINT UNSIGNED NULL,
+  created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_listing_payment_txn_ref (txn_ref),
+  KEY idx_listing_payment_credit (user_id, status, consumed_at),
+  CONSTRAINT fk_listing_payment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------

@@ -5,6 +5,7 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import LocationSelect from '../components/site/LocationSelect.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createPassRoom } from '../services/passRoomService.js'
 import '../styles/site.css'
@@ -23,6 +24,7 @@ const TIPS = [
 export default function PostPassRoomPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
   const location = useLocationSelect()
 
   const [postType, setPostType] = useState('pass')
@@ -89,7 +91,8 @@ export default function PostPassRoomPage() {
       const passRoom = await createPassRoom(formData)
       navigate(`/pass-phong/${passRoom.id}`)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 402) navigate(`/thanh-toan/dang-bai?returnTo=${encodeURIComponent('/pass-phong/dang-bai')}`)
+      else { setError(err.message); toast.error(err.message) }
     } finally {
       setSubmitting(false)
     }
@@ -115,8 +118,6 @@ export default function PostPassRoomPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {error && <div className="banner banner-error visible">{error}</div>}
-
             <h2 className="form-step-title">Loại bài đăng</h2>
             <div className="tab-switcher">
               <button

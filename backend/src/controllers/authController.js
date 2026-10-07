@@ -18,11 +18,13 @@ function sanitizeUser(user) {
   return safeUser
 }
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 function setAuthCookie(response, token) {
   response.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: COOKIE_MAX_AGE_MS,
   })
 }
@@ -135,6 +137,12 @@ async function forgotPassword(request, response) {
 
   const user = await userModel.findByEmail(email)
   if (user) {
+    if (!user.password_hash) {
+      return response.status(400).json({
+        message: 'Tài khoản này đăng nhập bằng Google và không sử dụng tính năng quên mật khẩu.',
+        code: 'GOOGLE_ONLY_ACCOUNT',
+      })
+    }
     const { rawToken, tokenHash } = generateResetToken()
     const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRES_MIN * 60 * 1000)
 
@@ -183,7 +191,11 @@ async function resetPassword(request, response) {
 }
 
 function logout(request, response) {
-  response.clearCookie(COOKIE_NAME)
+  response.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  })
   response.json({ message: 'Đã đăng xuất' })
 }
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ImageGallery from '../components/site/ImageGallery.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -25,7 +26,7 @@ export default function RoomDetailPage() {
   const { user } = useAuth()
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
   const [contactError, setContactError] = useState('')
   const [starting, setStarting] = useState(false)
 
@@ -37,7 +38,7 @@ export default function RoomDetailPage() {
         if (!ignore) setRoom(data)
       })
       .catch((err) => {
-        if (!ignore) setError(err.message)
+        if (!ignore) setError(err)
       })
       .finally(() => {
         if (!ignore) setLoading(false)
@@ -77,13 +78,14 @@ export default function RoomDetailPage() {
   }
 
   if (error || !room) {
+    const notFound = error?.status === 404 || !error
     return (
       <div className="site-page">
         <SiteHeader />
         <main className="site-main">
           <div className="coming-soon">
-            <h1>Không tìm thấy phòng trọ này</h1>
-            <p>Phòng trọ có thể đã bị gỡ hoặc đường dẫn không đúng.</p>
+            <h1>{notFound ? 'Không tìm thấy phòng trọ này' : 'Không thể tải thông tin phòng trọ'}</h1>
+            <p>{notFound ? 'Phòng trọ có thể đã bị gỡ hoặc đường dẫn không đúng.' : error.message}</p>
             <Link to="/phong-tro" className="btn btn-primary">
               Về danh sách phòng trọ
             </Link>
@@ -111,14 +113,7 @@ export default function RoomDetailPage() {
 
           <div className="detail-layout">
             <div className="detail-main">
-              <div className="detail-gallery">
-                <PlaceholderImage src={room.image} alt={room.title} className="detail-gallery-main" />
-                <div className="detail-gallery-thumbs">
-                  {room.gallery.map((src, index) => (
-                    <PlaceholderImage key={src} src={src} alt={`${room.title} - ảnh ${index + 1}`} />
-                  ))}
-                </div>
-              </div>
+              <ImageGallery primaryImage={room.image} images={room.gallery} title={room.title} />
 
               <h1 className="detail-title">{room.title}</h1>
               <p className="detail-address"><MapPin size={16} /> {room.address}</p>
@@ -180,7 +175,7 @@ export default function RoomDetailPage() {
                 </div>
               </div>
 
-              <ListingMapCard title={room.title} latitude={room.latitude} longitude={room.longitude} />
+              <ListingMapCard title={room.title} address={room.address} latitude={room.latitude} longitude={room.longitude} />
 
             </aside>
           </div>

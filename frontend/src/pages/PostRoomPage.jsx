@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import AddressAutocomplete from '../components/site/AddressAutocomplete.jsx'
+import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { createRoom } from '../services/roomService.js'
 import { listProvinces, getProvinceWithWards } from '../services/locationService.js'
 import '../styles/site.css'
@@ -22,6 +25,7 @@ const TIPS = [
 export default function PostRoomPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
 
   const [title, setTitle] = useState('')
   const [propertyType, setPropertyType] = useState('')
@@ -37,6 +41,7 @@ export default function PostRoomPage() {
   const [wardsLoading, setWardsLoading] = useState(false)
   const [wardCode, setWardCode] = useState('')
   const [streetAddress, setStreetAddress] = useState('')
+  const [selectedPlace, setSelectedPlace] = useState(null)
   const [amenities, setAmenities] = useState([])
   const [description, setDescription] = useState('')
   const [images, setImages] = useState([])
@@ -135,13 +140,20 @@ export default function PostRoomPage() {
       formData.set('ward', selectedWard?.name || '')
       formData.set('wardCode', wardCode)
       if (streetAddress.trim()) formData.set('streetAddress', streetAddress.trim())
+      if (selectedPlace) {
+        formData.set('formattedAddress', selectedPlace.display || '')
+        formData.set('vietmapRefId', selectedPlace.refId)
+        formData.set('latitude', selectedPlace.lat)
+        formData.set('longitude', selectedPlace.lng)
+      }
       formData.set('amenities', amenities.join(','))
       images.forEach((image) => formData.append('images', image.file))
 
       const room = await createRoom(formData)
       navigate(`/phong-tro/${room.id}`)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 402) navigate(`/thanh-toan/dang-bai?returnTo=${encodeURIComponent('/phong-tro/dang-bai')}`)
+      else { setError(err.message); toast.error(err.message) }
     } finally {
       setSubmitting(false)
     }
@@ -186,8 +198,6 @@ export default function PostRoomPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {error && <div className="banner banner-error visible">{error}</div>}
-
             <h2 className="form-step-title">Thông tin phòng trọ</h2>
             <div className="form-row">
               <label>
@@ -294,12 +304,12 @@ export default function PostRoomPage() {
             )}
             <div className="form-row form-row-split">
               <label>
-                Địa chỉ cụ thể (không bắt buộc)
-                <input
-                  type="text"
-                  placeholder="VD: Số 12, ngõ 5, đường Phùng Khoang"
+                Địa chỉ cụ thể
+                <AddressAutocomplete
                   value={streetAddress}
-                  onChange={(event) => setStreetAddress(event.target.value)}
+                  onChange={setStreetAddress}
+                  onSelect={setSelectedPlace}
+                  locationHint={[selectedWard?.name, selectedProvince?.name].filter(Boolean).join(', ')}
                 />
               </label>
               <label>
@@ -316,6 +326,18 @@ export default function PostRoomPage() {
                 </select>
               </label>
             </div>
+            {selectedPlace && (
+              <div className="form-row selected-address-preview">
+                <p><strong>Vị trí đã chọn:</strong> {selectedPlace.display}</p>
+                <ListingMapCard
+                  title={title || 'phòng trọ'}
+                  address={selectedPlace.display}
+                  latitude={selectedPlace.lat}
+                  longitude={selectedPlace.lng}
+                  compact
+                />
+              </div>
+            )}
 
             <h2 className="form-step-title">Tiện ích</h2>
             <div className="amenities-grid">

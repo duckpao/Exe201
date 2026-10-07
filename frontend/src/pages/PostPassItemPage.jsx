@@ -5,6 +5,7 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import LocationSelect from '../components/site/LocationSelect.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createItem } from '../services/itemService.js'
 import '../styles/site.css'
@@ -23,6 +24,7 @@ const TIPS = [
 export default function PostPassItemPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
   const location = useLocationSelect()
 
   const [title, setTitle] = useState('')
@@ -77,7 +79,8 @@ export default function PostPassItemPage() {
       const item = await createItem(formData)
       navigate(`/pass-do/${item.id}`)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 402) navigate(`/thanh-toan/dang-bai?returnTo=${encodeURIComponent('/pass-do/dang-bai')}`)
+      else { setError(err.message); toast.error(err.message) }
     } finally {
       setSubmitting(false)
     }
@@ -103,8 +106,6 @@ export default function PostPassItemPage() {
 
         <div className="post-layout">
           <form className="post-form-card" onSubmit={handleSubmit}>
-            {error && <div className="banner banner-error visible">{error}</div>}
-
             <h2 className="form-step-title">Thông tin sản phẩm</h2>
             <div className="form-row">
               <label>

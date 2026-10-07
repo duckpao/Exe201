@@ -7,9 +7,17 @@ async function findOrCreateWard({
   provinceCode = null,
   wardCode = null,
   streetAddress = null,
+  formattedAddress = null,
+  vietmapRefId = null,
   latitude = null,
   longitude = null,
+  locationSource = 'manual',
 } = {}) {
+  if (vietmapRefId) {
+    const [existingRows] = await pool.query('SELECT * FROM addresses WHERE vietmap_ref_id = ? LIMIT 1', [vietmapRefId])
+    if (existingRows[0]) return existingRows[0]
+  }
+
   if (!streetAddress) {
     if (wardCode) {
       const [existingRows] = await pool.query(
@@ -27,9 +35,10 @@ async function findOrCreateWard({
   }
 
   const [result] = await pool.query(
-    `INSERT INTO addresses (province, district, ward, province_code, ward_code, street_address, latitude, longitude)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [province, district, ward, provinceCode, wardCode, streetAddress, latitude, longitude]
+    `INSERT INTO addresses
+       (province, district, ward, province_code, ward_code, street_address, formatted_address, vietmap_ref_id, latitude, longitude, location_source)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [province, district, ward, provinceCode, wardCode, streetAddress, formattedAddress, vietmapRefId, latitude, longitude, locationSource]
   )
   const [rows] = await pool.query('SELECT * FROM addresses WHERE id = ?', [result.insertId])
   return rows[0]

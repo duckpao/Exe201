@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ImageGallery from '../components/site/ImageGallery.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
@@ -72,22 +73,7 @@ export default function RoommateDetailPage() {
 
           <div className="detail-layout">
             <div className="detail-main">
-              {roommate.gallery.length > 0 && (
-                <div className="detail-gallery">
-                  <PlaceholderImage
-                    src={roommate.gallery[0]}
-                    alt={roommate.title}
-                    className="detail-gallery-main"
-                  />
-                  {roommate.gallery.length > 1 && (
-                    <div className="detail-gallery-thumbs">
-                      {roommate.gallery.map((src, index) => (
-                        <PlaceholderImage key={src} src={src} alt={`${roommate.title} - ảnh ${index + 1}`} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <ImageGallery images={roommate.gallery} title={roommate.title} />
 
               <h1 className="detail-title">{roommate.title}</h1>
               <p className="detail-address"><MapPin size={16} /> {roommate.address || 'Chưa cập nhật địa chỉ'}</p>

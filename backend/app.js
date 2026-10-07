@@ -13,8 +13,11 @@ const vehicleRoutes = require('./src/routes/vehicleRoutes')
 const conversationRoutes = require('./src/routes/conversationRoutes')
 const userRoutes = require('./src/routes/userRoutes')
 const favoriteRoutes = require('./src/routes/favoriteRoutes')
+const mapRoutes = require('./src/routes/mapRoutes')
+const paymentRoutes = require('./src/routes/paymentRoutes')
 
 const app = express()
+app.set('trust proxy', 1)
 
 const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174'].filter(Boolean)
 
@@ -31,6 +34,8 @@ app.use('/api/transport', vehicleRoutes)
 app.use('/api/conversations', conversationRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/favorites', favoriteRoutes)
+app.use('/api/maps', mapRoutes)
+app.use('/api/payments', paymentRoutes)
 
 app.use((request, response) => {
   response.status(404).json({ message: 'Không tìm thấy endpoint' })

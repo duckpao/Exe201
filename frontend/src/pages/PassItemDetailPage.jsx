@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ImageGallery from '../components/site/ImageGallery.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
@@ -66,16 +67,7 @@ export default function PassItemDetailPage() {
 
           <div className="detail-layout">
             <div className="detail-main">
-              <div className="detail-gallery">
-                <PlaceholderImage src={item.image} alt={item.title} className="detail-gallery-main" />
-                {item.gallery.length > 1 && (
-                  <div className="detail-gallery-thumbs">
-                    {item.gallery.map((src, index) => (
-                      <PlaceholderImage key={src} src={src} alt={`${item.title} - ảnh ${index + 1}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImageGallery primaryImage={item.image} images={item.gallery} title={item.title} />
 
               <h1 className="detail-title">{item.title}</h1>
               <p className="detail-address"><MapPin size={16} /> {item.address || 'Chưa cập nhật địa chỉ'}</p>
