@@ -10,6 +10,7 @@ function LocationSelect({ location, required = true }) {
     wardsLoading,
     wardCode,
     setWardCode,
+    retryProvinces,
   } = location
 
   return (
@@ -55,7 +56,7 @@ function LocationSelect({ location, required = true }) {
       {provincesError && (
         <div className="notice-box info">
           Không tải được danh sách tỉnh/thành.{' '}
-          <button type="button" onClick={() => window.location.reload()}>
+          <button type="button" onClick={retryProvinces}>
             Thử lại
           </button>
         </div>

@@ -1,6 +1,7 @@
 const { verifyAuthToken } = require('../utils/token')
+const userModel = require('../models/userModel')
 
-function requireAuth(request, response, next) {
+async function requireAuth(request, response, next) {
   const cookieName = process.env.COOKIE_NAME || 'auth_token'
   const token = request.cookies?.[cookieName]
 
@@ -9,7 +10,12 @@ function requireAuth(request, response, next) {
   }
 
   try {
-    request.user = verifyAuthToken(token)
+    const tokenUser = verifyAuthToken(token)
+    const user = await userModel.findById(tokenUser.id)
+    if (!user || user.status === 'locked') {
+      return response.status(401).json({ message: 'Tài khoản không còn được phép truy cập' })
+    }
+    request.user = { id: user.id, email: user.email, role: user.role }
     next()
   } catch (error) {
     return response.status(401).json({ message: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn' })
@@ -25,4 +31,21 @@ function requireRole(...roles) {
   }
 }
 
-module.exports = { requireAuth, requireRole }
+  async function optionalAuth(request, response, next) {
+    const cookieName = process.env.COOKIE_NAME || 'auth_token'
+    const token = request.cookies?.[cookieName]
+    if (!token) return next()
+
+    try {
+      const tokenUser = verifyAuthToken(token)
+      const user = await userModel.findById(tokenUser.id)
+      if (user && user.status !== 'locked') {
+        request.user = { id: user.id, email: user.email, role: user.role }
+      }
+    } catch (error) {
+      // Public detail pages remain usable when an old cookie is invalid.
+    }
+    next()
+  }
+
+  module.exports = { requireAuth, requireRole, optionalAuth }

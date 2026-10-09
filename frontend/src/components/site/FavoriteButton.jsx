@@ -1,69 +1,64 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Heart } from 'lucide-react'
-
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { addFavorite, checkFavorite, removeFavorite } from '../../services/favoriteService.js'
 
 export default function FavoriteButton({ entityType, entityId }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [isFav, setIsFav] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!user) return
-    fetch(`${apiUrl}/api/favorites/check/${entityType}/${entityId}`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(d => setIsFav(d.isFavorite))
-      .catch(console.error)
+    const controller = new AbortController()
+    checkFavorite(entityType, entityId, { signal: controller.signal })
+      .then((data) => setIsFav(data.isFavorite))
+      .catch((requestError) => {
+        if (requestError.name !== 'AbortError') setError(requestError.message)
+      })
+    return () => controller.abort()
   }, [user, entityType, entityId])
 
   const toggleFav = async () => {
     if (!user) {
-      alert('Vui lòng đăng nhập để lưu bài đăng')
+      navigate('/login', { state: { from: `${location.pathname}${location.search}` } })
       return
     }
     setLoading(true)
+    setError('')
     try {
       if (isFav) {
-        await fetch(`${apiUrl}/api/favorites/${entityType}/${entityId}`, { method: 'DELETE', credentials: 'include' })
+        await removeFavorite(entityType, entityId)
         setIsFav(false)
       } else {
-        await fetch(`${apiUrl}/api/favorites`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ entityType, entityId })
-        })
+        await addFavorite(entityType, entityId)
         setIsFav(true)
       }
-    } catch (e) {
-      console.error(e)
+    } catch (requestError) {
+      setError(requestError.message || 'Không thể cập nhật bài đã lưu.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={toggleFav}
-      disabled={loading}
-      style={{
-        background: 'white',
-        border: '1.5px solid var(--brand-border)',
-        borderRadius: '50%',
-        width: 48,
-        height: 48,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        color: isFav ? 'var(--brand-danger)' : 'var(--brand-text-soft)',
-        transition: 'all 0.2s',
-      }}
-      title={isFav ? "Bỏ lưu" : "Lưu bài viết"}
-    >
-      <Heart size={20} fill={isFav ? "currentColor" : "none"} strokeWidth={2} />
-    </button>
+    <span className="favorite-control">
+      <button
+        type="button"
+        className="favorite-button"
+        onClick={toggleFav}
+        disabled={loading}
+        aria-label={isFav ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
+        aria-pressed={isFav}
+        title={isFav ? 'Bỏ lưu' : 'Lưu bài viết'}
+      >
+        <Heart size={20} fill={isFav ? 'currentColor' : 'none'} strokeWidth={2} />
+      </button>
+      {error && <span className="field-error" role="alert">{error}</span>}
+    </span>
   )
 }

@@ -163,6 +163,22 @@
   letter-spacing: -0.3px;
 }
 
+.admin-page-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-page-subtitle {
+  margin: 6px 0 0;
+  color: var(--brand-text-soft);
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+}
+
 .admin-card-title {
   font-size: 16px;
   margin: 0 0 16px;

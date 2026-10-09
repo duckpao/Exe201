@@ -47,7 +47,7 @@ async function list(query, { limit, offset }) {
   return { rows, total }
 }
 
-async function findById(id) {
+  async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
     `SELECT v.*, u.full_name AS owner_name, u.avatar_url AS owner_avatar,
        (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating,
@@ -55,8 +55,9 @@ async function findById(id) {
      FROM vehicles v
      JOIN users u ON u.id = v.owner_id
      WHERE v.id = ? AND v.deleted_at IS NULL
+       AND (v.status = 'available' OR v.owner_id = ?)
      LIMIT 1`,
-    [id]
+    [id, viewerId]
   )
   return rows[0] || null
 }

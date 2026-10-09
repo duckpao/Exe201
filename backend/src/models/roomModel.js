@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const { queryWithRetry } = pool
 
 function buildListFilters(query) {
   const where = ["rl.deleted_at IS NULL", "rl.status = 'available'"]
@@ -43,7 +44,7 @@ function buildListFilters(query) {
 async function list(query, { limit, offset }) {
   const { whereSql, params } = buildListFilters(query)
 
-  const [rows] = await pool.query(
+  const [rows] = await queryWithRetry(
     `SELECT rl.*, a.province, a.district, a.ward,
        (SELECT media_url FROM room_images WHERE room_listing_id = rl.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
      FROM room_listings rl
@@ -54,7 +55,7 @@ async function list(query, { limit, offset }) {
     [...params, limit, offset]
   )
 
-  const [[{ total }]] = await pool.query(
+  const [[{ total }]] = await queryWithRetry(
     `SELECT COUNT(*) AS total FROM room_listings rl JOIN addresses a ON a.id = rl.address_id WHERE ${whereSql}`,
     params
   )
@@ -62,7 +63,7 @@ async function list(query, { limit, offset }) {
   return { rows, total }
 }
 
-async function findById(id) {
+  async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
     `SELECT rl.*, a.province, a.district, a.ward, a.street_address, a.formatted_address, a.latitude, a.longitude,
        u.id AS landlord_user_id, u.full_name AS landlord_name, u.avatar_url AS landlord_avatar, u.created_at AS landlord_created_at,
@@ -71,8 +72,9 @@ async function findById(id) {
      JOIN addresses a ON a.id = rl.address_id
      JOIN users u ON u.id = rl.landlord_id
      WHERE rl.id = ? AND rl.deleted_at IS NULL
+       AND (rl.status = 'available' OR rl.landlord_id = ?)
      LIMIT 1`,
-    [id]
+    [id, viewerId]
   )
   return rows[0] || null
 }

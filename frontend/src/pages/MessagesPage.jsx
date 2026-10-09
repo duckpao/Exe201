@@ -35,11 +35,17 @@ export default function MessagesPage() {
 
   const [conversations, setConversations] = useState([])
   const [conversationsLoading, setConversationsLoading] = useState(true)
+  const [conversationsError, setConversationsError] = useState('')
+  const [conversationsRetry, setConversationsRetry] = useState(0)
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState('')
+  const [messagesRetry, setMessagesRetry] = useState(0)
   const [body, setBody] = useState('')
   const [chatMode, setChatMode] = useState('owner')
   const [aiLoading, setAiLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [socketConnected, setSocketConnected] = useState(false)
   const [aiStatus, setAiStatus] = useState({ available: false, loading: true, model: null })
   const bodyRef = useRef(null)
 
@@ -50,11 +56,12 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!user) return
     setConversationsLoading(true)
+    setConversationsError('')
     listConversations()
       .then((data) => setConversations(data.data || []))
-      .catch(() => {})
+      .catch((err) => setConversationsError(err.message))
       .finally(() => setConversationsLoading(false))
-  }, [user])
+  }, [user, conversationsRetry])
 
   useEffect(() => {
     if (!user) return
@@ -68,17 +75,33 @@ export default function MessagesPage() {
       setMessages([])
       return
     }
+    setMessagesError('')
     setMessagesLoading(true)
     getMessages(conversationId)
       .then((data) => setMessages(data.data || []))
-      .catch((err) => toast.error(err.message))
+      .catch((err) => setMessagesError(err.message))
       .finally(() => setMessagesLoading(false))
-  }, [conversationId, toast])
+  }, [conversationId, messagesRetry, toast])
 
   useEffect(() => {
     if (!socket || !conversationId) return
     socket.emit('conversation:join', conversationId)
   }, [socket, conversationId])
+
+  useEffect(() => {
+    if (!socket) {
+      setSocketConnected(false)
+      return
+    }
+    const updateConnection = () => setSocketConnected(socket.connected)
+    updateConnection()
+    socket.on('connect', updateConnection)
+    socket.on('disconnect', updateConnection)
+    return () => {
+      socket.off('connect', updateConnection)
+      socket.off('disconnect', updateConnection)
+    }
+  }, [socket])
 
   useEffect(() => {
     if (!socket) return
@@ -116,23 +139,31 @@ export default function MessagesPage() {
     event.preventDefault()
     const text = body.trim()
     if (!text || !conversationId) return
-    setBody('')
+    setSending(true)
     try {
       if (chatMode === 'ai') {
         setAiLoading(true)
         const result = await sendAiMessage(conversationId, text)
         setMessages((prev) => dedupeAppend(dedupeAppend(prev, result.question), result.answer))
       } else if (socket?.connected) {
-        socket.emit('message:send', { conversationId, body: text })
+        await new Promise((resolve, reject) => {
+          socket.timeout(8000).emit('message:send', { conversationId, body: text }, (timeoutError, response) => {
+            if (timeoutError) return reject(new Error('Kết nối gửi tin nhắn đã hết thời gian.'))
+            if (!response?.ok) return reject(new Error(response?.message || 'Không thể gửi tin nhắn.'))
+            resolve()
+          })
+        })
       } else {
         const message = await sendMessageHttp(conversationId, text)
         setMessages((prev) => dedupeAppend(prev, message))
       }
+      setBody('')
     } catch (err) {
       setBody(text)
       toast.error(err.message)
     } finally {
       setAiLoading(false)
+      setSending(false)
     }
   }
 
@@ -148,6 +179,7 @@ export default function MessagesPage() {
           <aside className="messages-sidebar">
             <h2 className="messages-sidebar-title">Tin nhắn</h2>
             {conversationsLoading && <p className="listing-status">Đang tải...</p>}
+            {!conversationsLoading && conversationsError && <div className="listing-error" role="alert"><p>{conversationsError}</p><button type="button" className="btn btn-outline" onClick={() => setConversationsRetry((value) => value + 1)}>Thử lại</button></div>}
             {!conversationsLoading && conversations.length === 0 && (
               <p className="listing-status">Bạn chưa có cuộc trò chuyện nào.</p>
             )}
@@ -208,6 +240,9 @@ export default function MessagesPage() {
                       <Bot size={16} /> Hỏi AI
                     </button>
                   </div>
+                  <span className={`socket-status ${socketConnected ? 'is-connected' : ''}`} role="status">
+                    {socketConnected ? 'Đang kết nối realtime' : 'Đang dùng gửi dự phòng'}
+                  </span>
                 </div>
                 {chatMode === 'ai' && (
                   <div className="ai-chat-notice">
@@ -223,6 +258,7 @@ export default function MessagesPage() {
                 )}
                 <div className="messages-thread-body" ref={bodyRef}>
                   {messagesLoading && <p className="listing-status">Đang tải tin nhắn...</p>}
+                  {!messagesLoading && messagesError && <div className="listing-error" role="alert"><p>{messagesError}</p><button type="button" className="btn btn-outline" onClick={() => setMessagesRetry((value) => value + 1)}>Thử lại</button></div>}
                   {!messagesLoading &&
                     messages.map((message) => (
                       <div
@@ -242,8 +278,8 @@ export default function MessagesPage() {
                     value={body}
                     onChange={(event) => setBody(event.target.value)}
                   />
-                  <button type="submit" className="btn btn-primary" disabled={aiLoading}>
-                    {aiLoading ? 'AI đang trả lời...' : chatMode === 'ai' ? 'Hỏi AI' : 'Gửi'}
+                  <button type="submit" className="btn btn-primary" disabled={aiLoading || sending}>
+                    {aiLoading ? 'AI đang trả lời...' : sending ? 'Đang gửi...' : chatMode === 'ai' ? 'Hỏi AI' : 'Gửi'}
                   </button>
                 </form>
               </>

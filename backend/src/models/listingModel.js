@@ -12,7 +12,7 @@ async function findOwner(listingType, listingId) {
        u.full_name AS owner_name, u.avatar_url AS owner_avatar
      FROM ${config.table} l
      JOIN users u ON u.id = l.${config.ownerColumn}
-     WHERE l.id = ? AND l.deleted_at IS NULL
+    WHERE l.id = ? AND l.deleted_at IS NULL AND ${config.publicStatusSql}
      LIMIT 1`,
     [listingId]
   )

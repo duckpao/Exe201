@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { mockAdminUsers } from '../../data/mockAdminUsers.js'
+import { useEffect, useMemo, useState } from 'react'
+import { listAdminUsers } from '../../services/adminRepository.js'
 
 const STATUS_LABELS = { active: 'Hoạt động', locked: 'Đã khoá' }
 
@@ -7,10 +7,19 @@ const DEFAULT_USER_AVATAR =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='20' fill='%23fed7aa'/%3E%3Ccircle cx='20' cy='15' r='6' fill='%23ea580c'/%3E%3Cpath fill='%23ea580c' d='M9 33c0-6.1 4.9-11 11-11s11 4.9 11 11'/%3E%3C/svg%3E"
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState(mockAdminUsers)
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+
+  useEffect(() => {
+    listAdminUsers()
+      .then(setUsers)
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   const filteredUsers = useMemo(() => {
     const keyword = search.trim().toLowerCase()
@@ -41,7 +50,10 @@ export default function AdminUsersPage() {
     <div className="admin-page">
       <h1 className="admin-page-title">Quản lý người dùng</h1>
 
-      <div className="admin-filter-bar">
+      {loading && <p className="listing-status">Đang tải dữ liệu quản trị...</p>}
+      {!loading && error && <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="admin-action-btn" onClick={() => window.location.reload()}>Thử lại</button></div>}
+
+      {!loading && !error && <div className="admin-filter-bar">
         <input
           type="text"
           placeholder="Tìm theo tên hoặc email..."
@@ -60,9 +72,9 @@ export default function AdminUsersPage() {
           <option value="active">Hoạt động</option>
           <option value="locked">Đã khoá</option>
         </select>
-      </div>
+      </div>}
 
-      <section className="admin-table-card">
+      {!loading && !error && <section className="admin-table-card">
         <table className="admin-table">
           <thead>
             <tr>
@@ -120,7 +132,7 @@ export default function AdminUsersPage() {
             )}
           </tbody>
         </table>
-      </section>
+      </section>}
     </div>
   )
 }

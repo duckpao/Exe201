@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import ImageUploader from '../components/site/ImageUploader.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { createVehicle } from '../services/vehicleService.js'
 import '../styles/site.css'
-import { Camera, Lightbulb } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 
 // Khớp ENUM vehicles.vehicle_type trong database.sql
 const VEHICLE_TYPES = [
@@ -47,12 +48,6 @@ export default function PostTransportPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    return () => {
-      images.forEach((image) => URL.revokeObjectURL(image.url))
-    }
-  }, [images])
-
-  useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login')
     }
@@ -60,18 +55,6 @@ export default function PostTransportPage() {
 
   function toggleTag(tag) {
     setTags((prev) => (prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]))
-  }
-
-  function handleImageChange(event) {
-    const files = Array.from(event.target.files ?? [])
-    if (files.length === 0) return
-    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), file }))])
-    event.target.value = ''
-  }
-
-  function handleRemoveImage(url) {
-    setImages((prev) => prev.filter((image) => image.url !== url))
-    URL.revokeObjectURL(url)
   }
 
   async function handleSubmit(event) {
@@ -225,25 +208,8 @@ export default function PostTransportPage() {
 
             <h2 className="form-step-title">Mô tả chi tiết</h2>
             <div className="form-row">
-              <label>
-                Hình ảnh
-                <label className="upload-box">
-                  <span><Camera size={16} /> Kéo thả hoặc chọn ảnh để tải lên</span>
-                  <input type="file" accept="image/*" multiple onChange={handleImageChange} hidden />
-                </label>
-              </label>
-              {images.length > 0 && (
-                <div className="upload-preview-grid">
-                  {images.map((image) => (
-                    <div key={image.url} className="upload-preview-item">
-                      <img src={image.url} alt={image.file.name} />
-                      <button type="button" onClick={() => handleRemoveImage(image.url)} aria-label="Xoá ảnh">
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <span className="form-label">Hình ảnh</span>
+              <ImageUploader images={images} onChange={setImages} />
             </div>
             <div className="form-row">
               <textarea

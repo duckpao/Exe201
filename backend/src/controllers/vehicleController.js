@@ -42,7 +42,7 @@ async function listVehicles(request, response) {
 }
 
 async function getVehicle(request, response) {
-  const vehicle = await vehicleModel.findById(request.params.id)
+  const vehicle = await vehicleModel.findById(request.params.id, request.user?.id)
   if (!vehicle) {
     return response.status(404).json({ message: 'Không tìm thấy dịch vụ vận chuyển' })
   }
@@ -82,6 +82,14 @@ async function createVehicle(request, response) {
     return response.status(400).json({ message: 'Vui lòng nhập loại xe, tên xe và biển số' })
   }
 
+  const numericValues = [capacityKg, pricePerHour, pricePerTrip].filter((value) => value !== undefined && value !== null && value !== '')
+  if (numericValues.some((value) => !Number.isFinite(Number(value)) || Number(value) < 0)) {
+    return response.status(400).json({ message: 'Thông số tải trọng và giá phải là số không âm' })
+  }
+  if (pricePerHour === undefined && pricePerTrip === undefined) {
+    return response.status(400).json({ message: 'Vui lòng nhập giá theo giờ hoặc giá theo chuyến' })
+  }
+
   const parsedTags = tags ? (Array.isArray(tags) ? tags : String(tags).split(',').map((item) => item.trim())) : null
 
   const vehicleId = await vehicleModel.create({
@@ -115,9 +123,27 @@ async function createBooking(request, response) {
     return response.status(400).json({ message: 'Vui lòng nhập điểm đón, điểm trả và thời gian' })
   }
 
+  const scheduledDate = new Date(scheduledAt)
+  const hours = estimatedHours === undefined || estimatedHours === '' ? null : Number(estimatedHours)
+  if (Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+    return response.status(400).json({ message: 'Thời gian đặt xe phải là thời điểm hợp lệ trong tương lai' })
+  }
+  if (hours !== null && (!Number.isFinite(hours) || hours <= 0)) {
+    return response.status(400).json({ message: 'Số giờ thuê phải lớn hơn 0' })
+  }
+
   const vehicle = await vehicleModel.findById(request.params.id)
   if (!vehicle) {
     return response.status(404).json({ message: 'Không tìm thấy dịch vụ vận chuyển' })
+  }
+  if (vehicle.owner_id === request.user.id) {
+    return response.status(400).json({ message: 'Bạn không thể tự đặt dịch vụ của mình' })
+  }
+  const calculatedPrice = vehicle.price_per_hour && hours
+    ? Number(vehicle.price_per_hour) * hours
+    : Number(vehicle.price_per_trip || 0)
+  if (!calculatedPrice || calculatedPrice < 0) {
+    return response.status(400).json({ message: 'Dịch vụ này chưa có giá hợp lệ' })
   }
 
   const [pickupAddress, dropoffAddress] = await Promise.all([
@@ -131,8 +157,8 @@ async function createBooking(request, response) {
     pickupAddressId: pickupAddress.id,
     dropoffAddressId: dropoffAddress.id,
     scheduledAt,
-    estimatedHours: estimatedHours ? Number(estimatedHours) : null,
-    totalPrice: totalPrice ? Number(totalPrice) : null,
+    estimatedHours: hours,
+    totalPrice: calculatedPrice,
     note,
   })
 

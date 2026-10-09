@@ -17,14 +17,18 @@ export default function PostingPaymentPage() {
   const [checkoutInitialized, setCheckoutInitialized] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [returnNotice, setReturnNotice] = useState(null)
+  const [statusError, setStatusError] = useState('')
   const checkoutRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
-  const returnTo = new URLSearchParams(location.search).get('returnTo') || '/'
+  const returnTo = safeReturnPath(new URLSearchParams(location.search).get('returnTo'))
 
   useEffect(() => {
-    getPostingStatus().then(setStatus).catch((error) => toast.error(error.message)).finally(() => setLoading(false))
+    getPostingStatus()
+      .then(setStatus)
+      .catch((error) => setStatusError(error.message))
+      .finally(() => setLoading(false))
   }, [toast])
 
   useEffect(() => {
@@ -77,8 +81,8 @@ export default function PostingPaymentPage() {
           setReturnNotice({ type: 'pending', text: 'PayOS chưa gửi xác nhận thanh toán. Trạng thái sẽ cập nhật sau khi webhook đến.' })
         }
       })
-      .catch(() => {
-        if (!ignore) setReturnNotice({ type: 'pending', text: 'Chưa thể kiểm tra trạng thái. Bạn có thể kiểm tra lại sau.' })
+      .catch((error) => {
+        if (!ignore) setReturnNotice({ type: 'pending', text: error.message || 'Chưa thể kiểm tra trạng thái. Bạn có thể kiểm tra lại sau.' })
       })
     return () => {
       ignore = true
@@ -153,6 +157,7 @@ export default function PostingPaymentPage() {
             <p>Thanh toán chuyển khoản bảo mật qua payOS. Mỗi giao dịch thành công cấp một lượt đăng bài.</p>
           </div>
           {returnNotice && <div className={`payos-return-notice ${returnNotice.type}`} role="status">{returnNotice.text}</div>}
+          {statusError && <div className="listing-error" role="alert"><p>{statusError}</p><button type="button" className="btn btn-outline" onClick={() => window.location.reload()}>Thử lại</button></div>}
 
           {loading ? <p className="listing-status">Đang kiểm tra quyền đăng bài...</p> : !payment ? (
             <div className="payment-plan-card">
@@ -227,4 +232,9 @@ export default function PostingPaymentPage() {
       <SiteFooter />
     </div>
   )
+}
+
+function safeReturnPath(value) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/'
+  return value
 }

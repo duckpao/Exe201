@@ -1,5 +1,6 @@
 const paymentModel = require('../models/paymentModel')
 const payosService = require('../services/payosService')
+const { parsePagination, buildPagination } = require('../utils/pagination')
 
 const LISTING_FEE = Number(process.env.LISTING_FEE_VND) || 20000
 
@@ -92,4 +93,36 @@ async function confirmPayosWebhook(request, response) {
   response.json(data)
 }
 
-module.exports = { getPostingStatus, createPayosPayment, payosWebhook, getPayosStatus, confirmPayosWebhook }
+async function listSuccessfulPayments(request, response) {
+  const { page, limit, offset } = parsePagination(request.query, 20)
+  const listingType = request.query.listing_type || null
+  const result = await paymentModel.listSuccessfulForAdmin({ listingType, page, limit, offset })
+  response.json({
+    data: result.rows.map((row) => ({
+      id: row.id,
+      txnRef: row.txn_ref,
+      amount: Number(row.amount),
+      provider: row.provider,
+      providerOrderCode: row.provider_order_code,
+      providerTransaction: row.provider_transaction,
+      status: row.status,
+      paidAt: row.paid_at,
+      consumedAt: row.consumed_at,
+      listingType: row.listing_type || 'posting_credit',
+      listingId: row.listing_id,
+      user: { id: row.user_id, name: row.user_name, email: row.user_email },
+    })),
+    summary: {
+      transactionCount: Number(result.summary.transaction_count),
+      totalAmount: Number(result.summary.total_amount),
+    },
+    breakdown: result.breakdown.map((row) => ({
+      listingType: row.listing_type,
+      transactionCount: Number(row.transaction_count),
+      totalAmount: Number(row.total_amount),
+    })),
+    pagination: buildPagination({ page, limit, total: Number(result.summary.transaction_count) }),
+  })
+}
+
+module.exports = { getPostingStatus, createPayosPayment, payosWebhook, getPayosStatus, confirmPayosWebhook, listSuccessfulPayments }

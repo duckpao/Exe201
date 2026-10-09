@@ -1,31 +1,50 @@
-import { mockAdminUsers } from '../../data/mockAdminUsers.js'
-import { LISTING_TYPE_LABELS, mockAdminListings } from '../../data/mockAdminListings.js'
+import { useEffect, useState } from 'react'
+import { listAdminListings, listAdminUsers } from '../../services/adminRepository.js'
 import { Users, FolderOpen, Hourglass, Lock } from 'lucide-react';
 
 const ROLE_LABELS = { tenant: 'Người thuê', landlord: 'Chủ trọ', admin: 'Quản trị viên' }
 
 export default function AdminOverviewPage() {
-  const totalUsers = mockAdminUsers.length
-  const lockedUsers = mockAdminUsers.filter((user) => user.status === 'locked').length
-  const totalListings = mockAdminListings.length
-  const pendingListings = mockAdminListings.filter((item) => item.moderationStatus === 'pending').length
+  const [users, setUsers] = useState([])
+  const [listings, setListings] = useState([])
+  const [listingTypeLabels, setListingTypeLabels] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const listingsByType = Object.keys(LISTING_TYPE_LABELS).map((type) => ({
+  useEffect(() => {
+    Promise.all([listAdminUsers(), listAdminListings()])
+      .then(([adminUsers, adminListings]) => {
+        setUsers(adminUsers)
+        setListings(adminListings.listings)
+        setListingTypeLabels(adminListings.typeLabels)
+      })
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const totalUsers = users.length
+  const lockedUsers = users.filter((user) => user.status === 'locked').length
+  const totalListings = listings.length
+  const pendingListings = listings.filter((item) => item.moderationStatus === 'pending').length
+
+  const listingsByType = Object.keys(listingTypeLabels).map((type) => ({
     type,
-    label: LISTING_TYPE_LABELS[type],
-    count: mockAdminListings.filter((item) => item.type === type).length,
+    label: listingTypeLabels[type],
+    count: listings.filter((item) => item.type === type).length,
   }))
   const maxCount = Math.max(...listingsByType.map((item) => item.count), 1)
 
-  const recentUsers = [...mockAdminUsers]
+  const recentUsers = [...users]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5)
 
   return (
     <div className="admin-page">
       <h1 className="admin-page-title">Tổng quan</h1>
+      {loading && <p className="listing-status">Đang tải dữ liệu quản trị...</p>}
+      {!loading && error && <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="admin-action-btn" onClick={() => window.location.reload()}>Thử lại</button></div>}
 
-      <div className="stat-grid">
+      {!loading && !error && <div className="stat-grid">
         <div className="stat-card">
           <span className="stat-card-icon"><Users size={16} /></span>
           <div className="stat-card-value">{totalUsers}</div>
@@ -46,9 +65,9 @@ export default function AdminOverviewPage() {
           <div className="stat-card-value">{lockedUsers}</div>
           <div className="stat-card-label">Tài khoản bị khoá</div>
         </div>
-      </div>
+      </div>}
 
-      <div className="admin-grid-2">
+      {!loading && !error && <div className="admin-grid-2">
         <section className="admin-table-card">
           <h2 className="admin-card-title">Tin đăng theo loại</h2>
           <div className="admin-bar-chart">
@@ -90,7 +109,7 @@ export default function AdminOverviewPage() {
             </tbody>
           </table>
         </section>
-      </div>
+      </div>}
     </div>
   )
 }

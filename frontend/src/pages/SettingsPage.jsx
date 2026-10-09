@@ -4,22 +4,22 @@ import { useAuth } from '../context/AuthContext.jsx'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
+import { listFavorites, removeFavorite } from '../services/favoriteService.js'
+import { changePassword, deleteMyListing, listMyListings, updateMyListing, updateProfile } from '../services/userService.js'
 import { Pencil, Trash2, HeartOff } from 'lucide-react'
 import '../styles/site.css'
-
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 function FavoriteList() {
   const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const fetchFavorites = () => {
     setLoading(true)
-    fetch(`${apiUrl}/api/favorites`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.data) setFavorites(d.data)
-      })
+    setError('')
+    listFavorites()
+      .then((data) => setFavorites(data.data || []))
+      .catch((requestError) => setError(requestError.message))
       .finally(() => setLoading(false))
   }
 
@@ -29,17 +29,15 @@ function FavoriteList() {
 
   const handleUnfavorite = async (entityType, entityId) => {
     try {
-      await fetch(`${apiUrl}/api/favorites/${entityType}/${entityId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
+      await removeFavorite(entityType, entityId)
       setFavorites((prev) => prev.filter((f) => !(f.entityType === entityType && f.entityId === entityId)))
-    } catch (e) {
-      alert('Không thể bỏ lưu, vui lòng thử lại.')
+    } catch (requestError) {
+      setError(requestError.message || 'Không thể bỏ lưu, vui lòng thử lại.')
     }
   }
 
   if (loading) return <p>Đang tải...</p>
+  if (error) return <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="btn btn-outline" onClick={fetchFavorites}>Thử lại</button></div>
   if (favorites.length === 0) return <p>Bạn chưa lưu bài đăng nào.</p>
 
   return (
@@ -103,17 +101,10 @@ function ListingEditForm({ item, onCancel, onSaved }) {
     setSaving(true)
     setError('')
     try {
-      const res = await fetch(`${apiUrl}/api/users/listings/${item.type}/${item.id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
+      const data = await updateMyListing(item.type, item.id, values)
       onSaved(data.listing)
-    } catch (err) {
-      setError(err.message)
+    } catch (requestError) {
+      setError(requestError.message)
     } finally {
       setSaving(false)
     }
@@ -169,14 +160,14 @@ function MyListingsList() {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingKey, setEditingKey] = useState(null)
+  const [error, setError] = useState('')
 
   const fetchListings = () => {
     setLoading(true)
-    fetch(`${apiUrl}/api/users/listings`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.data) setListings(d.data)
-      })
+    setError('')
+    listMyListings()
+      .then((data) => setListings(data.data || []))
+      .catch((requestError) => setError(requestError.message))
       .finally(() => setLoading(false))
   }
 
@@ -187,17 +178,10 @@ function MyListingsList() {
   const handleDelete = async (type, id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa bài đăng này?')) return
     try {
-      const res = await fetch(`${apiUrl}/api/users/listings/${type}/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message)
-      }
+      await deleteMyListing(type, id)
       fetchListings()
-    } catch (e) {
-      alert(e.message)
+    } catch (requestError) {
+      setError(requestError.message)
     }
   }
 
@@ -211,6 +195,7 @@ function MyListingsList() {
   }
 
   if (loading) return <p>Đang tải...</p>
+  if (error) return <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="btn btn-outline" onClick={fetchListings}>Thử lại</button></div>
   if (listings.length === 0) return <p>Bạn chưa đăng bài nào.</p>
 
   return (
@@ -267,7 +252,7 @@ function MyListingsList() {
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth() // Assuming we might need to refresh user or we can use a custom update function
+  const { user, refreshUser } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   const [fullName, setFullName] = useState(user?.full_name || '')
   const [phone, setPhone] = useState(user?.phone || '')
@@ -299,14 +284,10 @@ export default function SettingsPage() {
     if (avatarFile) formData.append('avatar', avatarFile)
 
     try {
-      const response = await fetch(`${apiUrl}/api/users/profile`, { credentials: 'include',
-        method: 'PUT',
-        body: formData,
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message)
+      const data = await updateProfile(formData)
+      await refreshUser()
       setMessage({ type: 'success', text: 'Cập nhật hồ sơ thành công!' })
-      setTimeout(() => window.location.reload(), 1500) // Reload to get updated context
+      setAvatarPreview(data.user?.avatar_url || avatarPreview)
     } catch (err) {
       setMessage({ type: 'error', text: err.message })
     } finally {
@@ -319,13 +300,7 @@ export default function SettingsPage() {
     setLoading(true)
     setMessage({ type: '', text: '' })
     try {
-      const response = await fetch(`${apiUrl}/api/users/password`, { credentials: 'include',
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPassword, newPassword }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message)
+      await changePassword(oldPassword, newPassword)
       setMessage({ type: 'success', text: 'Đổi mật khẩu thành công!' })
       setOldPassword('')
       setNewPassword('')
@@ -344,11 +319,17 @@ export default function SettingsPage() {
           <aside className="settings-sidebar">
             <h3>Cài đặt</h3>
             <ul>
-              <li className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>Hồ sơ cá nhân</li>
-              <li className={activeTab === 'password' ? 'active' : ''} onClick={() => setActiveTab('password')}>Bảo mật &amp; Mật khẩu</li>
-              <li className={activeTab === 'listings' ? 'active' : ''} onClick={() => setActiveTab('listings')}>Bài đăng của tôi</li>
-              <li className={activeTab === 'favorites' ? 'active' : ''} onClick={() => setActiveTab('favorites')}>Đã lưu (Yêu thích)</li>
-              <li className={activeTab === 'system' ? 'active' : ''} onClick={() => setActiveTab('system')}>Hệ thống (Thông báo)</li>
+              {[
+                ['profile', 'Hồ sơ cá nhân'],
+                ['password', 'Bảo mật & Mật khẩu'],
+                ['listings', 'Bài đăng của tôi'],
+                ['favorites', 'Đã lưu (Yêu thích)'],
+                ['system', 'Hệ thống (Thông báo)'],
+              ].map(([tab, label]) => (
+                <li key={tab} className={activeTab === tab ? 'active' : ''}>
+                  <button type="button" aria-current={activeTab === tab ? 'page' : undefined} onClick={() => setActiveTab(tab)}>{label}</button>
+                </li>
+              ))}
             </ul>
           </aside>
 

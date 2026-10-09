@@ -60,6 +60,9 @@ async function changePassword(request, response) {
   const userId = request.user.id
 
   try {
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      return response.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 8 ký tự' })
+    }
     const user = await userModel.findById(userId)
     if (!user) return response.status(404).json({ message: 'User not found' })
 

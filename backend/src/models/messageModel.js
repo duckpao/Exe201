@@ -12,7 +12,9 @@ async function create({ conversationId, senderId = null, senderType = 'user', me
 
 async function listByConversation(conversationId, { limit = 50 } = {}) {
   const [rows] = await pool.query(
-    'SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC, id ASC LIMIT ?',
+    `SELECT * FROM (
+       SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at DESC, id DESC LIMIT ?
+     ) recent ORDER BY created_at ASC, id ASC`,
     [conversationId, limit]
   )
   return rows

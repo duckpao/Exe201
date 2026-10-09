@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext.jsx'
 import PlaceholderImage from '../site/PlaceholderImage.jsx'
 import '../../styles/admin.css'
-import { BarChart, Users, FolderOpen } from 'lucide-react';
+import { BarChart, Users, FolderOpen, WalletCards } from 'lucide-react';
 
 const DEFAULT_USER_AVATAR =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='20' fill='%23fed7aa'/%3E%3Ccircle cx='20' cy='15' r='6' fill='%23ea580c'/%3E%3Cpath fill='%23ea580c' d='M9 33c0-6.1 4.9-11 11-11s11 4.9 11 11'/%3E%3C/svg%3E"
@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: '/admin', label: 'Tổng quan', icon: <BarChart size={16} />, end: true },
   { to: '/admin/users', label: 'Người dùng', icon: <Users size={16} /> },
   { to: '/admin/listings', label: 'Tin đăng', icon: <FolderOpen size={16} /> },
+  { to: '/admin/payments', label: 'Dòng tiền', icon: <WalletCards size={16} /> },
 ]
 
 export default function AdminLayout() {

@@ -39,7 +39,7 @@ async function listItems(request, response) {
 }
 
 async function getItem(request, response) {
-  const item = await itemModel.findById(request.params.id)
+  const item = await itemModel.findById(request.params.id, request.user?.id)
   if (!item) {
     return response.status(404).json({ message: 'Không tìm thấy đồ pass' })
   }

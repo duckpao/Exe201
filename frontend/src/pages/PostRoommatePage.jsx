@@ -4,12 +4,13 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import LocationSelect from '../components/site/LocationSelect.jsx'
+import ImageUploader from '../components/site/ImageUploader.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
 import { createRoommate } from '../services/roommateService.js'
 import '../styles/site.css'
-import { ShieldCheck, Zap, Camera, Lightbulb, Target, MessageSquare, Send } from 'lucide-react';
+import { ShieldCheck, Zap, Lightbulb, Target, MessageSquare, Send } from 'lucide-react';
 
 const GENDERS = ['Nam', 'Nữ', 'Không yêu cầu']
 
@@ -54,28 +55,10 @@ export default function PostRoommatePage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    return () => {
-      images.forEach((image) => URL.revokeObjectURL(image.url))
-    }
-  }, [images])
-
-  useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login')
     }
   }, [authLoading, user, navigate])
-
-  function handleImageChange(event) {
-    const files = Array.from(event.target.files ?? [])
-    if (files.length === 0) return
-    setImages((prev) => [...prev, ...files.map((file) => ({ url: URL.createObjectURL(file), file }))])
-    event.target.value = ''
-  }
-
-  function handleRemoveImage(url) {
-    setImages((prev) => prev.filter((image) => image.url !== url))
-    URL.revokeObjectURL(url)
-  }
 
   function handlePreviewScroll() {
     previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -247,22 +230,7 @@ export default function PostRoommatePage() {
             </div>
             <div className="form-row">
               <span className="form-label">Hình ảnh</span>
-              <label className="upload-box">
-                <span><Camera size={16} /> Kéo thả hoặc chọn ảnh để tải lên</span>
-                <input type="file" accept="image/*" multiple onChange={handleImageChange} hidden />
-              </label>
-              {images.length > 0 && (
-                <div className="upload-preview-grid">
-                  {images.map((image) => (
-                    <div key={image.url} className="upload-preview-item">
-                      <img src={image.url} alt={image.file.name} />
-                      <button type="button" onClick={() => handleRemoveImage(image.url)} aria-label="Xoá ảnh">
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ImageUploader images={images} onChange={setImages} />
             </div>
 
             <h2 className="form-step-title">3. Thời gian đăng tin</h2>

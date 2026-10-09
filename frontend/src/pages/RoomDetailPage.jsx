@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import ImageGallery from '../components/site/ImageGallery.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
+import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
 import { getRoom } from '../services/roomService.js'
-import { startConversation } from '../services/conversationService.js'
 import '../styles/site.css'
 import { Star, MapPin, BadgeDollarSign, Home, Maximize, Bed, Bath, Armchair } from 'lucide-react';
 
@@ -22,13 +21,9 @@ const QUICK_FACTS = (room) => [
 
 export default function RoomDetailPage() {
   const { roomId } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuth()
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [contactError, setContactError] = useState('')
-  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -47,23 +42,6 @@ export default function RoomDetailPage() {
       ignore = true
     }
   }, [roomId])
-
-  async function handleMessage() {
-    if (!user) {
-      navigate('/login')
-      return
-    }
-    setContactError('')
-    setStarting(true)
-    try {
-      const conversation = await startConversation('room', room.id)
-      navigate(`/tin-nhan/${conversation.id}`)
-    } catch (err) {
-      setContactError(err.message)
-    } finally {
-      setStarting(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -149,16 +127,13 @@ export default function RoomDetailPage() {
                   <span><Bed size={16} /> {room.bedrooms} PN</span>
                   <span><Bath size={16} /> {room.bathrooms} WC</span>
                 </div>
-                {contactError && <p className="banner banner-error visible">{contactError}</p>}
                 <div className="price-actions">
                   {room.owner.phone ? (
                     <a href={`tel:${room.owner.phone}`} className="btn btn-primary">
                       Liên hệ ngay
                     </a>
                   ) : null}
-                  <button type="button" className="btn btn-outline" onClick={handleMessage} disabled={starting}>
-                    {starting ? 'Đang mở...' : 'Nhắn tin'}
-                  </button>
+                  <MessageOwnerButton listingType="room" listingId={room.id} ownerId={room.owner.id} />
                   <FavoriteButton entityType="room" entityId={room.id} />
                 </div>
               </div>

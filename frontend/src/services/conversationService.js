@@ -1,32 +1,11 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { getJson, postJson } from './api.js'
 
-async function handleJson(response) {
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.message || `Request failed: ${response.status}`)
-  return data
+export function listConversations(options = {}) {
+  return getJson('/api/conversations', {}, options)
 }
 
-async function getJson(path) {
-  const response = await fetch(`${apiUrl}${path}`, { credentials: 'include' })
-  return handleJson(response)
-}
-
-async function postJson(path, body) {
-  const response = await fetch(`${apiUrl}${path}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  return handleJson(response)
-}
-
-export function listConversations() {
-  return getJson('/api/conversations')
-}
-
-export function getAiStatus() {
-  return getJson('/api/conversations/ai-status')
+export function getAiStatus(options = {}) {
+  return getJson('/api/conversations/ai-status', {}, options)
 }
 
 // listingType: 'room' | 'roommate' | 'pass_room' | 'item' | 'vehicle'
@@ -34,8 +13,8 @@ export function startConversation(listingType, listingId) {
   return postJson('/api/conversations', { listingType, listingId })
 }
 
-export function getMessages(conversationId) {
-  return getJson(`/api/conversations/${conversationId}/messages`)
+export function getMessages(conversationId, options = {}) {
+  return getJson(`/api/conversations/${conversationId}/messages`, {}, options)
 }
 
 export function sendMessageHttp(conversationId, body) {

@@ -68,6 +68,46 @@ async function consumeCredit({ paymentId, userId, listingType, listingId }) {
   return result.affectedRows === 1
 }
 
+async function listSuccessfulForAdmin({ listingType, page, limit, offset }) {
+  const where = ["lp.status = 'paid'"]
+  const params = []
+  if (listingType === 'posting_credit') {
+    where.push('lp.listing_type IS NULL')
+  } else if (listingType) {
+    where.push('lp.listing_type = ?')
+    params.push(listingType)
+  }
+
+  const whereSql = where.join(' AND ')
+  const [rows] = await pool.query(
+    `SELECT lp.id, lp.txn_ref, lp.amount, lp.provider, lp.provider_order_code,
+            lp.provider_transaction, lp.status, lp.paid_at, lp.consumed_at,
+            lp.listing_type, lp.listing_id, lp.created_at,
+            u.id AS user_id, u.full_name AS user_name, u.email AS user_email
+     FROM listing_payments lp
+     JOIN users u ON u.id = lp.user_id
+     WHERE ${whereSql}
+     ORDER BY COALESCE(lp.paid_at, lp.created_at) DESC, lp.id DESC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  )
+  const [[summary]] = await pool.query(
+    `SELECT COUNT(*) AS transaction_count, COALESCE(SUM(lp.amount), 0) AS total_amount
+     FROM listing_payments lp WHERE ${whereSql}`,
+    params
+  )
+  const [breakdown] = await pool.query(
+    `SELECT COALESCE(lp.listing_type, 'posting_credit') AS listing_type,
+            COUNT(*) AS transaction_count, COALESCE(SUM(lp.amount), 0) AS total_amount
+     FROM listing_payments lp WHERE ${whereSql}
+     GROUP BY COALESCE(lp.listing_type, 'posting_credit')
+     ORDER BY total_amount DESC`,
+    params
+  )
+
+  return { rows, summary, breakdown, page, limit, totalPages: Math.max(1, Math.ceil(Number(summary.transaction_count) / limit)) }
+}
+
 module.exports = {
   getPostingAccess,
   createPending,
@@ -76,4 +116,5 @@ module.exports = {
   markResult,
   markPayosResult,
   consumeCredit,
+  listSuccessfulForAdmin,
 }

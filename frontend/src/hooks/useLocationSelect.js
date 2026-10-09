@@ -7,6 +7,7 @@ export function useLocationSelect() {
   const [provinces, setProvinces] = useState([])
   const [provincesLoading, setProvincesLoading] = useState(true)
   const [provincesError, setProvincesError] = useState('')
+  const [provincesRetry, setProvincesRetry] = useState(0)
   const [provinceCode, setProvinceCode] = useState('')
   const [wards, setWards] = useState([])
   const [wardsLoading, setWardsLoading] = useState(false)
@@ -29,7 +30,7 @@ export function useLocationSelect() {
     return () => {
       ignore = true
     }
-  }, [])
+  }, [provincesRetry])
 
   useEffect(() => {
     if (!provinceCode) {
@@ -78,6 +79,7 @@ export function useLocationSelect() {
     setWardCode,
     selectedProvince,
     selectedWard,
+    retryProvinces: () => setProvincesRetry((value) => value + 1),
     appendTo,
   }
 }

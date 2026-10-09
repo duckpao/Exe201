@@ -1,27 +1,17 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { getJson, postJson } from './api.js'
 
-async function handleJson(response) {
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const error = new Error(data.message || `Request failed: ${response.status}`)
-    error.code = data.code
-    error.status = response.status
-    throw error
-  }
-  return data
+export function listAdminTransactions(query = {}, options = {}) {
+  return getJson('/api/payments/admin/transactions', query, options)
 }
 
-export async function getPostingStatus() {
-  return handleJson(await fetch(`${apiUrl}/api/payments/posting-status`, { credentials: 'include' }))
+export function getPostingStatus(options = {}) {
+  return getJson('/api/payments/posting-status', {}, options)
 }
 
-export async function createPayosPayment() {
-  return handleJson(await fetch(`${apiUrl}/api/payments/payos/create`, {
-    method: 'POST',
-    credentials: 'include',
-  }))
+export function createPayosPayment(options = {}) {
+  return postJson('/api/payments/payos/create', {}, options)
 }
 
-export async function getPayosPaymentStatus(orderCode) {
-  return handleJson(await fetch(`${apiUrl}/api/payments/payos/status/${orderCode}`, { credentials: 'include' }))
+export function getPayosPaymentStatus(orderCode, options = {}) {
+  return getJson(`/api/payments/payos/status/${orderCode}`, {}, options)
 }

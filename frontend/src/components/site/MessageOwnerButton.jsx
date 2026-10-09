@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { startConversation } from '../../services/conversationService.js'
 
@@ -8,6 +8,7 @@ import { startConversation } from '../../services/conversationService.js'
 function MessageOwnerButton({ listingType, listingId, ownerId, className = 'btn btn-outline' }) {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [error, setError] = useState('')
   const [starting, setStarting] = useState(false)
 
@@ -16,7 +17,7 @@ function MessageOwnerButton({ listingType, listingId, ownerId, className = 'btn 
 
   async function handleClick() {
     if (!user) {
-      navigate('/login')
+      navigate('/login', { state: { from: `${location.pathname}${location.search}` } })
       return
     }
     setError('')

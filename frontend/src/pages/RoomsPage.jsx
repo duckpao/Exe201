@@ -1,52 +1,91 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import FilterSidebar from '../components/site/FilterSidebar.jsx'
 import RoomCard from '../components/site/RoomCard.jsx'
+import Button from '../components/foundation/Button.jsx'
+import EmptyState from '../components/foundation/EmptyState.jsx'
+import LoadingState from '../components/foundation/LoadingState.jsx'
 import { listRooms } from '../services/roomService.js'
 import '../styles/site.css'
 
 const FILTER_GROUPS = [
-  { title: 'Giá thuê', type: 'range', min: 'Tối thiểu', max: 'Tối đa' },
-  { title: 'Loại phòng', type: 'checkbox', options: ['Phòng trọ', 'Chung cư mini', 'Nhà nguyên căn'] },
-  { title: 'Diện tích', type: 'checkbox', options: ['Dưới 20m²', '20 - 30m²', 'Trên 30m²'] },
-  { title: 'Tiện ích', type: 'checkbox', options: ['Full nội thất', 'Có ban công', 'Có gác lửng', 'Có điều hòa'] },
+  { title: 'Giá thuê / tháng', type: 'range', min: 'Từ', max: 'Đến', minKey: 'price_min', maxKey: 'price_max' },
+  { title: 'Loại phòng', key: 'property_type', type: 'checkbox', options: [
+    { label: 'Phòng trọ', value: 'phong_tro' },
+    { label: 'Chung cư mini', value: 'chung_cu_mini' },
+    { label: 'Nhà nguyên căn', value: 'nha_nguyen_can' },
+  ] },
+  { title: 'Diện tích', type: 'range', min: 'Từ m²', max: 'Đến m²', minKey: 'area_min', maxKey: 'area_max' },
+  { title: 'Tiện ích', key: 'amenities', type: 'checkbox', options: [
+    { label: 'Full nội thất', value: 'Full nội thất' },
+    { label: 'Có ban công', value: 'Có ban công' },
+    { label: 'Có gác lửng', value: 'Có gác lửng' },
+    { label: 'Có điều hòa', value: 'Có điều hòa' },
+  ] },
 ]
 
 export default function RoomsPage() {
-  const [keyword, setKeyword] = useState('')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search])
+  const [searchInput, setSearchInput] = useState(params.get('keyword') || '')
   const [rooms, setRooms] = useState([])
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [filterValues, setFilterValues] = useState(() => readFilterValues(params))
+
+  const query = useMemo(() => Object.fromEntries(params.entries()), [params])
 
   useEffect(() => {
-    let ignore = false
+    setSearchInput(params.get('keyword') || '')
+    setFilterValues(readFilterValues(params))
+  }, [params])
+
+  useEffect(() => {
+    const controller = new AbortController()
     setLoading(true)
-    listRooms()
+    setError('')
+    listRooms({ ...query, limit: 9 }, { signal: controller.signal })
       .then((data) => {
-        if (!ignore) setRooms(data.data || [])
+        setRooms(data.data || [])
+        setPagination(data.pagination || { page: 1, totalPages: 1, total: 0 })
       })
       .catch((err) => {
-        if (!ignore) setError(err.message)
+        if (err.name !== 'AbortError') setError(err.message || 'Không thể tải danh sách phòng.')
       })
       .finally(() => {
-        if (!ignore) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       })
-    return () => {
-      ignore = true
-    }
-  }, [])
+    return () => controller.abort()
+  }, [query])
 
-  const [sortBy, setSortBy] = useState('newest')
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updateQuery({ keyword: searchInput.trim() || null, page: 1 })
+    }, 350)
+    return () => clearTimeout(timeoutId)
+  }, [searchInput])
 
-  const sortedRooms = [...rooms].sort((a, b) => {
-    // a.price is string like "2.000.000/tháng", so we parse it
-    const priceA = parseInt(a.price.replace(/\D/g, '')) || 0
-    const priceB = parseInt(b.price.replace(/\D/g, '')) || 0
-    if (sortBy === 'price_asc') return priceA - priceB
-    if (sortBy === 'price_desc') return priceB - priceA
-    return 0 // 'newest' uses default API order
-  })
+  function updateQuery(changes) {
+    const next = new URLSearchParams(location.search)
+    Object.entries(changes).forEach(([key, value]) => {
+      if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) next.delete(key)
+      else next.set(key, Array.isArray(value) ? value.join(',') : String(value))
+    })
+    navigate({ search: next.toString() }, { replace: true })
+  }
+
+  function applyFilters() {
+    updateQuery({ ...filterValues, page: 1 })
+  }
+
+  function resetFilters() {
+    setFilterValues({ amenities: [], property_type: [], price_min: '', price_max: '', area_min: '', area_max: '' })
+    navigate({ search: query.keyword ? `?keyword=${encodeURIComponent(query.keyword)}` : '' }, { replace: true })
+  }
 
   return (
     <div className="site-page">
@@ -54,53 +93,56 @@ export default function RoomsPage() {
       <main className="site-main">
         <section className="listing-page-hero">
           <div className="listing-page-hero-inner">
-            <h1>Phòng trọ</h1>
-            <p>Tìm phòng trọ phù hợp với nhu cầu và ngân sách của bạn.</p>
-            <form
-              className="listing-search-bar"
-              onSubmit={(event) => event.preventDefault()}
-            >
+            <h1>Tìm phòng trọ theo cách dễ scan hơn</h1>
+            <p>Giá, diện tích và tiện ích được gom lại để bạn lọc nhanh rồi xem chi tiết.</p>
+            <form className="listing-search-bar" onSubmit={(event) => { event.preventDefault(); updateQuery({ keyword: searchInput.trim() || null, page: 1 }) }}>
               <input
                 type="text"
+                aria-label="Tìm phòng trọ"
                 placeholder="Tìm theo khu vực, tên đường..."
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
               />
-              <button type="submit">Tìm kiếm</button>
+              <Button type="submit">Tìm kiếm</Button>
             </form>
           </div>
         </section>
 
         <div className="listing-page-body">
-          <FilterSidebar groups={FILTER_GROUPS} />
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 20, margin: 0 }}>Kết quả tìm kiếm</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <label style={{ fontWeight: 500, color: '#555' }}>Sắp xếp:</label>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: 8, outline: 'none' }}
-                >
-                  <option value="newest">Mới nhất</option>
-                  <option value="price_asc">Giá: Thấp đến cao</option>
-                  <option value="price_desc">Giá: Cao đến thấp</option>
-                </select>
+          <FilterSidebar
+            groups={FILTER_GROUPS}
+            values={filterValues}
+            onChange={(key, value) => setFilterValues((current) => ({ ...current, [key]: value }))}
+            onApply={applyFilters}
+            onReset={resetFilters}
+          />
+          <div className="listing-results">
+            <div className="listing-results-heading">
+              <div>
+                <h2>Kết quả phòng trọ</h2>
+                <p>{pagination.total || 0} tin đang hiển thị</p>
               </div>
+              <span className="sort-note">Đang xem: mới nhất</span>
             </div>
 
-            {loading && <p className="listing-status">Đang tải danh sách phòng trọ...</p>}
-            {!loading && error && <p className="listing-status listing-status-error">{error}</p>}
-            {!loading && !error && sortedRooms.length === 0 && (
-              <p className="listing-status">Chưa có phòng trọ nào được đăng.</p>
+            {loading && <LoadingState label="Đang tải danh sách phòng trọ..." />}
+            {!loading && error && <div className="listing-error" role="alert"><p>{error}</p><Button variant="secondary" onClick={() => navigate({ search: location.search })}>Thử lại</Button></div>}
+            {!loading && !error && rooms.length === 0 && (
+              <EmptyState title="Chưa có phòng phù hợp" description="Thử bỏ bớt một bộ lọc hoặc tìm theo khu vực khác." action={<Button variant="secondary" onClick={resetFilters}>Xóa bộ lọc</Button>} />
             )}
-            {!loading && !error && sortedRooms.length > 0 && (
+            {!loading && !error && rooms.length > 0 && (
+              <>
               <div className="listing-grid">
-                {sortedRooms.map((room) => (
+                {rooms.map((room) => (
                   <RoomCard key={room.id} room={room} />
                 ))}
               </div>
+              {pagination.totalPages > 1 && <nav className="listing-pagination" aria-label="Phân trang phòng trọ">
+                <Button variant="secondary" disabled={pagination.page <= 1} onClick={() => updateQuery({ page: pagination.page - 1 })}>Trang trước</Button>
+                <span>Trang {pagination.page} / {pagination.totalPages}</span>
+                <Button variant="secondary" disabled={pagination.page >= pagination.totalPages} onClick={() => updateQuery({ page: pagination.page + 1 })}>Trang sau</Button>
+              </nav>}
+              </>
             )}
           </div>
         </div>
@@ -108,4 +150,15 @@ export default function RoomsPage() {
       <SiteFooter />
     </div>
   )
+}
+
+function readFilterValues(params) {
+  return {
+    price_min: params.get('price_min') || '',
+    price_max: params.get('price_max') || '',
+    area_min: params.get('area_min') || '',
+    area_max: params.get('area_max') || '',
+    property_type: params.get('property_type') ? params.get('property_type').split(',') : [],
+    amenities: params.get('amenities') ? params.get('amenities').split(',') : [],
+  }
 }

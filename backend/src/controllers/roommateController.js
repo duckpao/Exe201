@@ -41,7 +41,7 @@ async function listRoommates(request, response) {
 }
 
 async function getRoommate(request, response) {
-  const roommate = await roommateModel.findById(request.params.id)
+  const roommate = await roommateModel.findById(request.params.id, request.user?.id)
   if (!roommate) {
     return response.status(404).json({ message: 'Không tìm thấy bài đăng tìm roommate' })
   }

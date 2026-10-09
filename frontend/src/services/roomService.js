@@ -1,35 +1,13 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { getJson, postJson } from './api.js'
 
-async function handleJson(response) {
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const error = new Error(data.message || `Request failed: ${response.status}`)
-    error.status = response.status
-    error.code = data.code
-    throw error
-  }
-  return data
-}
-
-export async function listRooms(query = {}) {
-  const params = new URLSearchParams()
-  Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') params.set(key, value)
-  })
-  const response = await fetch(`${apiUrl}/api/rooms?${params.toString()}`, { credentials: 'include' })
-  return handleJson(response)
+export async function listRooms(query = {}, options = {}) {
+  return getJson('/api/rooms', query, options)
 }
 
 export async function getRoom(id) {
-  const response = await fetch(`${apiUrl}/api/rooms/${id}`, { credentials: 'include' })
-  return handleJson(response)
+  return getJson(`/api/rooms/${id}`)
 }
 
 export async function createRoom(formData) {
-  const response = await fetch(`${apiUrl}/api/rooms`, {
-    method: 'POST',
-    credentials: 'include',
-    body: formData,
-  })
-  return handleJson(response)
+  return postJson('/api/rooms', formData)
 }

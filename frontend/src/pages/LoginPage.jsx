@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
 import { useToast } from '../context/ToastContext.jsx'
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [googleUnavailable, setGoogleUnavailable] = useState(false)
   const googleButtonRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, loginWithGoogle } = useAuth()
   const toast = useToast()
 
@@ -49,6 +50,10 @@ export default function LoginPage() {
   }, [])
 
   function handleSuccessfulLogin(user) {
+    if (location.state?.from) {
+      navigate(location.state.from, { replace: true })
+      return
+    }
     if (user?.role === 'admin') {
       navigate('/admin')
     } else if (user?.role === 'landlord') {

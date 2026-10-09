@@ -29,54 +29,60 @@ import AdminLoginPage from './pages/admin/AdminLoginPage.jsx'
 import AdminOverviewPage from './pages/admin/AdminOverviewPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
 import AdminListingsPage from './pages/admin/AdminListingsPage.jsx'
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx'
 import AdminRoute from './components/admin/AdminRoute.jsx'
 import { AdminAuthProvider } from './context/AdminAuthContext.jsx'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/phong-tro" element={<RoomsPage />} />
-      <Route path="/phong-tro/dang-bai" element={<PostRoomPage />} />
-      <Route path="/phong-tro/:roomId" element={<RoomDetailPage />} />
-      <Route path="/tim-roommate" element={<RoommatesPage />} />
-      <Route path="/tim-roommate/dang-bai" element={<PostRoommatePage />} />
-      <Route path="/tim-roommate/:roommateId" element={<RoommateDetailPage />} />
-      <Route path="/van-chuyen-do" element={<TransportPage />} />
-      <Route path="/van-chuyen-do/dang-bai" element={<PostTransportPage />} />
-      <Route path="/van-chuyen-do/:vehicleId" element={<TransportDetailPage />} />
-      <Route path="/pass-phong" element={<PassRoomsPage />} />
-      <Route path="/pass-phong/dang-bai" element={<PostPassRoomPage />} />
-      <Route path="/pass-phong/:roomId" element={<PassRoomDetailPage />} />
-      <Route path="/pass-do" element={<PassItemsPage />} />
-      <Route path="/pass-do/dang-bai" element={<PostPassItemPage />} />
-      <Route path="/pass-do/:itemId" element={<PassItemDetailPage />} />
-      <Route path="/gioi-thieu" element={<AboutUsPage />} />
-      <Route path="/dieu-khoan" element={<TermsOfUsePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/dang-ky" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/tin-nhan" element={<MessagesPage />} />
-      <Route path="/tin-nhan/:conversationId" element={<MessagesPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/thanh-toan/dang-bai" element={<PostingPaymentPage />} />
-      <Route path="/thanh-toan/ket-qua" element={<PaymentResultPage />} />
+    <div className="app-shell">
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/phong-tro" element={<RoomsPage />} />
+          <Route path="/phong-tro/dang-bai" element={<PostRoomPage />} />
+          <Route path="/phong-tro/:roomId" element={<RoomDetailPage />} />
+          <Route path="/tim-roommate" element={<RoommatesPage />} />
+          <Route path="/tim-roommate/dang-bai" element={<PostRoommatePage />} />
+          <Route path="/tim-roommate/:roommateId" element={<RoommateDetailPage />} />
+          <Route path="/van-chuyen-do" element={<TransportPage />} />
+          <Route path="/van-chuyen-do/dang-bai" element={<PostTransportPage />} />
+          <Route path="/van-chuyen-do/:vehicleId" element={<TransportDetailPage />} />
+          <Route path="/pass-phong" element={<PassRoomsPage />} />
+          <Route path="/pass-phong/dang-bai" element={<PostPassRoomPage />} />
+          <Route path="/pass-phong/:roomId" element={<PassRoomDetailPage />} />
+          <Route path="/pass-do" element={<PassItemsPage />} />
+          <Route path="/pass-do/dang-bai" element={<PostPassItemPage />} />
+          <Route path="/pass-do/:itemId" element={<PassItemDetailPage />} />
+          <Route path="/gioi-thieu" element={<AboutUsPage />} />
+          <Route path="/dieu-khoan" element={<TermsOfUsePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/dang-ky" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/tin-nhan" element={<MessagesPage />} />
+          <Route path="/tin-nhan/:conversationId" element={<MessagesPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/thanh-toan/dang-bai" element={<PostingPaymentPage />} />
+          <Route path="/thanh-toan/ket-qua" element={<PaymentResultPage />} />
 
-      {/* Admin routes */}
-      <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route
-        path="/admin"
-        element={
-          <AdminAuthProvider>
-            <AdminRoute />
-          </AdminAuthProvider>
-        }
-      >
-        <Route index element={<AdminOverviewPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="listings" element={<AdminListingsPage />} />
-      </Route>
-    </Routes>
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminAuthProvider>
+                <AdminRoute />
+              </AdminAuthProvider>
+            }
+          >
+            <Route index element={<AdminOverviewPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="listings" element={<AdminListingsPage />} />
+            <Route path="payments" element={<AdminPaymentsPage />} />
+          </Route>
+        </Routes>
+      </main>
+    </div>
   )
 }

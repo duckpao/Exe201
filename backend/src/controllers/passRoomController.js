@@ -40,7 +40,7 @@ async function listPassRooms(request, response) {
 }
 
 async function getPassRoom(request, response) {
-  const passRoom = await passRoomModel.findById(request.params.id)
+  const passRoom = await passRoomModel.findById(request.params.id, request.user?.id)
   if (!passRoom) {
     return response.status(404).json({ message: 'Không tìm thấy bài pass phòng' })
   }

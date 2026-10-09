@@ -1,14 +1,28 @@
-import { useMemo, useState } from 'react'
-import { LISTING_TYPE_LABELS, MODERATION_STATUS_LABELS, mockAdminListings } from '../../data/mockAdminListings.js'
-
-const TABS = Object.keys(LISTING_TYPE_LABELS)
+import { useEffect, useMemo, useState } from 'react'
+import { listAdminListings } from '../../services/adminRepository.js'
 
 const DEFAULT_LISTING_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' rx='10' fill='%23fef3c7'/%3E%3Cpath fill='%23f59e0b' d='M30 14L12 30h6v18h24V30h6z'/%3E%3Crect x='26' y='36' width='8' height='12' rx='1' fill='%23d97706'/%3E%3C/svg%3E"
 
 export default function AdminListingsPage() {
-  const [listings, setListings] = useState(mockAdminListings)
-  const [activeTab, setActiveTab] = useState(TABS[0])
+  const [listings, setListings] = useState([])
+  const [typeLabels, setTypeLabels] = useState({})
+  const [moderationLabels, setModerationLabels] = useState({})
+  const [activeTab, setActiveTab] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    listAdminListings()
+      .then((data) => {
+        setListings(data.listings)
+        setTypeLabels(data.typeLabels)
+        setModerationLabels(data.moderationLabels)
+        setActiveTab(Object.keys(data.typeLabels)[0] || '')
+      })
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   const visibleListings = useMemo(
     () => listings.filter((item) => item.type === activeTab),
@@ -28,20 +42,23 @@ export default function AdminListingsPage() {
     <div className="admin-page">
       <h1 className="admin-page-title">Quản lý tin đăng</h1>
 
-      <div className="admin-tabs">
-        {TABS.map((tab) => (
+      {loading && <p className="listing-status">Đang tải dữ liệu quản trị...</p>}
+      {!loading && error && <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="admin-action-btn" onClick={() => window.location.reload()}>Thử lại</button></div>}
+
+      {!loading && !error && <div className="admin-tabs">
+        {Object.keys(typeLabels).map((tab) => (
           <button
             key={tab}
             type="button"
             className={`admin-tab ${activeTab === tab ? 'active' : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {LISTING_TYPE_LABELS[tab]}
+            {typeLabels[tab]}
           </button>
         ))}
-      </div>
+      </div>}
 
-      <section className="admin-table-card">
+      {!loading && !error && <section className="admin-table-card">
         <table className="admin-table">
           <thead>
             <tr>
@@ -75,7 +92,7 @@ export default function AdminListingsPage() {
                 <td>{item.price}</td>
                 <td>
                   <span className={`status-badge status-${item.moderationStatus}`}>
-                    {MODERATION_STATUS_LABELS[item.moderationStatus]}
+                    {moderationLabels[item.moderationStatus]}
                   </span>
                 </td>
                 <td className="admin-table-actions">
@@ -104,7 +121,7 @@ export default function AdminListingsPage() {
             )}
           </tbody>
         </table>
-      </section>
+      </section>}
     </div>
   )
 }

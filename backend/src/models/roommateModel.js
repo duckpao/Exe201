@@ -64,7 +64,7 @@ async function list(query, { limit, offset }) {
   return { rows, total }
 }
 
-async function findById(id) {
+  async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
     `SELECT rm.*, a.province, a.district, a.ward, a.street_address, a.latitude, a.longitude,
        u.full_name AS poster_name, u.avatar_url AS poster_avatar
@@ -72,8 +72,10 @@ async function findById(id) {
      JOIN addresses a ON a.id = rm.address_id
      JOIN users u ON u.id = rm.posted_by
      WHERE rm.id = ? AND rm.deleted_at IS NULL
+       AND (rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW()) OR rm.posted_by = ?)
+       AND rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW())
      LIMIT 1`,
-    [id]
+    [id, viewerId]
   )
   return rows[0] || null
 }

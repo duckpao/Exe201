@@ -44,7 +44,7 @@ async function listRooms(request, response) {
 }
 
 async function getRoom(request, response) {
-  const room = await roomModel.findById(request.params.id)
+  const room = await roomModel.findById(request.params.id, request.user?.id)
   if (!room) {
     return response.status(404).json({ message: 'Không tìm thấy phòng trọ' })
   }

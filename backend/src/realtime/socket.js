@@ -3,6 +3,7 @@ const { parseCookie } = require('cookie')
 const { verifyAuthToken } = require('../utils/token')
 const conversationModel = require('../models/conversationModel')
 const messagingService = require('../services/messagingService')
+const userModel = require('../models/userModel')
 
 const COOKIE_NAME = process.env.COOKIE_NAME || 'auth_token'
 const configuredOrigins = (process.env.FRONTEND_URL || '')
@@ -18,7 +19,7 @@ function initSocket(server) {
     cors: { origin: allowedOrigins, credentials: true },
   })
 
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const rawCookie = socket.handshake.headers.cookie
     if (!rawCookie) {
       return next(new Error('Chưa đăng nhập'))
@@ -31,7 +32,12 @@ function initSocket(server) {
     }
 
     try {
-      socket.user = verifyAuthToken(token)
+      const tokenUser = verifyAuthToken(token)
+      const user = await userModel.findById(tokenUser.id)
+      if (!user || user.status === 'locked') {
+        return next(new Error('Tài khoản không còn được phép truy cập'))
+      }
+      socket.user = { id: user.id, email: user.email, role: user.role }
       next()
     } catch (error) {
       next(new Error('Phiên đăng nhập không hợp lệ hoặc đã hết hạn'))
@@ -40,17 +46,24 @@ function initSocket(server) {
 
   io.on('connection', (socket) => {
     socket.on('conversation:join', async (conversationId) => {
-      const allowed = await conversationModel.isParticipant(conversationId, socket.user.id)
-      if (allowed) {
-        socket.join(`conv:${conversationId}`)
+      try {
+        const allowed = await conversationModel.isParticipant(conversationId, socket.user.id)
+        if (allowed) {
+          socket.join(`conv:${conversationId}`)
+        }
+      } catch (error) {
+        socket.emit('message:error', { message: 'Không thể tham gia cuộc trò chuyện' })
       }
     })
 
-    socket.on('message:send', async ({ conversationId, body } = {}) => {
+    socket.on('message:send', async ({ conversationId, body } = {}, acknowledge) => {
       try {
         await messagingService.sendMessage({ conversationId, senderId: socket.user.id, body, io })
+        acknowledge?.({ ok: true })
       } catch (error) {
-        socket.emit('message:error', { message: error.message })
+        const payload = { message: error.message }
+        acknowledge?.({ ok: false, ...payload })
+        socket.emit('message:error', payload)
       }
     })
   })

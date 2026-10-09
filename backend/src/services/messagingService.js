@@ -4,6 +4,7 @@ const userModel = require('../models/userModel')
 const listingModel = require('../models/listingModel')
 const { getListingType } = require('../models/listingRegistry')
 const { sendMail } = require('../config/mailer')
+const { escapeHtml } = require('../utils/html')
 
 async function notifyOwnerByEmail({ conversation, message }) {
   try {
@@ -18,11 +19,11 @@ async function notifyOwnerByEmail({ conversation, message }) {
     await sendMail({
       to: owner.email,
       subject: `Bạn có tin nhắn mới về ${listingLabel} đang đăng`,
-      html: `<p>Xin chào ${owner.full_name},</p>
-             <p>${inquirer?.full_name || 'Một người dùng'} vừa gửi cho bạn một tin nhắn mới${
-               listing?.title ? ` về "${listing.title}"` : ''
+      html: `<p>Xin chào ${escapeHtml(owner.full_name)},</p>
+             <p>${escapeHtml(inquirer?.full_name || 'Một người dùng')} vừa gửi cho bạn một tin nhắn mới${
+               listing?.title ? ` về &quot;${escapeHtml(listing.title)}&quot;` : ''
              }:</p>
-             <p style="padding:12px;background:#f5f5f5;border-radius:8px">${message.body}</p>
+             <p style="padding:12px;background:#f5f5f5;border-radius:8px">${escapeHtml(message.body)}</p>
              <p>Đăng nhập vào website để trả lời.</p>`,
     })
   } catch (error) {

@@ -4,6 +4,10 @@ import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import RoomCard from '../components/site/RoomCard.jsx'
+import Button from '../components/foundation/Button.jsx'
+import EmptyState from '../components/foundation/EmptyState.jsx'
+import LoadingState from '../components/foundation/LoadingState.jsx'
+import SectionHeader from '../components/foundation/SectionHeader.jsx'
 import { listRooms } from '../services/roomService.js'
 import '../styles/site.css'
 
@@ -22,16 +26,26 @@ const SERVICES = [
 
 export default function HomePage() {
   const [featuredRooms, setFeaturedRooms] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let ignore = false
+
+    setLoading(true)
     listRooms({ limit: 4 })
       .then((data) => {
-        if (!ignore) setFeaturedRooms(data.data || [])
+        if (!ignore) {
+          setFeaturedRooms(data.data || [])
+          setLoading(false)
+        }
       })
       .catch(() => {
-        if (!ignore) setFeaturedRooms([])
+        if (!ignore) {
+          setFeaturedRooms([])
+          setLoading(false)
+        }
       })
+
     return () => {
       ignore = true
     }
@@ -44,6 +58,7 @@ export default function HomePage() {
         <section className="home-hero">
           <div className="home-hero-inner">
             <div className="home-hero-text">
+              <p className="home-hero__eyebrow">Trang chủ / Khám phá</p>
               <h1>
                 Tìm phòng dễ dàng
                 <br />
@@ -53,9 +68,14 @@ export default function HomePage() {
                 RentMate Hola giúp bạn tìm phòng trọ, roommate, pass phòng và vận chuyển đồ đạc nhanh
                 chóng, tin cậy chỉ trong vài bước.
               </p>
-              <Link to="/phong-tro" className="btn btn-primary">
-                Tìm phòng ngay
-              </Link>
+              <div className="hero-actions">
+                <Button type="button" onClick={() => (window.location.href = '/phong-tro')}>
+                  Tìm phòng ngay
+                </Button>
+                <Link to="/tim-roommate" className="text-link">
+                  Tìm roommate
+                </Link>
+              </div>
             </div>
             <div className="home-hero-image">
               <PlaceholderImage src="/images/hero-home.jpg" alt="Phòng trọ đẹp" />
@@ -73,10 +93,11 @@ export default function HomePage() {
         </div>
 
         <section className="site-section">
-          <div className="site-section-header">
-            <h2>Dịch vụ nổi bật</h2>
-            <p>Mọi thứ bạn cần cho cuộc sống trọ đều có trên RentMate Hola.</p>
-          </div>
+          <SectionHeader
+            eyebrow="Dịch vụ"
+            title="Dịch vụ nổi bật"
+            description="Mọi thứ bạn cần cho cuộc sống trọ đều có trên RentMate Hola."
+          />
           <div className="service-grid">
             {SERVICES.map((service) => (
               <Link key={service.label} to={service.to} className="service-card">
@@ -91,18 +112,25 @@ export default function HomePage() {
         </section>
 
         <section className="site-section">
-          <div className="site-section-header">
-            <h2>Phòng trọ nổi bật</h2>
-            <p>Những phòng trọ được quan tâm nhiều nhất tuần này.</p>
-          </div>
-          {featuredRooms.length > 0 ? (
+          <SectionHeader
+            eyebrow="Phòng trọ"
+            title="Phòng trọ nổi bật"
+            description="Những phòng trọ được quan tâm nhiều nhất tuần này."
+          />
+          {loading ? (
+            <LoadingState label="Đang tải phòng trọ nổi bật..." />
+          ) : featuredRooms.length > 0 ? (
             <div className="room-grid">
               {featuredRooms.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
             </div>
           ) : (
-            <p className="listing-status">Chưa có phòng trọ nào được đăng.</p>
+            <EmptyState
+              title="Chưa có phòng trọ nào được đăng"
+              description="Hãy quay lại sau hoặc đăng tin mới để bắt đầu."
+              action={<Link to="/phong-tro/dang-bai" className="inline-action">Đăng tin ngay</Link>}
+            />
           )}
         </section>
       </main>
