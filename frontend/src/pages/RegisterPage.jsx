@@ -11,7 +11,6 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [isLandlord, setIsLandlord] = useState(false)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { register } = useAuth()
@@ -19,7 +18,6 @@ export default function RegisterPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
     setLoading(true)
     try {
       const user = await register({
@@ -38,7 +36,6 @@ export default function RegisterPage() {
         navigate('/')
       }
     } catch (err) {
-      setError(err.message)
       toast.error(err.message)
     } finally {
       setLoading(false)

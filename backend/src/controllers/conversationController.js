@@ -4,6 +4,11 @@ const listingModel = require('../models/listingModel')
 const { getListingType, LISTING_TYPE_KEYS } = require('../models/listingRegistry')
 const messagingService = require('../services/messagingService')
 const { getIO } = require('../realtime/socket')
+const aiChatModel = require('../models/aiChatModel')
+const geminiService = require('../services/geminiService')
+
+const aiRequestTimes = new Map()
+const AI_COOLDOWN_MS = 5000
 
 function listingUrl(listingType, listingId) {
   const config = getListingType(listingType)
@@ -75,6 +80,10 @@ async function listConversations(request, response) {
   response.json({ data: rows.map((row) => toConversationCard(row, request.user.id)) })
 }
 
+function getAiStatus(request, response) {
+  response.json(geminiService.getStatus())
+}
+
 async function getMessages(request, response) {
   const conversationId = request.params.id
   const allowed = await conversationModel.isParticipant(conversationId, request.user.id)
@@ -102,4 +111,52 @@ async function postMessage(request, response) {
   response.status(201).json(message)
 }
 
-module.exports = { startConversation, listConversations, getMessages, postMessage }
+async function postAiMessage(request, response) {
+  const conversationId = request.params.id
+  const question = String(request.body?.body || '').trim()
+  if (!question) return response.status(400).json({ message: 'Vui lòng nhập câu hỏi cho trợ lý AI' })
+  if (question.length > 1500) return response.status(400).json({ message: 'Câu hỏi AI không được vượt quá 1.500 ký tự' })
+  const rateLimitKey = `${request.user.id}:${conversationId}`
+  const lastRequestAt = aiRequestTimes.get(rateLimitKey) || 0
+  if (Date.now() - lastRequestAt < AI_COOLDOWN_MS) {
+    return response.status(429).json({ message: 'Bạn đang hỏi AI quá nhanh. Vui lòng chờ vài giây rồi thử lại.' })
+  }
+  const conversation = await conversationModel.findById(conversationId)
+  if (!conversation) return response.status(404).json({ message: 'Không tìm thấy cuộc trò chuyện' })
+  const allowed = conversation.owner_id === request.user.id || conversation.inquirer_id === request.user.id
+  if (!allowed) return response.status(403).json({ message: 'Bạn không thuộc cuộc trò chuyện này' })
+
+  const listing = await aiChatModel.getListingContext(conversation.listing_type, conversation.listing_id)
+  if (!listing) return response.status(404).json({ message: 'Bài đăng liên quan không còn tồn tại' })
+
+  const [history, similarRooms] = await Promise.all([
+    messageModel.listRecentByConversation(conversationId, { limit: 12 }),
+    aiChatModel.findSimilarRooms(conversation.listing_type, listing),
+  ])
+  aiRequestTimes.set(rateLimitKey, Date.now())
+  let answer
+  try {
+    answer = await geminiService.answerListingQuestion({
+      question,
+      listingType: conversation.listing_type,
+      listing,
+      similarRooms,
+      history,
+    })
+  } catch (error) {
+    aiRequestTimes.delete(rateLimitKey)
+    throw error
+  }
+  const { question: questionMessage, answer: answerMessage } = await messageModel.createAiExchange({
+    conversationId,
+    senderId: request.user.id,
+    question,
+    answer,
+  })
+  const room = getIO()?.to(`conv:${conversationId}`)
+  room?.emit('message:new', questionMessage)
+  room?.emit('message:new', answerMessage)
+  response.status(201).json({ question: questionMessage, answer: answerMessage })
+}
+
+module.exports = { startConversation, listConversations, getAiStatus, getMessages, postMessage, postAiMessage }

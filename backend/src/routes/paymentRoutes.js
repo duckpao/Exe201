@@ -4,7 +4,8 @@ const { requireAuth } = require('../middleware/authMiddleware')
 
 const router = express.Router()
 router.get('/posting-status', requireAuth, paymentController.getPostingStatus)
-router.post('/vnpay/create', requireAuth, paymentController.createVnpayPayment)
-router.get('/vnpay/ipn', paymentController.vnpayIpn)
-router.get('/vnpay/return', paymentController.vnpayReturn)
+router.post('/payos/create', requireAuth, paymentController.createPayosPayment)
+router.get('/payos/status/:orderCode', requireAuth, paymentController.getPayosStatus)
+router.post('/payos/webhook', paymentController.payosWebhook)
+router.post('/payos/confirm-webhook', requireAuth, paymentController.confirmPayosWebhook)
 module.exports = router

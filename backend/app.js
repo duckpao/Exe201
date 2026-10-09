@@ -19,7 +19,11 @@ const paymentRoutes = require('./src/routes/paymentRoutes')
 const app = express()
 app.set('trust proxy', 1)
 
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174'].filter(Boolean)
+const configuredOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+const allowedOrigins = [...new Set([...configuredOrigins, 'http://localhost:5173', 'http://localhost:5174'])]
 
 app.use(cors({ origin: allowedOrigins, credentials: true }))
 app.use(express.json())

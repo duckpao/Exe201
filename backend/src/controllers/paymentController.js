@@ -1,5 +1,5 @@
 const paymentModel = require('../models/paymentModel')
-const vnpayService = require('../services/vnpayService')
+const payosService = require('../services/payosService')
 
 const LISTING_FEE = Number(process.env.LISTING_FEE_VND) || 20000
 
@@ -11,10 +11,11 @@ async function getPostingStatus(request, response) {
     freeUntil: access.user.free_until,
     hasCredit: Boolean(access.credit),
     fee: LISTING_FEE,
+    provider: 'payos',
   })
 }
 
-async function createVnpayPayment(request, response) {
+async function createPayosPayment(request, response) {
   const access = await paymentModel.getPostingAccess(request.user.id)
   if (Number(access?.user.in_free_trial) === 1) {
     return response.status(400).json({ message: 'Tài khoản của bạn vẫn đang trong 2 tháng miễn phí' })
@@ -22,42 +23,73 @@ async function createVnpayPayment(request, response) {
   if (access?.credit) {
     return response.status(400).json({ message: 'Bạn đang có một lượt đăng bài chưa sử dụng' })
   }
-  const txnRef = `POST${request.user.id}${Date.now()}`
-  await paymentModel.createPending({ userId: request.user.id, txnRef, amount: LISTING_FEE })
-  const paymentUrl = vnpayService.createPaymentUrl({
+
+  const orderCode = Date.now()
+  const txnRef = `PAYOS${orderCode}`
+  const description = `POST${request.user.id}`.slice(0, 9)
+  const paymentLink = await payosService.createPaymentLink({ orderCode, amount: LISTING_FEE, description })
+
+  await paymentModel.createPending({
+    userId: request.user.id,
     txnRef,
     amount: LISTING_FEE,
-    ipAddress: request.ip?.replace('::ffff:', ''),
-    orderInfo: `Thanh toan phi dang bai ${txnRef}`,
+    provider: 'payos',
+    orderCode,
+    paymentLinkId: paymentLink.paymentLinkId,
   })
-  response.status(201).json({ paymentUrl, txnRef, amount: LISTING_FEE })
-}
 
-async function processResult(query) {
-  if (!vnpayService.verifyCallback(query)) return { valid: false, paid: false }
-  const payment = await paymentModel.findByTxnRef(query.vnp_TxnRef)
-  if (!payment || Number(payment.amount) * 100 !== Number(query.vnp_Amount)) return { valid: false, paid: false }
-  const paid = query.vnp_ResponseCode === '00' && query.vnp_TransactionStatus === '00'
-  const updated = await paymentModel.markResult({
-    txnRef: query.vnp_TxnRef,
-    paid,
-    responseCode: query.vnp_ResponseCode,
-    providerTransaction: query.vnp_TransactionNo,
+  response.status(201).json({
+    orderCode,
+    amount: LISTING_FEE,
+    checkoutUrl: paymentLink.checkoutUrl,
+    qrCode: paymentLink.qrCode,
+    accountNumber: paymentLink.accountNumber,
+    accountName: paymentLink.accountName,
+    bin: paymentLink.bin,
+    description: paymentLink.description,
+    paymentLinkId: paymentLink.paymentLinkId,
+    status: paymentLink.status,
+    returnUrl: process.env.PAYOS_RETURN_URL,
   })
-  return { valid: true, paid: updated.status === 'paid', payment: updated }
 }
 
-async function vnpayIpn(request, response) {
-  const result = await processResult(request.query)
-  if (!result.valid) return response.json({ RspCode: '97', Message: 'Invalid signature or order' })
-  response.json({ RspCode: '00', Message: 'Confirm Success' })
+async function payosWebhook(request, response) {
+  if (!payosService.verifyWebhook(request.body)) {
+    return response.status(400).json({ success: false, message: 'Invalid signature' })
+  }
+
+  const data = request.body.data
+  const payment = await paymentModel.findByOrderCode(data.orderCode)
+  if (!payment) return response.json({ success: true })
+  if (Number(payment.amount) !== Number(data.amount)) {
+    return response.status(400).json({ success: false, message: 'Amount mismatch' })
+  }
+
+  const paid = request.body.success === true && data.code === '00'
+  await paymentModel.markPayosResult({
+    orderCode: data.orderCode,
+    status: paid ? 'paid' : 'failed',
+    providerTransaction: data.reference,
+    paymentLinkId: data.paymentLinkId,
+  })
+  response.json({ success: true })
 }
 
-async function vnpayReturn(request, response) {
-  const result = await processResult(request.query)
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173'
-  const status = result.valid && result.paid ? 'success' : result.valid ? 'failed' : 'invalid'
-  response.redirect(`${frontend}/thanh-toan/ket-qua?status=${status}&txnRef=${encodeURIComponent(request.query.vnp_TxnRef || '')}`)
+async function getPayosStatus(request, response) {
+  const orderCode = Number(request.params.orderCode)
+  const payment = await paymentModel.findByOrderCode(orderCode)
+  if (!payment || payment.user_id !== request.user.id) {
+    return response.status(404).json({ message: 'Không tìm thấy giao dịch' })
+  }
+
+  response.json({ orderCode, status: payment.status, paid: payment.status === 'paid' })
 }
 
-module.exports = { getPostingStatus, createVnpayPayment, vnpayIpn, vnpayReturn }
+async function confirmPayosWebhook(request, response) {
+  const webhookUrl = process.env.PAYOS_WEBHOOK_URL
+  if (!webhookUrl) return response.status(503).json({ message: 'Chưa cấu hình PAYOS_WEBHOOK_URL' })
+  const data = await payosService.confirmWebhook(webhookUrl)
+  response.json(data)
+}
+
+module.exports = { getPostingStatus, createPayosPayment, payosWebhook, getPayosStatus, confirmPayosWebhook }

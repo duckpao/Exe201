@@ -262,3 +262,48 @@
   text-align: center;
   margin-top: 8px;
 }
+
+@media (max-width: 600px) {
+  .auth-main {
+    align-items: flex-start;
+    padding: 18px 12px 32px;
+  }
+
+  .auth-card {
+    max-width: none;
+    padding: 26px 18px;
+    border-radius: 18px;
+  }
+
+  .auth-card-header {
+    margin-bottom: 22px;
+  }
+
+  .auth-card h2 {
+    font-size: 23px;
+  }
+
+  .auth-form {
+    gap: 14px;
+  }
+
+  .form-group input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .auth-card .btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  #google-signin-button {
+    min-height: 44px;
+    overflow: hidden;
+  }
+
+  .auth-footer {
+    margin-top: 20px;
+    line-height: 1.65;
+  }
+}

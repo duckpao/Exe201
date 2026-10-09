@@ -25,6 +25,10 @@ export function listConversations() {
   return getJson('/api/conversations')
 }
 
+export function getAiStatus() {
+  return getJson('/api/conversations/ai-status')
+}
+
 // listingType: 'room' | 'roommate' | 'pass_room' | 'item' | 'vehicle'
 export function startConversation(listingType, listingId) {
   return postJson('/api/conversations', { listingType, listingId })
@@ -36,4 +40,8 @@ export function getMessages(conversationId) {
 
 export function sendMessageHttp(conversationId, body) {
   return postJson(`/api/conversations/${conversationId}/messages`, { body })
+}
+
+export function sendAiMessage(conversationId, body) {
+  return postJson(`/api/conversations/${conversationId}/ai-messages`, { body })
 }

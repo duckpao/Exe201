@@ -34,7 +34,9 @@ async function listForUser(userId) {
        inquirer.full_name AS inquirer_name, inquirer.avatar_url AS inquirer_avatar,
        (SELECT body FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC, id DESC LIMIT 1) AS last_message,
        (SELECT created_at FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC, id DESC LIMIT 1) AS last_message_at,
-       (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id AND is_read = 0 AND sender_id != ?) AS unread_count
+       (SELECT COUNT(*) FROM messages
+        WHERE conversation_id = c.id AND sender_type = 'user' AND message_kind = 'chat'
+          AND is_read = 0 AND sender_id != ?) AS unread_count
      FROM conversations c
      LEFT JOIN (${buildListingUnionSql()}) l
        ON l.listing_type = c.listing_type AND l.listing_id = c.listing_id

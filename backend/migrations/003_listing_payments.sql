@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS listing_payments (
   user_id              BIGINT UNSIGNED NOT NULL,
   txn_ref              VARCHAR(100) NOT NULL,
   amount               DECIMAL(12,2) NOT NULL,
-  provider             ENUM('vnpay') NOT NULL DEFAULT 'vnpay',
+  provider             ENUM('vnpay','payos') NOT NULL DEFAULT 'payos',
+  provider_order_code  BIGINT NULL,
+  payment_link_id      VARCHAR(100) NULL,
   status               ENUM('pending','paid','failed','cancelled') NOT NULL DEFAULT 'pending',
   provider_transaction VARCHAR(100) NULL,
   response_code        VARCHAR(10) NULL,
@@ -14,6 +16,7 @@ CREATE TABLE IF NOT EXISTS listing_payments (
   created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_listing_payment_txn_ref (txn_ref),
+  UNIQUE KEY uq_listing_payment_order_code (provider_order_code),
   KEY idx_listing_payment_credit (user_id, status, consumed_at),
   CONSTRAINT fk_listing_payment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

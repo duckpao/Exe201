@@ -10,7 +10,6 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleUnavailable, setGoogleUnavailable] = useState(false)
   const googleButtonRef = useRef(null)
@@ -60,13 +59,11 @@ export default function LoginPage() {
   }
 
   async function handleGoogleCredential(credentialResponse) {
-    setError('')
     setLoading(true)
     try {
       const user = await loginWithGoogle(credentialResponse.credential)
       handleSuccessfulLogin(user)
     } catch (err) {
-      setError(err.message)
       toast.error(err.message)
     } finally {
       setLoading(false)
@@ -75,13 +72,11 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
     setLoading(true)
     try {
       const user = await login(email.trim(), password)
       handleSuccessfulLogin(user)
     } catch (err) {
-      setError(err.message)
       toast.error(err.message)
     } finally {
       setLoading(false)

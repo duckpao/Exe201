@@ -4,7 +4,7 @@ import PlaceholderImage from './PlaceholderImage.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSocket } from '../../context/SocketContext.jsx'
 import { listConversations } from '../../services/conversationService.js'
-import { Bell, Settings } from 'lucide-react';
+import { Bell, Menu, Settings, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Trang chủ' },
@@ -21,6 +21,7 @@ export default function SiteHeader() {
   const { user, logout } = useAuth()
   const socket = useSocket()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -51,6 +52,11 @@ export default function SiteHeader() {
     navigate('/')
   }
 
+  useEffect(() => {
+    setMobileNavOpen(false)
+    setMenuOpen(false)
+  }, [pathname])
+
   const navLinks =
     user?.role === 'landlord' ? [...NAV_LINKS, { to: '/phong-tro/dang-bai', label: 'Đăng phòng' }] : NAV_LINKS
 
@@ -74,6 +80,15 @@ export default function SiteHeader() {
         </nav>
 
         <div className="site-header-actions">
+          <button
+            type="button"
+            className="mobile-nav-toggle"
+            onClick={() => setMobileNavOpen((open) => !open)}
+            aria-expanded={mobileNavOpen}
+            aria-label={mobileNavOpen ? 'Đóng menu' : 'Mở menu'}
+          >
+            {mobileNavOpen ? <X size={21} /> : <Menu size={21} />}
+          </button>
           <Link to="/tin-nhan" className="icon-btn" aria-label="Tin nhắn">
             <Bell size={16} />
             {unreadCount > 0 && <span className="icon-badge">{unreadCount}</span>}
@@ -117,6 +132,15 @@ export default function SiteHeader() {
           )}
         </div>
       </div>
+      {mobileNavOpen && (
+        <nav className="mobile-site-nav" aria-label="Điều hướng trên điện thoại">
+          {navLinks.map((link) => (
+            <Link key={link.to} to={link.to} className={pathname === link.to ? 'active' : ''}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   )
 }

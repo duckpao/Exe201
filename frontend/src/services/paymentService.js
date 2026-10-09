@@ -15,9 +15,13 @@ export async function getPostingStatus() {
   return handleJson(await fetch(`${apiUrl}/api/payments/posting-status`, { credentials: 'include' }))
 }
 
-export async function createVnpayPayment() {
-  return handleJson(await fetch(`${apiUrl}/api/payments/vnpay/create`, {
+export async function createPayosPayment() {
+  return handleJson(await fetch(`${apiUrl}/api/payments/payos/create`, {
     method: 'POST',
     credentials: 'include',
   }))
+}
+
+export async function getPayosPaymentStatus(orderCode) {
+  return handleJson(await fetch(`${apiUrl}/api/payments/payos/status/${orderCode}`, { credentials: 'include' }))
 }

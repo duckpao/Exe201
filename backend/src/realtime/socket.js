@@ -5,12 +5,17 @@ const conversationModel = require('../models/conversationModel')
 const messagingService = require('../services/messagingService')
 
 const COOKIE_NAME = process.env.COOKIE_NAME || 'auth_token'
+const configuredOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+const allowedOrigins = [...new Set([...configuredOrigins, 'http://localhost:5173', 'http://localhost:5174'])]
 
 let io = null
 
 function initSocket(server) {
   io = new Server(server, {
-    cors: { origin: process.env.FRONTEND_URL, credentials: true },
+    cors: { origin: allowedOrigins, credentials: true },
   })
 
   io.use((socket, next) => {

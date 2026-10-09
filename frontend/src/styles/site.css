@@ -75,6 +75,24 @@
   gap: 12px;
 }
 
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--brand-border);
+  border-radius: 50%;
+  background: var(--brand-cream);
+  color: var(--brand-text);
+  cursor: pointer;
+}
+
+.mobile-site-nav {
+  display: none;
+}
+
 .icon-btn {
   position: relative;
   border: 1px solid var(--brand-border);
@@ -174,6 +192,34 @@
 @media (max-width: 900px) {
   .site-nav {
     display: none;
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
+  }
+
+  .mobile-site-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px 16px 16px;
+    border-top: 1px solid var(--brand-border);
+    background: var(--brand-white);
+    box-shadow: 0 12px 24px rgba(26, 20, 10, 0.08);
+  }
+
+  .mobile-site-nav a {
+    padding: 11px 12px;
+    border-radius: 10px;
+    color: var(--brand-text-soft);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .mobile-site-nav a.active {
+    background: var(--brand-cream);
+    color: var(--brand-primary-dark);
   }
 }
 
@@ -1307,9 +1353,374 @@
 .payment-card small { color: var(--brand-text-soft); line-height: 1.5; }
 .payment-card small a { color: var(--brand-primary-dark); font-weight: 700; }
 
+.payment-hub-page {
+  padding: 48px 24px 64px;
+}
+
+.payment-hub {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+}
+
+.payment-hub-heading {
+  max-width: 700px;
+  margin: 0 auto 32px;
+  text-align: center;
+}
+
+.payment-hub-heading .payment-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-hub-heading h1 {
+  margin: 12px 0 10px;
+  color: var(--brand-text);
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.payment-hub-heading p,
+.payment-terms {
+  color: var(--brand-text-soft);
+  line-height: 1.65;
+}
+
+.payment-plan-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 260px);
+  gap: 24px 32px;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid var(--brand-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: var(--brand-shadow);
+}
+
+.payment-plan-copy h2,
+.payos-order-summary h2 {
+  margin: 8px 0;
+  color: var(--brand-text);
+  font-size: 22px;
+}
+
+.payment-plan-copy p {
+  max-width: 540px;
+  margin: 0;
+  color: var(--brand-text-soft);
+  line-height: 1.6;
+}
+
+.payment-plan-label {
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.payment-plan-price {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+}
+
+.payment-plan-price strong,
+.payos-order-total strong {
+  color: var(--brand-primary-dark);
+  font-size: 29px;
+  line-height: 1.2;
+}
+
+.payment-plan-price small,
+.payos-order-total small {
+  margin-left: 3px;
+  font-size: 16px;
+}
+
+.payment-benefits {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.payment-benefits span {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.payment-benefits svg {
+  flex: 0 0 auto;
+  color: var(--brand-primary-dark);
+}
+
+.payment-plan-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.payment-plan-actions .btn {
+  min-height: 46px;
+}
+
+.payos-hub-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.75fr) minmax(0, 1.25fr);
+  overflow: hidden;
+  border: 1px solid var(--brand-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: var(--brand-shadow);
+}
+
+.payos-order-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px;
+  border-right: 1px solid var(--brand-border);
+}
+
+.payos-order-title {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.payos-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8a5a00;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.payos-order-total {
+  display: grid;
+  width: 100%;
+  gap: 5px;
+  margin-top: 26px;
+  padding: 18px 0;
+  border-top: 1px solid var(--brand-border);
+  border-bottom: 1px solid var(--brand-border);
+  color: var(--brand-text-soft);
+  font-size: 13px;
+}
+
+.payos-order-meta {
+  display: grid;
+  gap: 5px;
+  margin-top: 18px;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+}
+
+.payos-order-meta strong {
+  color: var(--brand-text);
+  font-size: 15px;
+}
+
+.payos-trust-note {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.payos-trust-note svg {
+  flex: 0 0 auto;
+  color: var(--brand-primary-dark);
+}
+
+.payos-check-status {
+  width: 100%;
+  min-height: 44px;
+  margin-top: auto;
+}
+
+.payos-back-link {
+  align-self: center;
+  margin-top: 14px;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.payos-back-link:hover,
+.payos-hosted-link:hover {
+  color: var(--brand-primary-dark);
+}
+
+.payos-checkout-panel {
+  min-width: 0;
+  padding: 24px;
+  background: #f7f8f5;
+}
+
+.payos-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--brand-border);
+  color: var(--brand-text-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.payos-brand-mark {
+  color: #161616;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.payos-checkout-start {
+  display: grid;
+  min-height: 340px;
+  align-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px 12px;
+  text-align: center;
+}
+
+.payos-checkout-start p {
+  max-width: 380px;
+  margin: 0;
+  color: var(--brand-text-soft);
+  line-height: 1.6;
+}
+
+.payos-checkout-start .btn {
+  min-height: 46px;
+}
+
+.payos-hosted-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-text-soft);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.payos-checkout-frame {
+  display: none;
+  width: 100%;
+  min-height: 540px;
+}
+
+.payos-checkout-frame.is-open {
+  display: block;
+}
+
+.payment-terms {
+  margin: 20px 0 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.payment-terms a {
+  color: var(--brand-primary-dark);
+  font-weight: 700;
+}
+
+.payos-return-notice {
+  margin: 0 0 20px;
+  padding: 13px 16px;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--brand-text);
+  line-height: 1.5;
+}
+
+.payos-return-notice.success {
+  border-color: #a9d5b9;
+  background: #eff8f1;
+}
+
+.payos-return-notice.pending {
+  border-color: #e9d39e;
+  background: #fff8e8;
+}
+
+.payos-return-notice.cancelled {
+  border-color: #e7c2bc;
+  background: #fff3f1;
+}
+
 @media (max-width: 700px) {
   .quick-info-box {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payment-hub-page {
+    padding: 28px 14px 40px;
+  }
+
+  .payment-hub-heading {
+    margin-bottom: 22px;
+    text-align: left;
+  }
+
+  .payment-hub-heading h1 {
+    font-size: 27px;
+  }
+
+  .payment-plan-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .payment-plan-price strong {
+    font-size: 24px;
+  }
+
+  .payment-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-plan-actions {
+    flex-direction: column;
+  }
+
+  .payment-plan-actions .btn {
+    justify-content: center;
+  }
+
+  .payos-hub-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .payos-order-summary {
+    padding: 20px;
+    border-right: 0;
+    border-bottom: 1px solid var(--brand-border);
+  }
+
+  .payos-checkout-panel {
+    padding: 18px;
+  }
+
+  .payos-checkout-frame {
+    min-height: 500px;
   }
 }
 
@@ -2302,11 +2713,76 @@
 
 .messages-thread-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid var(--brand-border);
   padding-bottom: 14px;
   margin-bottom: 14px;
+}
+
+.chat-mode-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--brand-cream);
+}
+
+.chat-mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: transparent;
+  color: var(--brand-text-soft);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chat-mode-switch button.active {
+  background: var(--brand-white);
+  color: var(--brand-primary-dark);
+  box-shadow: 0 3px 10px rgba(26, 20, 10, 0.08);
+}
+
+.chat-mode-switch button.active.ai {
+  color: #6d28d9;
+}
+
+.chat-mode-switch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ai-chat-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ddd6fe;
+  border-radius: 12px;
+  background: #f5f3ff;
+  color: #5b21b6;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.ai-chat-notice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ai-chat-unavailable {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
 }
 
 .messages-thread-title {
@@ -2339,10 +2815,73 @@
   line-height: 145%;
 }
 
+.message-text {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message-listing-link {
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .message-bubble.mine {
   align-self: flex-end;
   background: var(--brand-primary);
   color: var(--brand-white);
+}
+
+.message-bubble.ai {
+  align-self: flex-start;
+  max-width: 86%;
+  border: 1px solid #ddd6fe;
+  background: linear-gradient(145deg, #faf8ff, #f5f3ff);
+  color: #312e81;
+}
+
+.message-bubble.ai-question {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(145deg, #7c3aed, #6d28d9);
+}
+
+.message-bubble.ai-question .message-ai-label {
+  color: #ede9fe;
+}
+
+.message-ai-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+  color: #6d28d9;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .messages-thread-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .chat-mode-switch {
+    width: 100%;
+  }
+
+  .chat-mode-switch button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .message-bubble,
+  .message-bubble.ai {
+    max-width: 90%;
+  }
 }
 
 .message-bubble.theirs {
@@ -2419,3 +2958,471 @@
 
 .site-header-login-btn { background: var(--brand-primary); color: #fff; padding: 10px 20px; border-radius: 999px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-size: 14.5px; transition: opacity 0.2s; }
 .site-header-login-btn:hover { opacity: 0.9; }
+
+/* Mobile-first refinements */
+.messages-mobile-back {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .site-header-inner {
+    min-height: 62px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .site-logo-image {
+    height: 34px;
+  }
+
+  .site-header-actions {
+    gap: 7px;
+  }
+
+  .icon-btn,
+  .site-avatar,
+  .mobile-nav-toggle {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .site-header-login-btn {
+    min-height: 40px;
+    padding: 8px 13px;
+    font-size: 13px;
+  }
+
+  .site-avatar-dropdown {
+    position: fixed;
+    top: 68px;
+    right: 12px;
+    left: 12px;
+    min-width: 0;
+  }
+
+  .mobile-site-nav {
+    padding: 8px 12px 12px;
+  }
+
+  .mobile-site-nav a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-hero {
+    padding: 34px 16px 70px;
+  }
+
+  .home-hero-inner {
+    gap: 26px;
+  }
+
+  .home-hero-text {
+    text-align: center;
+  }
+
+  .home-hero-text h1 {
+    font-size: clamp(31px, 10vw, 39px);
+    line-height: 1.14;
+  }
+
+  .home-hero-text p {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .home-hero-text .btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .home-hero-image img,
+  .home-hero-image .placeholder-image {
+    border-radius: 18px;
+  }
+
+  .quick-access {
+    margin-top: -42px;
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .quick-access-card {
+    min-height: 112px;
+    padding: 16px 8px;
+    border-radius: 16px;
+    font-size: 13px;
+  }
+
+  .quick-access-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .site-section {
+    padding: 58px 14px 38px;
+  }
+
+  .site-section-header {
+    margin-bottom: 24px;
+  }
+
+  .site-section-header h2 {
+    font-size: 25px;
+  }
+
+  .service-grid,
+  .room-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .service-card {
+    aspect-ratio: 16 / 10;
+  }
+
+  .room-card,
+  .roommate-card,
+  .transport-card,
+  .pass-room-card {
+    border-radius: 16px;
+  }
+
+  .listing-page-hero {
+    padding: 34px 14px;
+  }
+
+  .listing-page-hero h1 {
+    font-size: 27px;
+    line-height: 1.25;
+  }
+
+  .listing-search-bar {
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .listing-search-bar input,
+  .listing-search-bar button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .listing-hero-image {
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+  }
+
+  .listing-hero-cta {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  .listing-page-body {
+    padding: 24px 12px 46px;
+    gap: 18px;
+  }
+
+  .filter-sidebar {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .listing-grid,
+  .listing-grid.cols-2 {
+    gap: 16px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .pagination button {
+    min-width: 44px;
+    min-height: 42px;
+    padding: 8px 12px;
+  }
+
+  .detail-page-inner {
+    padding: 18px 12px 44px;
+  }
+
+  .breadcrumb {
+    margin-bottom: 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  .breadcrumb::-webkit-scrollbar {
+    display: none;
+  }
+
+  .detail-layout {
+    gap: 20px;
+  }
+
+  .detail-gallery-main-button,
+  .detail-gallery-main {
+    border-radius: 15px;
+  }
+
+  .detail-gallery-thumbs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .detail-gallery-thumbs button {
+    flex: 0 0 92px;
+    scroll-snap-align: start;
+  }
+
+  .detail-gallery-inspect {
+    font-size: 11.5px;
+  }
+
+  .detail-title {
+    font-size: 27px;
+  }
+
+  .quick-info-box {
+    padding: 16px 10px;
+    gap: 12px 8px;
+    border-radius: 15px;
+  }
+
+  .quick-info-label {
+    font-size: 11.5px;
+  }
+
+  .quick-info-value {
+    font-size: 13.5px;
+  }
+
+  .detail-sidebar {
+    position: static;
+  }
+
+  .sidebar-card {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .price-amount {
+    font-size: 24px;
+  }
+
+  .map-embed,
+  .map-placeholder {
+    height: 220px;
+  }
+
+  .post-banner {
+    padding: 30px 14px 0;
+  }
+
+  .post-banner-text h1 {
+    font-size: 26px;
+  }
+
+  .post-banner-image {
+    border-radius: 15px;
+  }
+
+  .post-banner-features {
+    grid-template-columns: 1fr;
+    padding: 0 14px 22px;
+  }
+
+  .post-layout {
+    padding: 26px 12px 48px;
+    gap: 20px;
+  }
+
+  .post-form-card {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .form-row input,
+  .form-row select,
+  .form-row textarea {
+    width: 100%;
+    min-height: 46px;
+    font-size: 16px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .upload-preview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .amenities-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .radio-pill-group {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .radio-pill {
+    text-align: center;
+  }
+
+  .site-footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 36px 16px;
+  }
+
+  .footer-subscribe-form {
+    flex-direction: column;
+  }
+
+  .footer-subscribe-form input,
+  .footer-subscribe-form button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .messages-layout {
+    min-height: calc(100svh - 62px);
+    padding: 10px 0 0;
+    gap: 0;
+  }
+
+  .messages-sidebar,
+  .messages-thread {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .messages-sidebar {
+    padding: 14px 12px 24px;
+  }
+
+  .messages-layout.has-active-conversation .messages-sidebar {
+    display: none;
+  }
+
+  .messages-layout:not(.has-active-conversation) .messages-thread {
+    display: none;
+  }
+
+  .messages-thread {
+    min-height: calc(100svh - 72px);
+    padding: 12px;
+  }
+
+  .messages-mobile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 4px;
+    color: var(--brand-primary-dark);
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  .messages-thread-body {
+    min-height: 0;
+    max-height: none;
+    height: calc(100svh - 310px);
+    padding: 4px 2px 14px;
+  }
+
+  .message-bubble,
+  .message-bubble.ai {
+    max-width: 92%;
+    font-size: 14px;
+  }
+
+  .messages-thread-form {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    margin: 0 -12px -12px;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--brand-border);
+    background: var(--brand-white);
+  }
+
+  .messages-thread-form input {
+    min-width: 0;
+    min-height: 46px;
+    font-size: 16px;
+  }
+
+  .messages-thread-form .btn {
+    flex-shrink: 0;
+    min-height: 46px;
+    padding: 10px 15px;
+  }
+
+  .payment-page {
+    padding: 24px 12px;
+  }
+
+  .payment-card {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .settings-page {
+    padding: 22px 12px;
+  }
+
+  .settings-container {
+    gap: 18px;
+  }
+
+  .settings-sidebar,
+  .settings-card {
+    padding: 18px;
+  }
+
+  .settings-sidebar ul {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .settings-sidebar li {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .settings-list-item {
+    padding: 11px;
+  }
+
+  .settings-list-thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  .terms-content-card {
+    padding: 22px 16px;
+  }
+}
