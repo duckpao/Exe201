@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import { useAuth } from './AuthContext.jsx'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const apiUrl = import.meta.env.VITE_API_URL || 'https://rentmate-qd9h.onrender.com'
 
 const SocketContext = createContext(null)
 

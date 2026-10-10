@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const apiUrl = import.meta.env.production.VITE_API_URL || 'https://rentmate-qd9h.onrender.com'
 
 async function handleJson(response) {
   const data = await response.json().catch(() => ({}))
