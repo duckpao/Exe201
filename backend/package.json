@@ -21,7 +21,6 @@
     "google-auth-library": "^11.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.1",
-    "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.24.4",
     "nodemailer": "^10.0.10",
     "socket.io": "^4.8.4"
