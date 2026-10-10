@@ -6,11 +6,13 @@ const useAiven = process.env.DB_PROVIDER === 'aiven'
 const sslSetting = process.env.DB_SSL?.toLowerCase()
 const sslEnabled = sslSetting ? ['1', 'true', 'require'].includes(sslSetting) : useAiven
 const sslCaPath = process.env.DB_SSL_CA_PATH
+const sslCa = process.env.DB_SSL_CA
 
 const ssl = sslEnabled
   ? {
       rejectUnauthorized: true,
       ...(sslCaPath ? { ca: fs.readFileSync(path.resolve(sslCaPath)) } : {}),
+      ...(sslCa ? { ca: sslCa.replace(/\\n/g, '\n') } : {}),
     }
   : undefined
 
