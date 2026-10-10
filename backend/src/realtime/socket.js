@@ -1,5 +1,5 @@
 const { Server } = require('socket.io')
-const { parseCookie } = require('cookie')
+const { parse: parseCookie } = require('cookie')
 const { verifyAuthToken } = require('../utils/token')
 const conversationModel = require('../models/conversationModel')
 const messagingService = require('../services/messagingService')
