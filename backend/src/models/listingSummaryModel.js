@@ -20,6 +20,8 @@ function buildSelect(config, withEditable = false) {
             ${config.priceColumn} AS price,
             t.status,
             t.created_at,
+            t.admin_hidden_at,
+            t.admin_hidden_reason,
             (SELECT media_url FROM ${config.imageTable}
               WHERE ${config.imageForeignKey} = t.id
               ORDER BY is_primary DESC, id ASC
@@ -48,6 +50,8 @@ function toSummary(type, row, withEditable = false) {
     status: row.status,
     image: row.image,
     createdAt: row.created_at,
+    adminHidden: row.admin_hidden_at != null,
+    adminHiddenReason: row.admin_hidden_reason || null,
     path: `${config.path}/${row.id}`,
     label: config.label,
   }

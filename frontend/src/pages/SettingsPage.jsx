@@ -6,6 +6,7 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import { listFavorites, removeFavorite } from '../services/favoriteService.js'
 import { changePassword, deleteMyListing, listMyListings, updateMyListing, updateProfile } from '../services/userService.js'
+import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../services/notificationService.js'
 import { Pencil, Trash2, HeartOff } from 'lucide-react'
 import '../styles/site.css'
 
@@ -156,6 +157,74 @@ function ListingEditForm({ item, onCancel, onSaved }) {
   )
 }
 
+function NotificationList({ onChanged }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const fetchNotifications = () => {
+    setLoading(true)
+    setError('')
+    listNotifications()
+      .then((data) => setItems(data.data || []))
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
+  const handleRead = async (item) => {
+    if (item.isRead) return
+    try {
+      await markNotificationRead(item.id)
+      setItems((prev) => prev.map((entry) => (entry.id === item.id ? { ...entry, isRead: true } : entry)))
+      onChanged()
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  const handleReadAll = async () => {
+    try {
+      await markAllNotificationsRead()
+      setItems((prev) => prev.map((entry) => ({ ...entry, isRead: true })))
+      onChanged()
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  if (loading) return <p>Đang tải...</p>
+  if (error) return <div className="listing-error" role="alert"><p>{error}</p><button type="button" className="btn btn-outline" onClick={fetchNotifications}>Thử lại</button></div>
+  if (items.length === 0) return <p>Bạn chưa có thông báo nào.</p>
+
+  return (
+    <>
+      {items.some((item) => !item.isRead) && (
+        <div className="notification-toolbar">
+          <button type="button" className="btn btn-outline" onClick={handleReadAll}>Đánh dấu tất cả đã đọc</button>
+        </div>
+      )}
+      <div className="notification-list">
+        {items.map((item) => (
+          <div key={item.id} className={`notification-item ${item.isRead ? '' : 'unread'}`}>
+            <p className="notification-item-title">{item.title}</p>
+            {item.body && <p className="notification-item-body"><strong>Lý do:</strong> {item.body}</p>}
+            <div className="notification-item-meta">
+              <span>{new Date(item.createdAt).toLocaleString('vi-VN')}</span>
+              {!item.isRead && (
+                <button type="button" className="btn btn-outline" onClick={() => handleRead(item)}>Đã đọc</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 function MyListingsList() {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -215,10 +284,18 @@ function MyListingsList() {
                   <span className="settings-badge">{item.label}</span>
                   {item.price && <span className="settings-list-price">{item.price}</span>}
                   <span className="settings-badge settings-badge-status">{item.status}</span>
+                  {item.adminHidden && (
+                    <span className="settings-badge settings-badge-hidden">Bị quản trị viên ẩn</span>
+                  )}
                   <span className="settings-list-date">
                     Đăng lúc: {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                   </span>
                 </div>
+                {item.adminHidden && (
+                  <div className="settings-hidden-notice" role="note">
+                    <strong>Lý do ẩn:</strong> {item.adminHiddenReason}
+                  </div>
+                )}
               </div>
               <div className="settings-list-actions">
                 <button
@@ -260,6 +337,17 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [message, setMessage] = useState({ type: '', text: '' })
   const [loading, setLoading] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+
+  const refreshUnreadNotifications = () => {
+    listNotifications()
+      .then((data) => setUnreadNotifications(data.unreadCount || 0))
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    refreshUnreadNotifications()
+  }, [])
 
   const fileInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '')
@@ -322,12 +410,18 @@ export default function SettingsPage() {
               {[
                 ['profile', 'Hồ sơ cá nhân'],
                 ['password', 'Bảo mật & Mật khẩu'],
+                ['notifications', 'Thông báo'],
                 ['listings', 'Bài đăng của tôi'],
                 ['favorites', 'Đã lưu (Yêu thích)'],
                 ['system', 'Hệ thống (Thông báo)'],
               ].map(([tab, label]) => (
                 <li key={tab} className={activeTab === tab ? 'active' : ''}>
-                  <button type="button" aria-current={activeTab === tab ? 'page' : undefined} onClick={() => setActiveTab(tab)}>{label}</button>
+                  <button type="button" aria-current={activeTab === tab ? 'page' : undefined} onClick={() => setActiveTab(tab)}>
+                    {label}
+                    {tab === 'notifications' && unreadNotifications > 0 && (
+                      <span className="settings-nav-badge">{unreadNotifications}</span>
+                    )}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -386,6 +480,15 @@ export default function SettingsPage() {
                     {loading ? 'Đang đổi...' : 'Đổi mật khẩu'}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="settings-card">
+                <h2>Thông báo</h2>
+                <div style={{ marginTop: 20 }}>
+                  <NotificationList onChanged={refreshUnreadNotifications} />
+                </div>
               </div>
             )}
 

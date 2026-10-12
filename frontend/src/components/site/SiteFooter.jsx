@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
 
 const SOCIALS = [
-  { name: 'Facebook', src: '/images/fb.svg' },
+  { name: 'Facebook', src: '/images/fb.svg', url: 'https://www.facebook.com/share/1EuuM2wdGS/?mibextid=wwXIfr' },
   { name: 'Instagram', src: '/images/ig.svg' },
-  { name: 'LinkedIn', src: '/images/in.svg' },
-  { name: 'TikTok', src: '/images/tiktok.svg' },
+  { name: 'LinkedIn', src: '/images/in.svg'},
+  { name: 'TikTok', src: '/images/tiktok.svg', url: 'https://www.tiktok.com/@troholagiare.com?_r=1&_t=ZS-9AUXSM0m6uP' },
 ]
 
 export default function SiteFooter() {
@@ -27,8 +27,15 @@ export default function SiteFooter() {
           </div>
           <p>Nền tảng tìm phòng trọ, roommate, pass phòng và vận chuyển đồ dành cho sinh viên.</p>
           <div className="footer-socials">
-            {SOCIALS.map((social) => (
-              <a key={social.name} href="#" aria-label={social.name} className="footer-social-icon">
+            {SOCIALS.filter((social) => social.url).map((social) => (
+              <a
+                key={social.name}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.name}
+                className="footer-social-icon"
+              >
                 <PlaceholderImage src={social.src} alt={social.name} className="footer-social-img" />
               </a>
             ))}

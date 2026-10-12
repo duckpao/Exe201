@@ -1,7 +1,7 @@
 const pool = require('../config/db')
 
 function buildListFilters(query) {
-  const where = ["v.deleted_at IS NULL", "v.status = 'available'"]
+  const where = ["v.deleted_at IS NULL", "v.status = 'available'", 'v.admin_hidden_at IS NULL']
   const params = []
 
   if (query.priceMin) {
@@ -55,7 +55,7 @@ async function list(query, { limit, offset }) {
      FROM vehicles v
      JOIN users u ON u.id = v.owner_id
      WHERE v.id = ? AND v.deleted_at IS NULL
-       AND (v.status = 'available' OR v.owner_id = ?)
+       AND ((v.status = 'available' AND v.admin_hidden_at IS NULL) OR v.owner_id = ?)
      LIMIT 1`,
     [id, viewerId]
   )

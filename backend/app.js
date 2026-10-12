@@ -15,6 +15,8 @@ const userRoutes = require('./src/routes/userRoutes')
 const favoriteRoutes = require('./src/routes/favoriteRoutes')
 const mapRoutes = require('./src/routes/mapRoutes')
 const paymentRoutes = require('./src/routes/paymentRoutes')
+const adminRoutes = require('./src/routes/adminRoutes')
+const notificationRoutes = require('./src/routes/notificationRoutes')
 
 const app = express()
 app.set('trust proxy', 1)
@@ -40,6 +42,8 @@ app.use('/api/users', userRoutes)
 app.use('/api/favorites', favoriteRoutes)
 app.use('/api/maps', mapRoutes)
 app.use('/api/payments', paymentRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 app.use((request, response) => {
   response.status(404).json({ message: 'Không tìm thấy endpoint' })

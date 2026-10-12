@@ -67,7 +67,7 @@ async function findSimilarRooms(listingType, listing) {
        a.ward, a.province,
        (SELECT media_url FROM room_images WHERE room_listing_id = rl.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS image
      FROM room_listings rl JOIN addresses a ON a.id = rl.address_id
-     WHERE rl.deleted_at IS NULL AND rl.status = 'available' AND NOT (? = 'room' AND rl.id = ?)
+     WHERE rl.deleted_at IS NULL AND rl.status = 'available' AND rl.admin_hidden_at IS NULL AND NOT (? = 'room' AND rl.id = ?)
      ${order} LIMIT 5`,
     [listingType, ...params]
   )

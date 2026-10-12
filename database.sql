@@ -81,6 +81,8 @@ CREATE TABLE room_listings (
   max_occupants   SMALLINT UNSIGNED NULL,
   amenities       JSON NULL, -- ví dụ: ["wifi","gac_xep","gio_giac_tu_do"]
   status          ENUM('available','rented','hidden') NOT NULL DEFAULT 'available',
+  admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
+  admin_hidden_reason VARCHAR(500) NULL,
   created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at      TIMESTAMP NULL,
@@ -122,6 +124,8 @@ CREATE TABLE room_pass_listings (
   contract_end_date DATE NULL, -- tái dùng để lưu ngày muốn pass (passDate) từ form đăng bài
   reason            VARCHAR(255) NULL,
   status            ENUM('pending','active','urgent','completed','cancelled') NOT NULL DEFAULT 'pending',
+  admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
+  admin_hidden_reason VARCHAR(500) NULL,
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at        TIMESTAMP NULL,
@@ -165,6 +169,8 @@ CREATE TABLE roommate_listings (
   amenities         JSON NULL,
   publish_at        DATETIME NULL, -- NULL = đăng ngay, có giá trị = đăng theo lịch
   status            ENUM('active','closed') NOT NULL DEFAULT 'active',
+  admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
+  admin_hidden_reason VARCHAR(500) NULL,
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at        TIMESTAMP NULL,
@@ -199,6 +205,8 @@ CREATE TABLE item_listings (
   item_condition VARCHAR(50) NULL,     -- 'Mới 90%'|'Mới 95%'|'Đã dùng'
   price          DECIMAL(12,2) NOT NULL,
   status         ENUM('pending','available','urgent','sold') NOT NULL DEFAULT 'pending',
+  admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
+  admin_hidden_reason VARCHAR(500) NULL,
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at     TIMESTAMP NULL,
@@ -254,6 +262,8 @@ CREATE TABLE vehicles (
   description    TEXT NULL,
   tags           JSON NULL,
   status         ENUM('available','busy','hidden') NOT NULL DEFAULT 'available',
+  admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
+  admin_hidden_reason VARCHAR(500) NULL,
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at     TIMESTAMP NULL,
@@ -562,4 +572,21 @@ CREATE TABLE messages (
   KEY idx_conversation_created (conversation_id, created_at),
   CONSTRAINT fk_message_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
   CONSTRAINT fk_message_sender FOREIGN KEY (sender_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Thông báo trong website (vd: admin ẩn bài đăng kèm lý do)
+-- ---------------------------------------------------------
+CREATE TABLE notifications (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id      BIGINT UNSIGNED NOT NULL,
+  type         VARCHAR(50)  NOT NULL,
+  title        VARCHAR(200) NOT NULL,
+  body         TEXT NULL,
+  listing_type ENUM('room','roommate','pass_room','item','vehicle') NULL,
+  listing_id   BIGINT UNSIGNED NULL,
+  is_read      TINYINT(1) NOT NULL DEFAULT 0,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_notifications_user (user_id, is_read, created_at),
+  CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

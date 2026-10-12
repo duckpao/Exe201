@@ -1,7 +1,7 @@
 const pool = require('../config/db')
 
 function buildListFilters(query) {
-  const where = ["rp.deleted_at IS NULL", "rp.status IN ('active','urgent')"]
+  const where = ["rp.deleted_at IS NULL", "rp.status IN ('active','urgent')", 'rp.admin_hidden_at IS NULL']
   const params = []
 
   if (query.ward) {
@@ -66,7 +66,7 @@ async function list(query, { limit, offset }) {
      JOIN addresses a ON a.id = rp.address_id
      JOIN users u ON u.id = rp.posted_by
      WHERE rp.id = ? AND rp.deleted_at IS NULL
-       AND (rp.status IN ('active','urgent') OR rp.posted_by = ?)
+       AND ((rp.status IN ('active','urgent') AND rp.admin_hidden_at IS NULL) OR rp.posted_by = ?)
      LIMIT 1`,
     [id, viewerId]
   )

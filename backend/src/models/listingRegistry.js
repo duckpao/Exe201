@@ -30,7 +30,7 @@ const LISTING_TYPES = {
     },
     path: '/phong-tro',
     label: 'phòng trọ',
-    publicStatusSql: "l.status = 'available'",
+    publicStatusSql: "l.status = 'available' AND l.admin_hidden_at IS NULL",
   },
   roommate: {
     table: 'roommate_listings',
@@ -49,7 +49,7 @@ const LISTING_TYPES = {
     },
     path: '/tim-roommate',
     label: 'bài tìm roommate',
-    publicStatusSql: "l.status = 'active' AND (l.publish_at IS NULL OR l.publish_at <= NOW())",
+    publicStatusSql: "l.status = 'active' AND (l.publish_at IS NULL OR l.publish_at <= NOW()) AND l.admin_hidden_at IS NULL",
   },
   pass_room: {
     table: 'room_pass_listings',
@@ -68,7 +68,7 @@ const LISTING_TYPES = {
     },
     path: '/pass-phong',
     label: 'bài pass phòng',
-    publicStatusSql: "l.status IN ('active','urgent')",
+    publicStatusSql: "l.status IN ('active','urgent') AND l.admin_hidden_at IS NULL",
   },
   item: {
     table: 'item_listings',
@@ -86,7 +86,7 @@ const LISTING_TYPES = {
     },
     path: '/pass-do',
     label: 'bài pass đồ',
-    publicStatusSql: "l.status IN ('available','urgent')",
+    publicStatusSql: "l.status IN ('available','urgent') AND l.admin_hidden_at IS NULL",
   },
   vehicle: {
     table: 'vehicles',
@@ -107,7 +107,7 @@ const LISTING_TYPES = {
     },
     path: '/van-chuyen-do',
     label: 'dịch vụ vận chuyển',
-    publicStatusSql: "l.status = 'available'",
+    publicStatusSql: "l.status = 'available' AND l.admin_hidden_at IS NULL",
   },
 }
 

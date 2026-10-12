@@ -2,7 +2,7 @@ const pool = require('../config/db')
 const { queryWithRetry } = pool
 
 function buildListFilters(query) {
-  const where = ["rl.deleted_at IS NULL", "rl.status = 'available'"]
+  const where = ["rl.deleted_at IS NULL", "rl.status = 'available'", 'rl.admin_hidden_at IS NULL']
   const params = []
 
   if (query.keyword) {
@@ -72,7 +72,7 @@ async function list(query, { limit, offset }) {
      JOIN addresses a ON a.id = rl.address_id
      JOIN users u ON u.id = rl.landlord_id
      WHERE rl.id = ? AND rl.deleted_at IS NULL
-       AND (rl.status = 'available' OR rl.landlord_id = ?)
+       AND ((rl.status = 'available' AND rl.admin_hidden_at IS NULL) OR rl.landlord_id = ?)
      LIMIT 1`,
     [id, viewerId]
   )

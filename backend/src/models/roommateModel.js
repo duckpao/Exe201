@@ -4,6 +4,7 @@ function buildListFilters(query) {
   const where = [
     'rm.deleted_at IS NULL',
     "rm.status = 'active'",
+    'rm.admin_hidden_at IS NULL',
     '(rm.publish_at IS NULL OR rm.publish_at <= NOW())',
   ]
   const params = []
@@ -74,6 +75,7 @@ async function list(query, { limit, offset }) {
      WHERE rm.id = ? AND rm.deleted_at IS NULL
        AND (rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW()) OR rm.posted_by = ?)
        AND rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW())
+       AND rm.admin_hidden_at IS NULL
      LIMIT 1`,
     [id, viewerId]
   )
