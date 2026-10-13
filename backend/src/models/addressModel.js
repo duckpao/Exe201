@@ -1,5 +1,16 @@
 const pool = require('../config/db')
 
+// Dòng địa chỉ được tái dùng giữa nhiều bài đăng. Nếu lần tạo đầu geocode thất bại
+// (tọa độ NULL), mọi bài sau tái dùng dòng đó sẽ mãi không có bản đồ, nên bù tọa độ
+// ngay khi lần đăng sau có được.
+async function fillMissingCoordinates(row, latitude, longitude) {
+  const hasNewCoords = latitude != null && longitude != null
+  if (!hasNewCoords || (row.latitude != null && row.longitude != null)) return row
+
+  await pool.query('UPDATE addresses SET latitude = ?, longitude = ? WHERE id = ?', [latitude, longitude, row.id])
+  return { ...row, latitude, longitude }
+}
+
 async function findOrCreateWard({
   ward,
   province = 'Hà Nội',
@@ -15,7 +26,7 @@ async function findOrCreateWard({
 } = {}) {
   if (vietmapRefId) {
     const [existingRows] = await pool.query('SELECT * FROM addresses WHERE vietmap_ref_id = ? LIMIT 1', [vietmapRefId])
-    if (existingRows[0]) return existingRows[0]
+    if (existingRows[0]) return fillMissingCoordinates(existingRows[0], latitude, longitude)
   }
 
   if (!streetAddress) {
@@ -24,13 +35,13 @@ async function findOrCreateWard({
         'SELECT * FROM addresses WHERE ward_code = ? AND street_address IS NULL LIMIT 1',
         [wardCode]
       )
-      if (existingRows[0]) return existingRows[0]
+      if (existingRows[0]) return fillMissingCoordinates(existingRows[0], latitude, longitude)
     } else {
       const [existingRows] = await pool.query(
         'SELECT * FROM addresses WHERE province = ? AND district = ? AND ward = ? LIMIT 1',
         [province, district, ward]
       )
-      if (existingRows[0]) return existingRows[0]
+      if (existingRows[0]) return fillMissingCoordinates(existingRows[0], latitude, longitude)
     }
   }
 
