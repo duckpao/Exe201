@@ -59,14 +59,12 @@ async function getOverview() {
   const perType = await Promise.all(
     LISTING_TYPE_KEYS.map(async (type) => {
       const config = LISTING_TYPES[type]
-      const hasPending = type === 'item' || type === 'pass_room'
       const [[row]] = await pool.query(
         `SELECT COUNT(*) AS total,
-                COALESCE(SUM(admin_hidden_at IS NOT NULL), 0) AS hidden,
-                ${hasPending ? "COALESCE(SUM(status = 'pending'), 0)" : '0'} AS pending
+                COALESCE(SUM(admin_hidden_at IS NOT NULL), 0) AS hidden
          FROM ${config.table} WHERE deleted_at IS NULL`
       )
-      return { type, label: config.label, total: Number(row.total), hidden: Number(row.hidden), pending: Number(row.pending) }
+      return { type, label: config.label, total: Number(row.total), hidden: Number(row.hidden) }
     })
   )
 
@@ -79,7 +77,6 @@ async function getOverview() {
     listings: {
       total: perType.reduce((sum, item) => sum + item.total, 0),
       hidden: perType.reduce((sum, item) => sum + item.hidden, 0),
-      pending: perType.reduce((sum, item) => sum + item.pending, 0),
       byType: perType,
     },
     recentUsers,

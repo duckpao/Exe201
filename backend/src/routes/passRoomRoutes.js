@@ -9,6 +9,5 @@ const router = express.Router()
 router.get('/', passRoomController.listPassRooms)
 router.get('/:id', optionalAuth, passRoomController.getPassRoom)
 router.post('/', requireAuth, requirePostingAccess, uploadImages, requireReviewVideo, passRoomController.createPassRoom)
-router.patch('/:id/status', requireAuth, passRoomController.updatePassRoomStatus)
 
 module.exports = router

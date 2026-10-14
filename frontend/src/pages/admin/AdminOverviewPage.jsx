@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAdminOverview } from '../../services/adminUserService.js'
-import { Users, FolderOpen, Hourglass, Lock, EyeOff } from 'lucide-react'
+import { Users, FolderOpen, Lock, EyeOff } from 'lucide-react'
 
 const ROLE_LABELS = { tenant: 'Người thuê', landlord: 'Chủ trọ', admin: 'Quản trị viên' }
 
@@ -55,11 +55,6 @@ export default function AdminOverviewPage() {
               <span className="stat-card-icon"><FolderOpen size={16} /></span>
               <div className="stat-card-value">{overview.listings.total}</div>
               <div className="stat-card-label">Tổng tin đăng</div>
-            </div>
-            <div className="stat-card">
-              <span className="stat-card-icon"><Hourglass size={16} /></span>
-              <div className="stat-card-value">{overview.listings.pending}</div>
-              <div className="stat-card-label">Tin chờ duyệt</div>
             </div>
             <div className="stat-card">
               <span className="stat-card-icon"><EyeOff size={16} /></span>

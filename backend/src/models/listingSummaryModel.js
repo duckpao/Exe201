@@ -100,7 +100,7 @@ async function findSummariesByIds(idsByType) {
   return found
 }
 
-// Toàn bộ bài đăng còn sống của một user, gồm cả pending/hidden vì đây là view của chính chủ.
+// Toàn bộ bài đăng còn sống của một user, gồm cả bài đã bị admin ẩn vì đây là view của chính chủ.
 async function findSummariesByOwner(userId) {
   const perType = await Promise.all(
     LISTING_TYPE_KEYS.map(async (type) => {

@@ -102,24 +102,4 @@ async function createItem(request, response) {
   response.status(201).json({ id: itemId, title, status: 'available' })
 }
 
-async function updateItemStatus(request, response) {
-  if (request.user.role !== 'admin') {
-    return response.status(403).json({ message: 'Chỉ quản trị viên mới có quyền duyệt bài' })
-  }
-
-  const { status } = request.body || {}
-  const allowedStatuses = ['pending', 'available', 'urgent', 'sold']
-  if (!allowedStatuses.includes(status)) {
-    return response.status(400).json({ message: 'Trạng thái không hợp lệ' })
-  }
-
-  const item = await itemModel.findById(request.params.id)
-  if (!item) {
-    return response.status(404).json({ message: 'Không tìm thấy đồ pass' })
-  }
-
-  await itemModel.updateStatus(request.params.id, status)
-  response.json({ id: Number(request.params.id), status })
-}
-
-module.exports = { listItems, getItem, createItem, updateItemStatus }
+module.exports = { listItems, getItem, createItem }

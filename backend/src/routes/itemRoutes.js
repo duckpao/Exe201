@@ -9,6 +9,5 @@ const router = express.Router()
 router.get('/', itemController.listItems)
 router.get('/:id', optionalAuth, itemController.getItem)
 router.post('/', requireAuth, requirePostingAccess, uploadImages, requireReviewVideo, itemController.createItem)
-router.patch('/:id/status', requireAuth, itemController.updateItemStatus)
 
 module.exports = router

@@ -106,8 +106,4 @@ async function addImages(passListingId, images) {
   await pool.query('INSERT INTO room_pass_images (room_pass_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 
-async function updateStatus(id, status) {
-  await pool.query('UPDATE room_pass_listings SET status = ? WHERE id = ?', [status, id])
-}
-
-module.exports = { list, findById, getGallery, create, addImages, updateStatus }
+module.exports = { list, findById, getGallery, create, addImages }

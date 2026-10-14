@@ -43,14 +43,12 @@ const PASS_ROOM_STATUS_LABELS = {
   urgent: 'Cần pass gấp',
   completed: 'Đã pass xong',
   cancelled: 'Đã huỷ',
-  pending: 'Đang chờ duyệt',
 }
 
 const ITEM_STATUS_LABELS = {
   available: 'Còn hàng',
   urgent: 'Cần bán gấp',
   sold: 'Đã bán',
-  pending: 'Đang chờ duyệt',
 }
 
 module.exports = {

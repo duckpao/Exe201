@@ -117,24 +117,4 @@ async function createPassRoom(request, response) {
   response.status(201).json({ id: passRoomId, title, status: 'active' })
 }
 
-async function updatePassRoomStatus(request, response) {
-  if (request.user.role !== 'admin') {
-    return response.status(403).json({ message: 'Chỉ quản trị viên mới có quyền duyệt bài' })
-  }
-
-  const { status } = request.body || {}
-  const allowedStatuses = ['pending', 'active', 'urgent', 'completed', 'cancelled']
-  if (!allowedStatuses.includes(status)) {
-    return response.status(400).json({ message: 'Trạng thái không hợp lệ' })
-  }
-
-  const passRoom = await passRoomModel.findById(request.params.id)
-  if (!passRoom) {
-    return response.status(404).json({ message: 'Không tìm thấy bài pass phòng' })
-  }
-
-  await passRoomModel.updateStatus(request.params.id, status)
-  response.json({ id: Number(request.params.id), status })
-}
-
-module.exports = { listPassRooms, getPassRoom, createPassRoom, updatePassRoomStatus }
+module.exports = { listPassRooms, getPassRoom, createPassRoom }

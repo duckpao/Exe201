@@ -89,8 +89,4 @@ async function addImages(itemListingId, images) {
   await pool.query('INSERT INTO item_images (item_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 
-async function updateStatus(id, status) {
-  await pool.query('UPDATE item_listings SET status = ? WHERE id = ?', [status, id])
-}
-
-module.exports = { list, findById, getGallery, create, addImages, updateStatus }
+module.exports = { list, findById, getGallery, create, addImages }
