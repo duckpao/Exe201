@@ -16,4 +16,17 @@ const upload = multer({
   fileFilter,
 })
 
-module.exports = { uploadImages: upload.array('images', MAX_FILES) }
+// Mỗi bài đăng mới phải kèm đúng một video review. Chạy sau uploadImages, trước khi
+// trừ lượt đăng bài, nên bài thiếu video không làm mất lượt đã thanh toán.
+function requireReviewVideo(request, response, next) {
+  const videoCount = (request.files || []).filter((file) => file.mimetype.startsWith('video/')).length
+  if (videoCount === 0) {
+    return response.status(400).json({ message: 'Vui lòng tải lên 1 video review cho bài đăng' })
+  }
+  if (videoCount > 1) {
+    return response.status(400).json({ message: 'Chỉ được tải lên 1 video review' })
+  }
+  next()
+}
+
+module.exports = { uploadImages: upload.array('images', MAX_FILES), requireReviewVideo }

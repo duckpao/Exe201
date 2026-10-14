@@ -1,8 +1,9 @@
 const pool = require('../config/db')
+const { buildMediaRows } = require('../utils/media')
 const { queryWithRetry } = pool
 
 function buildListFilters(query) {
-  const where = ["rl.deleted_at IS NULL", "rl.status = 'available'", 'rl.admin_hidden_at IS NULL']
+  const where = ["rl.deleted_at IS NULL", "rl.status IN ('available','rented')", 'rl.admin_hidden_at IS NULL']
   const params = []
 
   if (query.keyword) {
@@ -46,11 +47,11 @@ async function list(query, { limit, offset }) {
 
   const [rows] = await queryWithRetry(
     `SELECT rl.*, a.province, a.district, a.ward,
-       (SELECT media_url FROM room_images WHERE room_listing_id = rl.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM room_images WHERE room_listing_id = rl.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
      FROM room_listings rl
      JOIN addresses a ON a.id = rl.address_id
      WHERE ${whereSql}
-     ORDER BY rl.created_at DESC
+     ORDER BY (rl.status = 'available') DESC, rl.created_at DESC
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   )
@@ -72,7 +73,7 @@ async function list(query, { limit, offset }) {
      JOIN addresses a ON a.id = rl.address_id
      JOIN users u ON u.id = rl.landlord_id
      WHERE rl.id = ? AND rl.deleted_at IS NULL
-       AND ((rl.status = 'available' AND rl.admin_hidden_at IS NULL) OR rl.landlord_id = ?)
+       AND ((rl.status IN ('available','rented') AND rl.admin_hidden_at IS NULL) OR rl.landlord_id = ?)
      LIMIT 1`,
     [id, viewerId]
   )
@@ -107,7 +108,7 @@ async function create({ landlordId, addressId, title, description, propertyType,
 
 async function addImages(roomListingId, images) {
   if (!images.length) return
-  const values = images.map((img, index) => [roomListingId, img.url, img.mediaType, index === 0 ? 1 : 0])
+  const values = buildMediaRows(roomListingId, images)
   await pool.query('INSERT INTO room_images (room_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 

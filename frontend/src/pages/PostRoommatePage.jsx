@@ -5,6 +5,7 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import LocationSelect from '../components/site/LocationSelect.jsx'
 import ImageUploader from '../components/site/ImageUploader.jsx'
+import VideoUploader from '../components/site/VideoUploader.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useLocationSelect } from '../hooks/useLocationSelect.js'
@@ -49,6 +50,7 @@ export default function PostRoommatePage() {
   const [aboutText, setAboutText] = useState('')
   const [placeText, setPlaceText] = useState('')
   const [images, setImages] = useState([])
+  const [video, setVideo] = useState(null)
   const [timing, setTiming] = useState('now')
   const [scheduledDate, setScheduledDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -67,6 +69,10 @@ export default function PostRoommatePage() {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
+    if (!video) {
+      setError('Vui lòng tải lên 1 video review cho bài đăng.')
+      return
+    }
     setSubmitting(true)
     try {
       const formData = new FormData()
@@ -82,6 +88,7 @@ export default function PostRoommatePage() {
       formData.set('timing', timing)
       if (timing === 'scheduled' && scheduledDate) formData.set('scheduledDate', scheduledDate)
       images.forEach((image) => formData.append('images', image.file))
+      formData.append('images', video.file)
 
       const roommate = await createRoommate(formData)
       navigate(`/tim-roommate/${roommate.id}`)
@@ -230,7 +237,11 @@ export default function PostRoommatePage() {
             </div>
             <div className="form-row">
               <span className="form-label">Hình ảnh</span>
-              <ImageUploader images={images} onChange={setImages} />
+              <ImageUploader images={images} onChange={setImages} accept="image/*" />
+            </div>
+            <div className="form-row">
+              <span className="form-label">Video review (bắt buộc)</span>
+              <VideoUploader value={video} onChange={setVideo} />
             </div>
 
             <h2 className="form-step-title">3. Thời gian đăng tin</h2>

@@ -15,6 +15,7 @@
 const LISTING_TYPES = {
   room: {
     table: 'room_listings',
+    reviewTarget: 'room_listing',
     ownerColumn: 'landlord_id',
     titleColumn: 'title',
     priceColumn: 'price_per_month',
@@ -34,6 +35,7 @@ const LISTING_TYPES = {
   },
   roommate: {
     table: 'roommate_listings',
+    reviewTarget: 'roommate',
     ownerColumn: 'posted_by',
     titleColumn: 'title',
     priceColumn: 'budget_max',
@@ -53,6 +55,7 @@ const LISTING_TYPES = {
   },
   pass_room: {
     table: 'room_pass_listings',
+    reviewTarget: 'pass_room',
     ownerColumn: 'posted_by',
     titleColumn: 'title',
     priceColumn: 'monthly_price',
@@ -72,6 +75,7 @@ const LISTING_TYPES = {
   },
   item: {
     table: 'item_listings',
+    reviewTarget: 'item',
     ownerColumn: 'posted_by',
     titleColumn: 'title',
     priceColumn: 'price',
@@ -90,6 +94,7 @@ const LISTING_TYPES = {
   },
   vehicle: {
     table: 'vehicles',
+    reviewTarget: 'vehicle',
     ownerColumn: 'owner_id',
     titleColumn: 'name',
     priceColumn: 'COALESCE(price_per_trip, price_per_hour)',

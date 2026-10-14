@@ -25,6 +25,7 @@ function toConversationCard(row, userId) {
     listingTitle: row.listing_title || 'Bài đăng đã bị gỡ',
     listingImage: row.listing_image,
     listingUrl: row.listing_title ? listingUrl(row.listing_type, row.listing_id) : null,
+    isOwner,
     counterpart: isOwner
       ? { id: row.inquirer_id, name: row.inquirer_name, avatar: row.inquirer_avatar }
       : { id: row.owner_id, name: row.owner_name, avatar: row.owner_avatar },

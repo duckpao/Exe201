@@ -20,7 +20,13 @@ export default function TransportCard({ service }) {
             </span>
           ))}
         </div>
-        <p className="transport-card-price">{service.price || 'Liên hệ để báo giá'}</p>
+        <p className="transport-card-price">
+          {service.phone ? (
+            <a href={`tel:${service.phone}`}>{service.phone}</a>
+          ) : (
+            <Link to="/login">Đăng nhập để xem số điện thoại</Link>
+          )}
+        </p>
         <Link to={`/van-chuyen-do/${service.id}`} className="btn btn-primary transport-card-cta">
           Xem chi tiết
         </Link>

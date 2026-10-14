@@ -8,6 +8,8 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getRoommate } from '../services/roommateService.js'
+import ListingVideo from '../components/site/ListingVideo.jsx'
+import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
 import { MapPin, BadgeDollarSign, Home, Maximize, Bed, User, Users, Calendar } from 'lucide-react';
 
@@ -108,6 +110,9 @@ export default function RoommateDetailPage() {
                   <p>{roommate.placeInfo}</p>
                 </div>
               )}
+              <ListingVideo src={roommate.videoUrl} title={roommate.title} />
+              <ListingReviews listingType="roommate" listingId={roommate.id} />
+
             </div>
 
             <aside className="detail-sidebar">

@@ -6,6 +6,7 @@ import PlaceholderImage from '../components/site/PlaceholderImage.jsx'
 import AddressAutocomplete from '../components/site/AddressAutocomplete.jsx'
 import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import ImageUploader from '../components/site/ImageUploader.jsx'
+import VideoUploader from '../components/site/VideoUploader.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { createRoom } from '../services/roomService.js'
@@ -46,6 +47,7 @@ export default function PostRoomPage() {
   const [amenities, setAmenities] = useState([])
   const [description, setDescription] = useState('')
   const [images, setImages] = useState([])
+  const [video, setVideo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -108,6 +110,10 @@ export default function PostRoomPage() {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
+    if (!video) {
+      setError('Vui lòng tải lên 1 video review cho bài đăng.')
+      return
+    }
     setSubmitting(true)
     try {
       const formData = new FormData()
@@ -131,6 +137,7 @@ export default function PostRoomPage() {
       }
       formData.set('amenities', amenities.join(','))
       images.forEach((image) => formData.append('images', image.file))
+      formData.append('images', video.file)
 
       const room = await createRoom(formData)
       navigate(`/phong-tro/${room.id}`)
@@ -339,7 +346,11 @@ export default function PostRoomPage() {
             <h2 className="form-step-title">Mô tả chi tiết</h2>
             <div className="form-row">
               <span className="form-label">Hình ảnh</span>
-              <ImageUploader images={images} onChange={setImages} />
+              <ImageUploader images={images} onChange={setImages} accept="image/*" />
+            </div>
+            <div className="form-row">
+              <span className="form-label">Video review (bắt buộc)</span>
+              <VideoUploader value={video} onChange={setVideo} />
             </div>
             <div className="form-row">
               <textarea

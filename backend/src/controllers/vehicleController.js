@@ -4,6 +4,7 @@ const { uploadFiles } = require('../utils/cloudinaryUpload')
 const { formatVnd, formatJoinedDuration } = require('../utils/format')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
+const { splitGallery } = require('../utils/media')
 
 function priceOf(row) {
   if (row.price_per_trip) return formatVnd(row.price_per_trip, '/chuyến')
@@ -11,13 +12,14 @@ function priceOf(row) {
   return null
 }
 
-function toVehicleCard(row) {
+function toVehicleCard(row, isLoggedIn) {
   return {
     id: row.id,
     title: row.name,
     rating: row.avg_rating ? Number(row.avg_rating).toFixed(1) : null,
     tags: row.tags || [],
     price: priceOf(row),
+    phone: isLoggedIn ? row.owner_phone || null : null,
     image: row.primary_image || null,
   }
 }
@@ -36,7 +38,7 @@ async function listVehicles(request, response) {
   const { rows, total } = await vehicleModel.list(query, { limit, offset })
 
   response.json({
-    data: rows.map(toVehicleCard),
+    data: rows.map((row) => toVehicleCard(row, Boolean(request.user))),
     pagination: buildPagination({ page, limit, total }),
   })
 }
@@ -47,7 +49,7 @@ async function getVehicle(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy dịch vụ vận chuyển' })
   }
 
-  const gallery = await vehicleModel.getGallery(vehicle.id)
+  const { images, videoUrl } = splitGallery(await vehicleModel.getGallery(vehicle.id))
 
   response.json({
     id: vehicle.id,
@@ -61,12 +63,14 @@ async function getVehicle(request, response) {
     reviews: vehicle.review_count,
     tags: vehicle.tags || [],
     price: priceOf(vehicle),
-    image: gallery[0]?.media_url || null,
-    gallery: gallery.map((item) => item.media_url),
+    image: images[0] || null,
+    gallery: images,
+    videoUrl,
     description: vehicle.description,
     vehicleType: vehicle.vehicle_type,
     serviceType: vehicle.service_type,
     capacityKg: vehicle.capacity_kg,
+    phone: request.user ? vehicle.owner_phone || null : null,
     owner: {
       name: vehicle.owner_name,
       avatar: vehicle.owner_avatar,

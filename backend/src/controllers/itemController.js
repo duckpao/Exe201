@@ -5,6 +5,7 @@ const { formatVnd, parseVndAmount, formatAddress } = require('../utils/format')
 const { ITEM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
+const { splitGallery } = require('../utils/media')
 
 function toItemCard(row) {
   return {
@@ -44,7 +45,7 @@ async function getItem(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy đồ pass' })
   }
 
-  const gallery = await itemModel.getGallery(item.id)
+  const { images, videoUrl } = splitGallery(await itemModel.getGallery(item.id))
   const statusLabel = ITEM_STATUS_LABELS[item.status] || item.status
 
   response.json({
@@ -56,14 +57,15 @@ async function getItem(request, response) {
     condition: item.item_condition,
     location: item.ward,
     status: statusLabel,
-    image: gallery[0]?.media_url || null,
+    image: images[0] || null,
     tags: [item.category, item.item_condition, statusLabel],
     address: formatAddress(item),
     streetAddress: item.street_address,
     latitude: item.latitude != null ? Number(item.latitude) : null,
     longitude: item.longitude != null ? Number(item.longitude) : null,
     description: item.description,
-    gallery: gallery.map((entry) => entry.media_url),
+    gallery: images,
+    videoUrl,
     poster: { name: item.poster_name, avatar: item.poster_avatar },
   })
 }

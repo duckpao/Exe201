@@ -8,6 +8,8 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getItem } from '../services/itemService.js'
+import ListingVideo from '../components/site/ListingVideo.jsx'
+import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
 import { Tag, Sparkles, MapPin, BadgeDollarSign, Home, Pin } from 'lucide-react';
 
@@ -93,6 +95,9 @@ export default function PassItemDetailPage() {
                 <h2>Mô tả</h2>
                 <p>{item.description || 'Người đăng chưa bổ sung mô tả.'}</p>
               </div>
+              <ListingVideo src={item.videoUrl} title={item.title} />
+              <ListingReviews listingType="item" listingId={item.id} />
+
             </div>
 
             <aside className="detail-sidebar">

@@ -16,7 +16,7 @@
 | Lưu ảnh và video | Cloudinary | Dịch vụ ngoài |
 | Bản đồ và địa chỉ | VietMap | Dịch vụ ngoài |
 | Thanh toán | payOS | Dịch vụ ngoài |
-| Trợ lý AI | Gemini (`gemini-3.8-flash`) | Dịch vụ ngoài |
+| Trợ lý AI | Gemini (`gemini-3.6-flash`) | Dịch vụ ngoài |
 | Tin nhắn thời gian thực | Socket.IO | Chạy cùng máy chủ API |
 | Gửi email | Nodemailer (SMTP) | Dịch vụ SMTP |
 
@@ -39,11 +39,11 @@ Giao diện gọi máy chủ qua REST API và dùng cookie phiên đăng nhập.
 
 | Loại | Nội dung chính |
 |---|---|
-| Phòng trọ | Giá thuê, tiền cọc, diện tích, loại hình, tiện ích, số người tối đa |
+| Phòng trọ | Giá thuê, tiền cọc, diện tích, loại hình, tiện ích, số người tối đa; nhãn chéo trên ảnh (xanh: còn phòng, đỏ: hết phòng) |
 | Tìm roommate | Ngân sách, giới tính mong muốn, ngày chuyển vào, hẹn giờ đăng |
 | Pass phòng | Giá thuê hằng tháng, phí đền bù, ngày muốn pass |
 | Pass đồ | Danh mục, tình trạng, giá bán |
-| Vận chuyển đồ | Loại xe, giá theo giờ hoặc theo chuyến, tải trọng |
+| Vận chuyển đồ | Loại xe, tải trọng, số điện thoại chủ xe (chỉ người đã đăng nhập thấy) |
 
 Mỗi loại có trang danh sách, trang chi tiết, trang đăng bài riêng. Danh sách có bộ lọc (từ khóa, khoảng giá, diện tích, khu vực, tiện ích) và phân trang. Mỗi bài có thể đính kèm tối đa 8 ảnh hoặc video, mỗi tệp tối đa 25 MB.
 
@@ -54,6 +54,8 @@ Mỗi loại có trang danh sách, trang chi tiết, trang đăng bài riêng. D
 - Bộ chọn tỉnh và phường theo mã hành chính.
 
 ### d) Quản lý bài đăng của chính mình
+
+- Chủ trọ có trang Quản lý trọ riêng với thanh bên gồm Tổng quan, Bài đăng trọ (sửa, xóa) và Tin nhắn khách thuê.
 
 - Xem toàn bộ bài đã đăng trong Cài đặt, kèm trạng thái.
 - Sửa tiêu đề, mô tả, giá và trạng thái. Backend chỉ cho sửa bài thuộc về chính người đó, và chỉ các trường nằm trong danh sách cho phép.
@@ -79,7 +81,13 @@ Mỗi loại có trang danh sách, trang chi tiết, trang đăng bài riêng. D
 - Email và số điện thoại trong lịch sử chat được che trước khi gửi cho AI.
 - Mỗi lần gọi có giới hạn thời gian chờ 20 giây để không treo giao diện.
 
-### h) Thông báo
+### h) Video review và đánh giá
+
+- Mỗi bài đăng mới bắt buộc kèm 1 video review (tối đa 25 MB). Máy chủ từ chối bài thiếu video trước khi trừ lượt đăng đã thanh toán. Bài đăng cũ không bị ảnh hưởng.
+- Trang chi tiết có trình phát video và mục đánh giá từ 1 đến 5 sao kèm nhận xét.
+- Chỉ người đã nhắn tin với chủ bài mới được đánh giá. Chủ bài không tự đánh giá bài của mình. Mỗi người một đánh giá cho mỗi bài và được sửa hoặc xóa.
+
+### i) Thông báo
 
 - Mục "Thông báo" trong Cài đặt, có số thông báo chưa đọc, đánh dấu từng thông báo hoặc tất cả là đã đọc.
 - Hiện dùng cho việc báo bài bị ẩn hoặc được hiển thị lại (xem 3.1.3).
@@ -141,7 +149,6 @@ Khu vực quản trị nằm ở đường dẫn `/admin`, chỉ tài khoản c�
 Báo cáo ghi rõ các giới hạn để tránh hiểu nhầm về phạm vi sản phẩm:
 
 - **Duyệt bài Pass phòng và Pass đồ:** hệ thống đã có API để quản trị viên đổi trạng thái từ chờ duyệt sang hiển thị, nhưng trang quản trị chưa có nút duyệt. Hiện chỉ làm được qua API.
-- **Đánh giá và nhận xét:** bảng dữ liệu đã có, giao diện viết đánh giá chưa làm.
 - **Đặt xe vận chuyển:** có thông tin dịch vụ và nhắn tin với chủ xe, chưa có luồng đặt lịch và thanh toán theo chuyến.
 - **Thông báo đẩy và thông báo tin nhắn trên web:** tin nhắn mới hiện được báo bằng email và số đếm trên thanh điều hướng, chưa có thông báo đẩy của trình duyệt.
 - **Kiểm thử tự động:** chưa có bộ kiểm thử tự động. Các tính năng mới được kiểm tra bằng cách biên dịch giao diện, nạp thử máy chủ và chạy thử thủ công.

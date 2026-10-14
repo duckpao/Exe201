@@ -5,6 +5,7 @@ const { formatVnd, formatArea, parseVndAmount, parseAreaM2, formatAddress } = re
 const { normalizePropertyType, PASS_ROOM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
+const { splitGallery } = require('../utils/media')
 
 function toPassRoomCard(row) {
   return {
@@ -45,7 +46,7 @@ async function getPassRoom(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy bài pass phòng' })
   }
 
-  const gallery = await passRoomModel.getGallery(passRoom.id)
+  const { images, videoUrl } = splitGallery(await passRoomModel.getGallery(passRoom.id))
   const statusLabel = PASS_ROOM_STATUS_LABELS[passRoom.status] || passRoom.status
 
   response.json({
@@ -56,7 +57,7 @@ async function getPassRoom(request, response) {
     area: formatArea(passRoom.area_m2),
     location: passRoom.ward,
     status: statusLabel,
-    image: gallery[0]?.media_url || null,
+    image: images[0] || null,
     bedrooms: 1,
     bathrooms: 1,
     tags: [statusLabel, ...(passRoom.amenities || [])],
@@ -65,7 +66,8 @@ async function getPassRoom(request, response) {
     latitude: passRoom.latitude != null ? Number(passRoom.latitude) : null,
     longitude: passRoom.longitude != null ? Number(passRoom.longitude) : null,
     description: passRoom.description,
-    gallery: gallery.map((item) => item.media_url),
+    gallery: images,
+    videoUrl,
     passType: passRoom.pass_type,
     propertyType: passRoom.property_type,
     maxOccupants: passRoom.max_occupants,

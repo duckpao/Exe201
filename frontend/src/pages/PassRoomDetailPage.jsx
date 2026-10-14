@@ -8,6 +8,8 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getPassRoom } from '../services/passRoomService.js'
+import ListingVideo from '../components/site/ListingVideo.jsx'
+import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
 import { Users, Tag, MapPin, BadgeDollarSign, Home, Maximize } from 'lucide-react';
 
@@ -94,6 +96,9 @@ export default function PassRoomDetailPage() {
                 <p>{room.description || 'Người đăng chưa bổ sung mô tả.'}</p>
                 {room.reason && <p>Lý do pass: {room.reason}</p>}
               </div>
+              <ListingVideo src={room.videoUrl} title={room.title} />
+              <ListingReviews listingType="pass_room" listingId={room.id} />
+
             </div>
 
             <aside className="detail-sidebar">

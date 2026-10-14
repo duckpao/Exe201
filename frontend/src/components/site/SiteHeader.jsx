@@ -116,6 +116,11 @@ export default function SiteHeader() {
                   <Link to="/tin-nhan" onClick={() => setMenuOpen(false)}>
                     Nhắn tin
                   </Link>
+                  {user.role === 'landlord' && (
+                    <Link to="/quan-ly-tro" onClick={() => setMenuOpen(false)}>
+                      Quản lý trọ
+                    </Link>
+                  )}
                   <Link to="/settings" onClick={() => setMenuOpen(false)}>
                     Cài đặt
                   </Link>

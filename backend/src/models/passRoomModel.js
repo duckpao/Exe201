@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const { buildMediaRows } = require('../utils/media')
 
 function buildListFilters(query) {
   const where = ["rp.deleted_at IS NULL", "rp.status IN ('active','urgent')", 'rp.admin_hidden_at IS NULL']
@@ -41,7 +42,7 @@ async function list(query, { limit, offset }) {
 
   const [rows] = await pool.query(
     `SELECT rp.*, a.province, a.district, a.ward,
-       (SELECT media_url FROM room_pass_images WHERE room_pass_listing_id = rp.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM room_pass_images WHERE room_pass_listing_id = rp.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
      FROM room_pass_listings rp
      JOIN addresses a ON a.id = rp.address_id
      WHERE ${whereSql}
@@ -101,7 +102,7 @@ async function create({
 
 async function addImages(passListingId, images) {
   if (!images.length) return
-  const values = images.map((img, index) => [passListingId, img.url, img.mediaType, index === 0 ? 1 : 0])
+  const values = buildMediaRows(passListingId, images)
   await pool.query('INSERT INTO room_pass_images (room_pass_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 

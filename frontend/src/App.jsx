@@ -23,6 +23,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import MessagesPage from './pages/MessagesPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import ManageRoomsPage from './pages/ManageRoomsPage.jsx'
 import PostingPaymentPage from './pages/PostingPaymentPage.jsx'
 import PaymentResultPage from './pages/PaymentResultPage.jsx'
 import AdminLoginPage from './pages/admin/AdminLoginPage.jsx'
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/tin-nhan" element={<MessagesPage />} />
           <Route path="/tin-nhan/:conversationId" element={<MessagesPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/quan-ly-tro" element={<ManageRoomsPage />} />
           <Route path="/thanh-toan/dang-bai" element={<PostingPaymentPage />} />
           <Route path="/thanh-toan/ket-qua" element={<PaymentResultPage />} />
 

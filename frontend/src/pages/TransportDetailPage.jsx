@@ -7,8 +7,10 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getVehicle } from '../services/vehicleService.js'
+import ListingVideo from '../components/site/ListingVideo.jsx'
+import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
-import { Star, Home, Truck, Briefcase, Scale, Bookmark, Timer, Map } from 'lucide-react';
+import { Star, Home, Truck, Briefcase, Scale, Bookmark } from 'lucide-react';
 
 // Khớp ENUM vehicles.vehicle_type
 const VEHICLE_TYPE_LABELS = {
@@ -104,14 +106,21 @@ export default function TransportDetailPage() {
                 <h2>Mô tả dịch vụ</h2>
                 <p>{vehicle.description || 'Chủ xe chưa bổ sung mô tả.'}</p>
               </div>
+              <ListingVideo src={vehicle.videoUrl} title={vehicle.title} />
+              <ListingReviews listingType="vehicle" listingId={vehicle.id} />
+
             </div>
 
             <aside className="detail-sidebar">
               <div className="sidebar-card price-card">
-                <p className="price-amount">{vehicle.price || 'Liên hệ để báo giá'}</p>
+                {vehicle.phone ? (
+                  <p className="price-amount"><a href={`tel:${vehicle.phone}`}>{vehicle.phone}</a></p>
+                ) : (
+                  <p className="price-amount price-amount-locked">
+                    <Link to="/login">Đăng nhập để xem số điện thoại</Link>
+                  </p>
+                )}
                 <div className="price-stats">
-                  {vehicle.pricePerHour && <span><Timer size={16} /> {vehicle.pricePerHour}</span>}
-                  {vehicle.pricePerTrip && <span><Map size={16} /> {vehicle.pricePerTrip}</span>}
                   {vehicle.capacity && <span><Scale size={16} /> {vehicle.capacity}</span>}
                 </div>
                 <div className="price-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

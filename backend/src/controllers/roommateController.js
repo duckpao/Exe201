@@ -5,6 +5,7 @@ const { formatVnd, formatDateVn, formatArea, formatAddress } = require('../utils
 const { normalizePropertyType, normalizeGender, genderLabel } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
+const { splitGallery } = require('../utils/media')
 
 function toRoommateCard(row) {
   return {
@@ -46,7 +47,7 @@ async function getRoommate(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy bài đăng tìm roommate' })
   }
 
-  const gallery = await roommateModel.getGallery(roommate.id)
+  const { images, videoUrl } = splitGallery(await roommateModel.getGallery(roommate.id))
 
   response.json({
     id: roommate.id,
@@ -69,7 +70,8 @@ async function getRoommate(request, response) {
     roomType: roommate.room_type,
     moveInDate: formatDateVn(roommate.move_in_date),
     tags: roommate.amenities || [],
-    gallery: gallery.map((item) => item.media_url),
+    gallery: images,
+    videoUrl,
   })
 }
 

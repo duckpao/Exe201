@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const { buildMediaRows } = require('../utils/media')
 
 function buildListFilters(query) {
   const where = ["v.deleted_at IS NULL", "v.status = 'available'", 'v.admin_hidden_at IS NULL']
@@ -32,10 +33,11 @@ async function list(query, { limit, offset }) {
   const { whereSql, params } = buildListFilters(query)
 
   const [rows] = await pool.query(
-    `SELECT v.*,
-       (SELECT media_url FROM vehicle_images WHERE vehicle_id = v.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
+    `SELECT v.*, u.phone AS owner_phone,
+       (SELECT media_url FROM vehicle_images WHERE vehicle_id = v.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
        (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating
      FROM vehicles v
+     JOIN users u ON u.id = v.owner_id
      WHERE ${whereSql}
      ORDER BY v.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -49,7 +51,7 @@ async function list(query, { limit, offset }) {
 
   async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
-    `SELECT v.*, u.full_name AS owner_name, u.avatar_url AS owner_avatar,
+    `SELECT v.*, u.full_name AS owner_name, u.avatar_url AS owner_avatar, u.phone AS owner_phone,
        (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating,
        (SELECT COUNT(*) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS review_count
      FROM vehicles v
@@ -81,7 +83,7 @@ async function create({ ownerId, vehicleType, serviceType, name, licensePlate, c
 
 async function addImages(vehicleId, images) {
   if (!images.length) return
-  const values = images.map((img, index) => [vehicleId, img.url, img.mediaType, index === 0 ? 1 : 0])
+  const values = buildMediaRows(vehicleId, images)
   await pool.query('INSERT INTO vehicle_images (vehicle_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 

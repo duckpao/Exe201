@@ -8,6 +8,9 @@ import ListingMapCard from '../components/site/ListingMapCard.jsx'
 import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { getRoom } from '../services/roomService.js'
+import AvailabilityRibbon from '../components/site/AvailabilityRibbon.jsx'
+import ListingVideo from '../components/site/ListingVideo.jsx'
+import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
 import { Star, MapPin, BadgeDollarSign, Home, Maximize, Bed, Bath, Armchair } from 'lucide-react';
 
@@ -91,7 +94,10 @@ export default function RoomDetailPage() {
 
           <div className="detail-layout">
             <div className="detail-main">
-              <ImageGallery primaryImage={room.image} images={room.gallery} title={room.title} />
+              <div className="detail-media-wrap">
+                <ImageGallery primaryImage={room.image} images={room.gallery} title={room.title} />
+                <AvailabilityRibbon available={room.available} />
+              </div>
 
               <h1 className="detail-title">{room.title}</h1>
               <p className="detail-address"><MapPin size={16} /> {room.address}</p>
@@ -117,6 +123,9 @@ export default function RoomDetailPage() {
                 <h2>Mô tả</h2>
                 <p>{room.description}</p>
               </div>
+              <ListingVideo src={room.videoUrl} title={room.title} />
+              <ListingReviews listingType="room" listingId={room.id} />
+
             </div>
 
             <aside className="detail-sidebar">

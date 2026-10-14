@@ -10,13 +10,13 @@ function redactSensitiveText(value) {
 function getConfig() {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw Object.assign(new Error('Máy chủ chưa cấu hình GEMINI_API_KEY'), { http_code: 503 })
-  return { apiKey, model: process.env.GEMINI_MODEL || 'gemini-3.8-flash' }
+  return { apiKey, model: process.env.GEMINI_MODEL || 'gemini-3.6-flash' }
 }
 
 function getStatus() {
   return {
     available: Boolean(process.env.GEMINI_API_KEY),
-    model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
   }
 }
 

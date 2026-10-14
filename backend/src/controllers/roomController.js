@@ -5,6 +5,7 @@ const { formatVnd, formatArea, formatJoinedDuration } = require('../utils/format
 const { normalizePropertyType } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
+const { splitGallery } = require('../utils/media')
 
 function toRoomCard(row) {
   const amenities = row.amenities || []
@@ -17,6 +18,7 @@ function toRoomCard(row) {
     tag: amenities[0] || null,
     image: row.primary_image || null,
     status: row.status,
+    available: row.status === 'available',
     propertyType: row.property_type,
   }
 }
@@ -55,6 +57,7 @@ async function getRoom(request, response) {
   ])
 
   const amenities = room.amenities || []
+  const { images, videoUrl } = splitGallery(gallery)
 
   response.json({
     id: room.id,
@@ -63,8 +66,9 @@ async function getRoom(request, response) {
     area: formatArea(room.area_m2),
     location: room.ward,
     tag: amenities[0] || null,
-    image: gallery[0]?.media_url || null,
+    image: images[0] || null,
     status: room.status,
+    available: room.status === 'available',
     propertyType: room.property_type,
     bedrooms: 1,
     bathrooms: 1,
@@ -74,7 +78,8 @@ async function getRoom(request, response) {
     latitude: room.latitude != null ? Number(room.latitude) : null,
     longitude: room.longitude != null ? Number(room.longitude) : null,
     description: room.description,
-    gallery: gallery.map((item) => item.media_url),
+    gallery: images,
+    videoUrl,
     depositAmount: formatVnd(room.deposit_amount),
     maxOccupants: room.max_occupants,
     owner: {

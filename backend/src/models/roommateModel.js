@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const { buildMediaRows } = require('../utils/media')
 
 function buildListFilters(query) {
   const where = [
@@ -47,7 +48,7 @@ async function list(query, { limit, offset }) {
   const [rows] = await pool.query(
     `SELECT rm.*, a.province, a.district, a.ward,
        u.full_name AS poster_name, u.avatar_url AS poster_avatar,
-       (SELECT media_url FROM roommate_images WHERE roommate_listing_id = rm.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM roommate_images WHERE roommate_listing_id = rm.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
      FROM roommate_listings rm
      JOIN addresses a ON a.id = rm.address_id
      JOIN users u ON u.id = rm.posted_by
@@ -110,7 +111,7 @@ async function create({
 
 async function addImages(roommateListingId, images) {
   if (!images.length) return
-  const values = images.map((img, index) => [roommateListingId, img.url, img.mediaType, index === 0 ? 1 : 0])
+  const values = buildMediaRows(roommateListingId, images)
   await pool.query('INSERT INTO roommate_images (roommate_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 

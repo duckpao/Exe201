@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const { buildMediaRows } = require('../utils/media')
 
 function buildListFilters(query) {
   const where = ["it.deleted_at IS NULL", "it.status IN ('available','urgent')", 'it.admin_hidden_at IS NULL']
@@ -33,7 +34,7 @@ async function list(query, { limit, offset }) {
 
   const [rows] = await pool.query(
     `SELECT it.*, a.province, a.district, a.ward,
-       (SELECT media_url FROM item_images WHERE item_listing_id = it.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM item_images WHERE item_listing_id = it.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
      FROM item_listings it
      JOIN addresses a ON a.id = it.address_id
      WHERE ${whereSql}
@@ -84,7 +85,7 @@ async function create({ postedBy, addressId, title, description, category, itemC
 
 async function addImages(itemListingId, images) {
   if (!images.length) return
-  const values = images.map((img, index) => [itemListingId, img.url, img.mediaType, index === 0 ? 1 : 0])
+  const values = buildMediaRows(itemListingId, images)
   await pool.query('INSERT INTO item_images (item_listing_id, media_url, media_type, is_primary) VALUES ?', [values])
 }
 
