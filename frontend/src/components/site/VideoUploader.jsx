@@ -3,8 +3,8 @@ import { Video } from 'lucide-react'
 
 const MAX_VIDEO_SIZE = 25 * 1024 * 1024
 
-// Ô chọn video review bắt buộc. value: { file, url } hoặc null.
-export default function VideoUploader({ value, onChange }) {
+// Ô chọn video review. value: { file, url } hoặc null. optional=false thì hiển thị nhãn "bắt buộc".
+export default function VideoUploader({ value, onChange, optional = false }) {
   const [error, setError] = useState('')
   const urlRef = useRef(null)
 
@@ -50,7 +50,7 @@ export default function VideoUploader({ value, onChange }) {
         </div>
       ) : (
         <label className="upload-box">
-          <span><Video size={16} /> Chọn 1 video review (bắt buộc, tối đa 25MB)</span>
+          <span><Video size={16} /> Chọn 1 video review ({optional ? 'tùy chọn' : 'bắt buộc'}, tối đa 25MB)</span>
           <input type="file" accept="video/*" onChange={handleChange} hidden />
         </label>
       )}

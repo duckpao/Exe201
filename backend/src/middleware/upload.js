@@ -29,4 +29,13 @@ function requireReviewVideo(request, response, next) {
   next()
 }
 
-module.exports = { uploadImages: upload.array('images', MAX_FILES), requireReviewVideo }
+// Video review tùy chọn: có thể không có, nhưng nếu có thì tối đa một.
+function limitReviewVideo(request, response, next) {
+  const videoCount = (request.files || []).filter((file) => file.mimetype.startsWith('video/')).length
+  if (videoCount > 1) {
+    return response.status(400).json({ message: 'Chỉ được tải lên 1 video review' })
+  }
+  next()
+}
+
+module.exports = { uploadImages: upload.array('images', MAX_FILES), requireReviewVideo, limitReviewVideo }

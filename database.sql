@@ -123,7 +123,7 @@ CREATE TABLE room_pass_listings (
   compensation_fee  DECIMAL(12,2) NULL, -- phí đền bù/hoàn cọc cho người pass
   contract_end_date DATE NULL, -- tái dùng để lưu ngày muốn pass (passDate) từ form đăng bài
   reason            VARCHAR(255) NULL,
-  status            ENUM('pending','active','urgent','completed','cancelled') NOT NULL DEFAULT 'pending',
+  status            ENUM('pending','active','urgent','completed','cancelled') NOT NULL DEFAULT 'active',
   admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
   admin_hidden_reason VARCHAR(500) NULL,
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -204,7 +204,7 @@ CREATE TABLE item_listings (
   category       VARCHAR(50) NOT NULL, -- 'Nội thất'|'Đồ điện tử'|'Đồ gia dụng'|'Xe cộ'|'Sách - Giáo trình'
   item_condition VARCHAR(50) NULL,     -- 'Mới 90%'|'Mới 95%'|'Đã dùng'
   price          DECIMAL(12,2) NOT NULL,
-  status         ENUM('pending','available','urgent','sold') NOT NULL DEFAULT 'pending',
+  status         ENUM('pending','available','urgent','sold') NOT NULL DEFAULT 'available',
   admin_hidden_at     DATETIME NULL, -- admin ẩn bài (tách khỏi status để chủ bài không tự bỏ ẩn)
   admin_hidden_reason VARCHAR(500) NULL,
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

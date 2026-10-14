@@ -69,10 +69,6 @@ export default function PostRoommatePage() {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
-    if (!video) {
-      setError('Vui lòng tải lên 1 video review cho bài đăng.')
-      return
-    }
     setSubmitting(true)
     try {
       const formData = new FormData()
@@ -88,7 +84,7 @@ export default function PostRoommatePage() {
       formData.set('timing', timing)
       if (timing === 'scheduled' && scheduledDate) formData.set('scheduledDate', scheduledDate)
       images.forEach((image) => formData.append('images', image.file))
-      formData.append('images', video.file)
+      if (video) formData.append('images', video.file)
 
       const roommate = await createRoommate(formData)
       navigate(`/tim-roommate/${roommate.id}`)
@@ -236,12 +232,12 @@ export default function PostRoommatePage() {
               </label>
             </div>
             <div className="form-row">
-              <span className="form-label">Hình ảnh</span>
+              <span className="form-label">Hình ảnh (tùy chọn)</span>
               <ImageUploader images={images} onChange={setImages} accept="image/*" />
             </div>
             <div className="form-row">
-              <span className="form-label">Video review (bắt buộc)</span>
-              <VideoUploader value={video} onChange={setVideo} />
+              <span className="form-label">Video review (tùy chọn)</span>
+              <VideoUploader value={video} onChange={setVideo} optional />
             </div>
 
             <h2 className="form-step-title">3. Thời gian đăng tin</h2>
