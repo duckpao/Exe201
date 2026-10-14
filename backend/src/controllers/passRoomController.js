@@ -114,7 +114,7 @@ async function createPassRoom(request, response) {
 
   await consumePostingCredit(request, 'pass_room', passRoomId)
 
-  response.status(201).json({ id: passRoomId, title, status: 'pending' })
+  response.status(201).json({ id: passRoomId, title, status: 'active' })
 }
 
 async function updatePassRoomStatus(request, response) {

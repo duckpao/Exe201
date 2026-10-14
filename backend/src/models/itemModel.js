@@ -77,7 +77,7 @@ async function getGallery(itemListingId) {
 async function create({ postedBy, addressId, title, description, category, itemCondition, price }) {
   const [result] = await pool.query(
     `INSERT INTO item_listings (posted_by, address_id, title, description, category, item_condition, price, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'available')`,
     [postedBy, addressId, title, description || null, category, itemCondition || null, price]
   )
   return result.insertId

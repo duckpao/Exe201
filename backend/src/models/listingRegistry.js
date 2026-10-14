@@ -4,9 +4,8 @@
 // bảng/cột nào ứng với từng loại bài đăng đều đọc từ đây.
 //
 // priceColumn: biểu thức SQL cho "giá đại diện" hiển thị trên thẻ danh sách.
-// ownerStatusValues: các status chủ bài đăng được tự đổi. Với item/pass_room đang
-// bị kiểm duyệt (tạo ra ở trạng thái pending), danh sách này CỐ TÌNH không chứa
-// 'available'/'active'/'urgent' để chủ bài không tự phê duyệt bài của mình.
+// ownerStatusValues: các status chủ bài đăng được tự đổi. Bài đăng hiện ngay khi đăng;
+// admin kiểm duyệt sau bằng cách ẩn bài (cột admin_hidden_at), không qua status.
 // editableFields: whitelist cho form "sửa bài đăng" — map tên field của API sang
 // cột thật. Vì đây cũng là nguồn dữ liệu prefill cho form (xem listingSummaryModel),
 // backend và frontend không thể lệch nhau. Mọi cột ngoài danh sách này (ảnh, địa chỉ,
@@ -62,7 +61,7 @@ const LISTING_TYPES = {
     priceSuffix: '/tháng',
     imageTable: 'room_pass_images',
     imageForeignKey: 'room_pass_listing_id',
-    ownerStatusValues: ['completed', 'cancelled'],
+    ownerStatusValues: ['active', 'completed', 'cancelled'],
     editableFields: {
       title: { column: 'title', kind: 'text', label: 'Tiêu đề', required: true },
       description: { column: 'description', kind: 'text', label: 'Mô tả' },
@@ -82,7 +81,7 @@ const LISTING_TYPES = {
     priceSuffix: '',
     imageTable: 'item_images',
     imageForeignKey: 'item_listing_id',
-    ownerStatusValues: ['sold'],
+    ownerStatusValues: ['available', 'sold'],
     editableFields: {
       title: { column: 'title', kind: 'text', label: 'Tiêu đề', required: true },
       description: { column: 'description', kind: 'text', label: 'Mô tả' },

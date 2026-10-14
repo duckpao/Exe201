@@ -3,10 +3,10 @@ import { updateMyListing } from '../../services/userService.js'
 
 // Nhãn tiếng Việt cho trạng thái chủ bài được tự chọn (khớp ownerStatusValues trong listingRegistry).
 const STATUS_LABELS = {
-  available: 'Còn phòng / đang hiển thị',
+  available: 'Còn phòng / còn hàng',
   rented: 'Hết phòng (đã cho thuê)',
   hidden: 'Tạm ẩn',
-  active: 'Đang tìm',
+  active: 'Đang hiển thị / đang tìm',
   closed: 'Đã đóng',
   completed: 'Đã pass xong',
   cancelled: 'Hủy',

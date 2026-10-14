@@ -60,7 +60,7 @@ Mỗi loại có trang danh sách, trang chi tiết, trang đăng bài riêng. D
 - Xem toàn bộ bài đã đăng trong Cài đặt, kèm trạng thái.
 - Sửa tiêu đề, mô tả, giá và trạng thái. Backend chỉ cho sửa bài thuộc về chính người đó, và chỉ các trường nằm trong danh sách cho phép.
 - Xóa bài. Việc xóa là xóa mềm, nên các cuộc trò chuyện liên quan không bị mất dữ liệu.
-- Với Pass phòng và Pass đồ, bài mới tạo ở trạng thái chờ duyệt và chủ bài không tự chuyển sang trạng thái hiển thị được.
+- Bài đăng hiện ngay khi đăng. Quản trị viên kiểm duyệt sau bằng cách ẩn bài kèm lý do.
 
 ### e) Lưu yêu thích
 

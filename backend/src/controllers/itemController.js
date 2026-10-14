@@ -99,7 +99,7 @@ async function createItem(request, response) {
 
   await consumePostingCredit(request, 'item', itemId)
 
-  response.status(201).json({ id: itemId, title, status: 'pending' })
+  response.status(201).json({ id: itemId, title, status: 'available' })
 }
 
 async function updateItemStatus(request, response) {

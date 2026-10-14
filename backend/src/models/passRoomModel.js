@@ -90,7 +90,7 @@ async function create({
     `INSERT INTO room_pass_listings
        (posted_by, address_id, title, description, pass_type, property_type, area_m2, max_occupants,
         amenities, monthly_price, compensation_fee, contract_end_date, reason, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
     [
       postedBy, addressId, title, description || null, passType || 'pass', propertyType || null,
       areaM2 || null, maxOccupants || null, amenities ? JSON.stringify(amenities) : null,

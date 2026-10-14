@@ -181,9 +181,6 @@ function buildListingUpdate(config, body) {
   }
 
   if ('status' in body) {
-    // ownerStatusValues CỐ TÌNH không chứa available/active/urgent với item & pass_room —
-    // hai loại này tạo ra ở trạng thái pending và phải qua kiểm duyệt, chủ bài không
-    // được tự phê duyệt bài của mình bằng cách PUT status.
     if (!config.ownerStatusValues.includes(body.status)) {
       return {
         error: `Trạng thái không hợp lệ. Chỉ được chọn: ${config.ownerStatusValues.join(', ')}`,
