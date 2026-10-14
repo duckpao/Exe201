@@ -2,6 +2,7 @@ const { OAuth2Client } = require('google-auth-library')
 
 const userModel = require('../models/userModel')
 const passwordResetModel = require('../models/passwordResetModel')
+const { normalizeVnPhone } = require('../utils/phone')
 const { hashPassword, comparePassword } = require('../utils/password')
 const { signAuthToken, generateResetToken, hashResetToken } = require('../utils/token')
 const { sendMail } = require('../config/mailer')
@@ -49,6 +50,11 @@ async function register(request, response) {
     return response.status(400).json({ message: 'Vui lòng nhập họ tên, email và mật khẩu hợp lệ (mật khẩu ít nhất 8 ký tự)' })
   }
 
+  const normalizedPhone = normalizeVnPhone(phone)
+  if (normalizedPhone.error) {
+    return response.status(400).json({ message: normalizedPhone.error })
+  }
+
   const existingUser = await userModel.findByEmail(email)
   if (existingUser) {
     return response.status(409).json({ message: 'Email này đã được sử dụng' })
@@ -56,7 +62,7 @@ async function register(request, response) {
 
   const safeRole = role === 'landlord' ? 'landlord' : 'tenant'
   const passwordHash = await hashPassword(password)
-  const user = await userModel.createUser({ fullName: String(fullName).trim(), email, phone, passwordHash, role: safeRole })
+  const user = await userModel.createUser({ fullName: String(fullName).trim(), email, phone: normalizedPhone.value, passwordHash, role: safeRole })
 
   const token = signAuthToken({ id: user.id, email: user.email, role: user.role })
   setAuthCookie(response, token)

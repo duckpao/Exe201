@@ -9,6 +9,7 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { getRoom } from '../services/roomService.js'
 import AvailabilityRibbon from '../components/site/AvailabilityRibbon.jsx'
+import RevealPhoneButton from '../components/site/RevealPhoneButton.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -137,11 +138,7 @@ export default function RoomDetailPage() {
                   <span><Bath size={16} /> {room.bathrooms} WC</span>
                 </div>
                 <div className="price-actions">
-                  {room.owner.phone ? (
-                    <a href={`tel:${room.owner.phone}`} className="btn btn-primary">
-                      Liên hệ ngay
-                    </a>
-                  ) : null}
+                  <RevealPhoneButton phone={room.owner.phone} />
                   <MessageOwnerButton listingType="room" listingId={room.id} ownerId={room.owner.id} />
                   <FavoriteButton entityType="room" entityId={room.id} />
                 </div>

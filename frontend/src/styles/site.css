@@ -3774,3 +3774,6 @@
 .manage-last-message { font-size: 13.5px; color: var(--brand-text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .manage-sidebar-link { display: block; padding: 12px 16px; color: var(--brand-primary); font-weight: 600; text-decoration: none; }
 .manage-sidebar-link:hover { text-decoration: underline; }
+
+.phone-revealed { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; letter-spacing: 0.02em; }
+.phone-missing { margin: 0; font-size: 13.5px; color: var(--brand-text-soft); }

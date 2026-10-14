@@ -5,10 +5,16 @@ const pool = require('../config/db')
 const { getListingType } = require('../models/listingRegistry')
 const listingSummaryModel = require('../models/listingSummaryModel')
 const { parseVndAmount } = require('../utils/format')
+const { normalizeVnPhone } = require('../utils/phone')
 
 async function updateProfile(request, response) {
   const { fullName, phone } = request.body
   const userId = request.user.id
+
+  const normalizedPhone = phone === undefined ? null : normalizeVnPhone(phone)
+  if (normalizedPhone?.error) {
+    return response.status(400).json({ message: normalizedPhone.error })
+  }
 
   try {
     let avatarUrl = undefined
@@ -25,7 +31,7 @@ async function updateProfile(request, response) {
     }
     if (phone !== undefined) {
       updates.push('phone = ?')
-      params.push(phone)
+      params.push(normalizedPhone.value)
     }
     if (avatarUrl !== undefined) {
       updates.push('avatar_url = ?')

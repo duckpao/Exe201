@@ -88,6 +88,9 @@ export default function RegisterPage() {
               <label htmlFor="phone">Số điện thoại</label>
               <input
                 type="tel"
+                inputMode="numeric"
+                pattern="0[0-9]{9}"
+                title="10 chữ số, bắt đầu bằng 0"
                 id="phone"
                 name="phone"
                 placeholder="09xxxxxxxx"
