@@ -6,10 +6,13 @@ const { ITEM_STATUS_LABELS } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 const { splitGallery } = require('../utils/media')
+const { memberFromRank } = require('../models/subscriptionModel')
+const { trackView } = require('../models/viewModel')
 
 function toItemCard(row) {
   return {
     id: row.id,
+    member: memberFromRank(row.member_rank),
     title: row.title,
     price: formatVnd(row.price),
     category: row.category,
@@ -45,11 +48,14 @@ async function getItem(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy đồ pass' })
   }
 
+  trackView(request, 'item', item.id, item.posted_by)
+
   const { images, videoUrl } = splitGallery(await itemModel.getGallery(item.id))
   const statusLabel = ITEM_STATUS_LABELS[item.status] || item.status
 
   response.json({
     id: item.id,
+    member: memberFromRank(item.member_rank),
     ownerId: item.posted_by,
     title: item.title,
     price: formatVnd(item.price),

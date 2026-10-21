@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
 import AvailabilityRibbon from './AvailabilityRibbon.jsx'
+import MemberBadge from './MemberBadge.jsx'
 
 export default function RoomCard({ room }) {
   return (
@@ -10,6 +11,7 @@ export default function RoomCard({ room }) {
         <AvailabilityRibbon available={room.available} />
       </div>
       <div className="room-card-body">
+        <MemberBadge member={room.member} />
         <h3 className="room-card-title">{room.title}</h3>
         <p className="room-card-price">{room.price}</p>
         <p className="room-card-meta">

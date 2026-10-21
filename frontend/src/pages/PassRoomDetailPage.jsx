@@ -8,6 +8,7 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getPassRoom } from '../services/passRoomService.js'
+import MemberBadge from '../components/site/MemberBadge.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -125,6 +126,7 @@ export default function PassRoomDetailPage() {
                 <PlaceholderImage src={room.poster.avatar} alt={room.poster.name} className="owner-avatar" />
                 <div>
                   <p className="owner-name">{room.poster.name}</p>
+                  <MemberBadge member={room.member} />
                   <p className="owner-joined">Người đăng bài</p>
                 </div>
               </div>

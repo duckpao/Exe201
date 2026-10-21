@@ -1,5 +1,8 @@
 const paymentModel = require('../models/paymentModel')
 const payosService = require('../services/payosService')
+const subscriptionModel = require('../models/subscriptionModel')
+const { notifyUser } = require('../services/notifyService')
+const { getPlan, TIER_LABELS, CYCLE_LABELS } = require('../config/plans')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 
 const LISTING_FEE = Number(process.env.LISTING_FEE_VND) || 20000
@@ -54,6 +57,20 @@ async function createPayosPayment(request, response) {
   })
 }
 
+// Gọi lại nhiều lần vẫn an toàn: activateFromPayment trả null khi payment_id đã có gói.
+async function activateSubscription(payment) {
+  const periodId = await subscriptionModel.activateFromPayment(payment)
+  if (!periodId) return
+  const plan = getPlan(payment.plan_code)
+  await notifyUser({
+    userId: payment.user_id,
+    type: 'subscription',
+    title: `Gói ${TIER_LABELS[plan.tier]} theo ${CYCLE_LABELS[plan.cycle]} đã được kích hoạt`,
+    body: 'Bài đăng của bạn đã có badge thành viên. Xem thời hạn tại mục Gói đăng ký.',
+    emailSubject: 'Gói đăng ký RentMate Hola đã được kích hoạt',
+  })
+}
+
 async function payosWebhook(request, response) {
   if (!payosService.verifyWebhook(request.body)) {
     return response.status(400).json({ success: false, message: 'Invalid signature' })
@@ -67,12 +84,16 @@ async function payosWebhook(request, response) {
   }
 
   const paid = request.body.success === true && data.code === '00'
-  await paymentModel.markPayosResult({
+  const updated = await paymentModel.markPayosResult({
     orderCode: data.orderCode,
     status: paid ? 'paid' : 'failed',
     providerTransaction: data.reference,
     paymentLinkId: data.paymentLinkId,
   })
+
+  if (updated?.purpose === 'subscription' && updated.status === 'paid') {
+    await activateSubscription(updated)
+  }
   response.json({ success: true })
 }
 
@@ -108,7 +129,8 @@ async function listSuccessfulPayments(request, response) {
       status: row.status,
       paidAt: row.paid_at,
       consumedAt: row.consumed_at,
-      listingType: row.listing_type || 'posting_credit',
+      listingType: row.purpose === 'subscription' ? 'subscription' : row.listing_type || 'posting_credit',
+      planCode: row.plan_code || null,
       listingId: row.listing_id,
       user: { id: row.user_id, name: row.user_name, email: row.user_email },
     })),

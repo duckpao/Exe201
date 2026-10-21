@@ -4,6 +4,7 @@ import { listAdminTransactions } from '../../services/paymentService.js'
 
 const SERVICE_LABELS = {
   posting_credit: 'Lượt đăng bài chưa dùng',
+  subscription: 'Gói đăng ký',
   room: 'Phòng trọ',
   roommate: 'Roommate',
   pass_room: 'Pass phòng',

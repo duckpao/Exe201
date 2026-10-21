@@ -6,11 +6,14 @@ const { normalizePropertyType } = require('../utils/enums')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 const { splitGallery } = require('../utils/media')
+const { memberFromRank } = require('../models/subscriptionModel')
+const { trackView } = require('../models/viewModel')
 
 function toRoomCard(row) {
   const amenities = row.amenities || []
   return {
     id: row.id,
+    member: memberFromRank(row.member_rank),
     title: row.title,
     price: formatVnd(row.price_per_month, '/tháng'),
     area: formatArea(row.area_m2),
@@ -51,6 +54,8 @@ async function getRoom(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy phòng trọ' })
   }
 
+  trackView(request, 'room', room.id, room.landlord_id)
+
   const [gallery, ownerRating] = await Promise.all([
     roomModel.getGallery(room.id),
     roomModel.getLandlordRating(room.landlord_id),
@@ -61,6 +66,7 @@ async function getRoom(request, response) {
 
   response.json({
     id: room.id,
+    member: memberFromRank(room.member_rank),
     title: room.title,
     price: formatVnd(room.price_per_month, '/tháng'),
     area: formatArea(room.area_m2),

@@ -7,6 +7,7 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getVehicle } from '../services/vehicleService.js'
+import MemberBadge from '../components/site/MemberBadge.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -138,6 +139,7 @@ export default function TransportDetailPage() {
                 <PlaceholderImage src={vehicle.owner.avatar} alt={vehicle.owner.name} className="owner-avatar" />
                 <div>
                   <p className="owner-name">{vehicle.owner.name}</p>
+                  <MemberBadge member={vehicle.member} />
                   <p className="owner-joined">{vehicle.owner.joined}</p>
                 </div>
               </div>

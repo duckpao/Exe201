@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
+import MemberBadge from './MemberBadge.jsx'
 import { Star } from 'lucide-react';
 
 export default function TransportCard({ service }) {
@@ -9,6 +10,7 @@ export default function TransportCard({ service }) {
         <PlaceholderImage src={service.image} alt={service.title} className="transport-card-image" />
       </Link>
       <div className="transport-card-body">
+        <MemberBadge member={service.member} />
         <h3 className="transport-card-title">
           <Link to={`/van-chuyen-do/${service.id}`}>{service.title}</Link>
         </h3>

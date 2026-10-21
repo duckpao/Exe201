@@ -1,6 +1,12 @@
 const paymentModel = require('../models/paymentModel')
+const subscriptionModel = require('../models/subscriptionModel')
 
 async function requirePostingAccess(request, response, next) {
+  // Có gói còn hạn thì đăng không giới hạn, không trừ lượt.
+  if (await subscriptionModel.getActive(request.user.id)) {
+    request.postingPayment = { subscription: true }
+    return next()
+  }
   const access = await paymentModel.getPostingAccess(request.user.id)
   if (!access) return response.status(404).json({ message: 'Không tìm thấy tài khoản' })
   if (Number(access.user.in_free_trial) === 1) {
@@ -19,7 +25,7 @@ async function requirePostingAccess(request, response, next) {
 }
 
 async function consumePostingCredit(request, listingType, listingId) {
-  if (!request.postingPayment || request.postingPayment.freeTrial) return
+  if (!request.postingPayment || request.postingPayment.freeTrial || request.postingPayment.subscription) return
   await paymentModel.consumeCredit({ paymentId: request.postingPayment.paymentId, userId: request.user.id, listingType, listingId })
 }
 

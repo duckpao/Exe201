@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { CheckCircle2, Clock3, ExternalLink, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, Clock3, ShieldCheck } from 'lucide-react'
 import SiteHeader from '../components/site/SiteHeader.jsx'
 import SiteFooter from '../components/site/SiteFooter.jsx'
+import PayosCheckoutPanel from '../components/site/PayosCheckoutPanel.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { createPayosPayment, getPayosPaymentStatus, getPostingStatus } from '../services/paymentService.js'
 import '../styles/site.css'
@@ -13,12 +14,8 @@ export default function PostingPaymentPage() {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [checking, setChecking] = useState(false)
-  const [checkoutReady, setCheckoutReady] = useState(false)
-  const [checkoutInitialized, setCheckoutInitialized] = useState(false)
-  const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [returnNotice, setReturnNotice] = useState(null)
   const [statusError, setStatusError] = useState('')
-  const checkoutRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
@@ -30,29 +27,6 @@ export default function PostingPaymentPage() {
       .catch((error) => setStatusError(error.message))
       .finally(() => setLoading(false))
   }, [toast])
-
-  useEffect(() => {
-    if (window.PayOSCheckout) {
-      setCheckoutReady(true)
-      return
-    }
-
-    const existingScript = document.querySelector('script[data-payos-checkout]')
-    const script = existingScript || document.createElement('script')
-    const onLoad = () => setCheckoutReady(true)
-    script.addEventListener('load', onLoad)
-    script.addEventListener('error', onLoad)
-    if (!existingScript) {
-      script.src = 'https://cdn.payos.vn/payos-checkout/v1/stable/payos-initialize.js'
-      script.dataset.payosCheckout = 'true'
-      document.head.appendChild(script)
-    }
-
-    return () => {
-      script.removeEventListener('load', onLoad)
-      script.removeEventListener('error', onLoad)
-    }
-  }, [])
 
   useEffect(() => {
     if (status?.inFreeTrial || status?.hasCredit) navigate(returnTo, { replace: true })
@@ -89,26 +63,6 @@ export default function PostingPaymentPage() {
     }
   }, [location.search])
 
-  useEffect(() => {
-    if (!payment || !checkoutReady || !window.PayOSCheckout) return
-    checkoutRef.current = window.PayOSCheckout.usePayOS({
-      RETURN_URL: payment.returnUrl,
-      ELEMENT_ID: 'payos-checkout-frame',
-      CHECKOUT_URL: payment.checkoutUrl,
-      embedded: true,
-      onSuccess: () => {
-        setCheckoutOpen(false)
-        handleCheckStatus()
-      },
-      onCancel: () => {
-        setCheckoutOpen(false)
-        toast.info('Bạn đã đóng hoặc hủy giao diện thanh toán. Trạng thái giao dịch vẫn được xác nhận qua webhook.')
-      },
-      onExit: () => setCheckoutOpen(false),
-    })
-    setCheckoutInitialized(true)
-  }, [payment, checkoutReady])
-
   async function handleCreatePayment() {
     setCreating(true)
     try {
@@ -138,12 +92,6 @@ export default function PostingPaymentPage() {
     } finally {
       setChecking(false)
     }
-  }
-
-  function openPayosCheckout() {
-    if (!checkoutRef.current) return
-    setCheckoutOpen(true)
-    checkoutRef.current.open()
   }
 
   return (
@@ -205,24 +153,11 @@ export default function PostingPaymentPage() {
                 <Link className="payos-back-link" to={returnTo}>Quay lại sau</Link>
               </section>
 
-              <section className="payos-checkout-panel" aria-label="Thanh toán qua payOS">
-                <div className="payos-panel-heading">
-                  <span className="payos-brand-mark">payOS</span>
-                  <span>Thanh toán bằng QR / chuyển khoản</span>
-                </div>
-                <div id="payos-checkout-frame" className={`payos-checkout-frame${checkoutOpen ? ' is-open' : ''}`} />
-                {!checkoutOpen && (
-                  <div className="payos-checkout-start">
-                    <p>Quét mã QR bằng ứng dụng ngân hàng hoặc chọn ngân hàng để chuyển khoản.</p>
-                    <button type="button" className="btn btn-primary" onClick={openPayosCheckout} disabled={!checkoutInitialized}>
-                      {checkoutInitialized ? 'Mở giao diện thanh toán' : 'Đang tải payOS...'}
-                    </button>
-                    <a className="payos-hosted-link" href={payment.checkoutUrl} target="_blank" rel="noreferrer">
-                      Mở trang thanh toán payOS <ExternalLink size={15} />
-                    </a>
-                  </div>
-                )}
-              </section>
+              <PayosCheckoutPanel
+                payment={payment}
+                onSuccess={handleCheckStatus}
+                onCancel={() => toast.info('Bạn đã đóng hoặc hủy giao diện thanh toán. Trạng thái giao dịch vẫn được xác nhận qua webhook.')}
+              />
             </div>
           )}
 

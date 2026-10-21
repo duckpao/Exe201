@@ -16,7 +16,7 @@
 | Lưu ảnh và video | Cloudinary | Dịch vụ ngoài |
 | Bản đồ và địa chỉ | VietMap | Dịch vụ ngoài |
 | Thanh toán | payOS | Dịch vụ ngoài |
-| Trợ lý AI | Gemini (`gemini-3.6-flash`) | Dịch vụ ngoài |
+| Trợ lý AI | Gemini (`gemini-3.5-flash-lite`) | Dịch vụ ngoài |
 | Tin nhắn thời gian thực | Socket.IO | Chạy cùng máy chủ API |
 | Gửi email | Nodemailer (SMTP) | Dịch vụ SMTP |
 

@@ -372,6 +372,8 @@ CREATE TABLE listing_payments (
   consumed_at          DATETIME NULL,
   listing_type         ENUM('room','roommate','pass_room','item','vehicle') NULL,
   listing_id           BIGINT UNSIGNED NULL,
+  purpose              ENUM('posting_credit','subscription') NOT NULL DEFAULT 'posting_credit',
+  plan_code            VARCHAR(30) NULL,
   created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_listing_payment_txn_ref (txn_ref),
@@ -589,4 +591,34 @@ CREATE TABLE notifications (
   created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_notifications_user (user_id, is_read, created_at),
   CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Gói đăng ký của người đăng bài (Cơ bản / Nâng cao, theo tháng hoặc năm)
+-- ---------------------------------------------------------
+CREATE TABLE user_subscriptions (
+  id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id          BIGINT UNSIGNED NOT NULL,
+  tier             ENUM('basic','pro') NOT NULL,
+  cycle            ENUM('monthly','yearly') NOT NULL,
+  starts_at        DATETIME NOT NULL,
+  expires_at       DATETIME NOT NULL,
+  source           ENUM('payment','admin') NOT NULL,
+  payment_id       BIGINT UNSIGNED NULL,
+  granted_by       BIGINT UNSIGNED NULL,
+  revoked_at       DATETIME NULL,
+  reminder_sent_at DATETIME NULL,
+  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_subscription_payment (payment_id),
+  KEY idx_subscription_user (user_id, expires_at),
+  CONSTRAINT fk_subscription_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- viewer_key là SHA-256 của người xem (tài khoản hoặc IP), không lưu IP thô.
+CREATE TABLE listing_view_daily (
+  listing_type ENUM('room','roommate','pass_room','item','vehicle') NOT NULL,
+  listing_id   BIGINT UNSIGNED NOT NULL,
+  view_date    DATE NOT NULL,
+  viewer_key   CHAR(64) NOT NULL,
+  PRIMARY KEY (listing_type, listing_id, view_date, viewer_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

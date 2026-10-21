@@ -10,6 +10,7 @@ import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { getRoom } from '../services/roomService.js'
 import AvailabilityRibbon from '../components/site/AvailabilityRibbon.jsx'
 import RevealPhoneButton from '../components/site/RevealPhoneButton.jsx'
+import MemberBadge from '../components/site/MemberBadge.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -148,6 +149,7 @@ export default function RoomDetailPage() {
                 <PlaceholderImage src={room.owner.avatar} alt={room.owner.name} className="owner-avatar" />
                 <div>
                   <p className="owner-name">{room.owner.name}</p>
+                  <MemberBadge member={room.member} />
                   <p className="owner-rating">
                     <Star size={16} /> {room.owner.rating || 'Chưa có đánh giá'}
                     {room.owner.rating ? ` · ${room.owner.reviews} đánh giá` : ''}

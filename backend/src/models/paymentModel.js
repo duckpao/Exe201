@@ -10,19 +10,19 @@ async function getPostingAccess(userId) {
   if (!user) return null
   const [[credit]] = await pool.query(
     `SELECT id, txn_ref, paid_at FROM listing_payments
-     WHERE user_id = ? AND status = 'paid' AND consumed_at IS NULL
+     WHERE user_id = ? AND purpose = 'posting_credit' AND status = 'paid' AND consumed_at IS NULL
      ORDER BY paid_at ASC, id ASC LIMIT 1`,
     [userId]
   )
   return { user, credit: credit || null }
 }
 
-async function createPending({ userId, txnRef, amount, provider = 'payos', orderCode = null, paymentLinkId = null }) {
+async function createPending({ userId, txnRef, amount, provider = 'payos', orderCode = null, paymentLinkId = null, purpose = 'posting_credit', planCode = null }) {
   await pool.query(
     `INSERT INTO listing_payments
-       (user_id, txn_ref, amount, provider, provider_order_code, payment_link_id)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [userId, txnRef, amount, provider, orderCode, paymentLinkId]
+       (user_id, txn_ref, amount, provider, provider_order_code, payment_link_id, purpose, plan_code)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [userId, txnRef, amount, provider, orderCode, paymentLinkId, purpose, planCode]
   )
 }
 
@@ -71,10 +71,12 @@ async function consumeCredit({ paymentId, userId, listingType, listingId }) {
 async function listSuccessfulForAdmin({ listingType, page, limit, offset }) {
   const where = ["lp.status = 'paid'"]
   const params = []
-  if (listingType === 'posting_credit') {
-    where.push('lp.listing_type IS NULL')
+  if (listingType === 'subscription') {
+    where.push("lp.purpose = 'subscription'")
+  } else if (listingType === 'posting_credit') {
+    where.push("lp.purpose = 'posting_credit' AND lp.listing_type IS NULL")
   } else if (listingType) {
-    where.push('lp.listing_type = ?')
+    where.push("lp.purpose = 'posting_credit' AND lp.listing_type = ?")
     params.push(listingType)
   }
 
@@ -82,7 +84,7 @@ async function listSuccessfulForAdmin({ listingType, page, limit, offset }) {
   const [rows] = await pool.query(
     `SELECT lp.id, lp.txn_ref, lp.amount, lp.provider, lp.provider_order_code,
             lp.provider_transaction, lp.status, lp.paid_at, lp.consumed_at,
-            lp.listing_type, lp.listing_id, lp.created_at,
+            lp.listing_type, lp.listing_id, lp.purpose, lp.plan_code, lp.created_at,
             u.id AS user_id, u.full_name AS user_name, u.email AS user_email
      FROM listing_payments lp
      JOIN users u ON u.id = lp.user_id
@@ -97,10 +99,10 @@ async function listSuccessfulForAdmin({ listingType, page, limit, offset }) {
     params
   )
   const [breakdown] = await pool.query(
-    `SELECT COALESCE(lp.listing_type, 'posting_credit') AS listing_type,
+    `SELECT CASE WHEN lp.purpose = 'subscription' THEN 'subscription' ELSE COALESCE(lp.listing_type, 'posting_credit') END AS listing_type,
             COUNT(*) AS transaction_count, COALESCE(SUM(lp.amount), 0) AS total_amount
      FROM listing_payments lp WHERE ${whereSql}
-     GROUP BY COALESCE(lp.listing_type, 'posting_credit')
+     GROUP BY CASE WHEN lp.purpose = 'subscription' THEN 'subscription' ELSE COALESCE(lp.listing_type, 'posting_credit') END
      ORDER BY total_amount DESC`,
     params
   )

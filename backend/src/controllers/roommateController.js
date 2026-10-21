@@ -6,10 +6,13 @@ const { normalizePropertyType, normalizeGender, genderLabel } = require('../util
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 const { splitGallery } = require('../utils/media')
+const { memberFromRank } = require('../models/subscriptionModel')
+const { trackView } = require('../models/viewModel')
 
 function toRoommateCard(row) {
   return {
     id: row.id,
+    member: memberFromRank(row.member_rank),
     name: row.poster_name,
     age: row.age,
     gender: genderLabel(row.gender_preference),
@@ -47,10 +50,13 @@ async function getRoommate(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy bài đăng tìm roommate' })
   }
 
+  trackView(request, 'roommate', roommate.id, roommate.posted_by)
+
   const { images, videoUrl } = splitGallery(await roommateModel.getGallery(roommate.id))
 
   response.json({
     id: roommate.id,
+    member: memberFromRank(roommate.member_rank),
     ownerId: roommate.posted_by,
     title: roommate.title,
     name: roommate.poster_name,

@@ -1,5 +1,9 @@
 const pool = require('../config/db')
+const { buildMemberSql } = require('./subscriptionModel')
+const { LISTING_TYPES } = require('./listingRegistry')
 const { buildMediaRows } = require('../utils/media')
+
+const member = buildMemberSql(LISTING_TYPES.roommate, 'rm')
 
 function buildListFilters(query) {
   const where = [
@@ -48,10 +52,12 @@ async function list(query, { limit, offset }) {
   const [rows] = await pool.query(
     `SELECT rm.*, a.province, a.district, a.ward,
        u.full_name AS poster_name, u.avatar_url AS poster_avatar,
-       (SELECT media_url FROM roommate_images WHERE roommate_listing_id = rm.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM roommate_images WHERE roommate_listing_id = rm.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
+       ${member.selectSql}
      FROM roommate_listings rm
      JOIN addresses a ON a.id = rm.address_id
      JOIN users u ON u.id = rm.posted_by
+     ${member.joinSql}
      WHERE ${whereSql}
      ORDER BY rm.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -69,10 +75,12 @@ async function list(query, { limit, offset }) {
   async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
     `SELECT rm.*, a.province, a.district, a.ward, a.street_address, a.latitude, a.longitude,
-       u.full_name AS poster_name, u.avatar_url AS poster_avatar
+       u.full_name AS poster_name, u.avatar_url AS poster_avatar,
+       ${member.selectSql}
      FROM roommate_listings rm
      JOIN addresses a ON a.id = rm.address_id
      JOIN users u ON u.id = rm.posted_by
+     ${member.joinSql}
      WHERE rm.id = ? AND rm.deleted_at IS NULL
        AND (rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW()) OR rm.posted_by = ?)
        AND rm.status = 'active' AND (rm.publish_at IS NULL OR rm.publish_at <= NOW())

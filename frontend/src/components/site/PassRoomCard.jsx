@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
+import MemberBadge from './MemberBadge.jsx'
 
 export default function PassRoomCard({ room }) {
   return (
@@ -9,6 +10,7 @@ export default function PassRoomCard({ room }) {
         <span className={`pass-room-status ${room.status === 'Cần pass gấp' ? 'urgent' : ''}`}>{room.status}</span>
       </div>
       <div className="pass-room-card-body">
+        <MemberBadge member={room.member} />
         <h3 className="pass-room-card-title">{room.title}</h3>
         <p className="pass-room-card-price">{room.price}</p>
         <p className="pass-room-card-meta">

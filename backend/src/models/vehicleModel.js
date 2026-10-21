@@ -1,5 +1,9 @@
 const pool = require('../config/db')
+const { buildMemberSql } = require('./subscriptionModel')
+const { LISTING_TYPES } = require('./listingRegistry')
 const { buildMediaRows } = require('../utils/media')
+
+const member = buildMemberSql(LISTING_TYPES.vehicle, 'v')
 
 function buildListFilters(query) {
   const where = ["v.deleted_at IS NULL", "v.status = 'available'", 'v.admin_hidden_at IS NULL']
@@ -35,9 +39,11 @@ async function list(query, { limit, offset }) {
   const [rows] = await pool.query(
     `SELECT v.*, u.phone AS owner_phone,
        (SELECT media_url FROM vehicle_images WHERE vehicle_id = v.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
-       (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating
+       (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating,
+       ${member.selectSql}
      FROM vehicles v
      JOIN users u ON u.id = v.owner_id
+     ${member.joinSql}
      WHERE ${whereSql}
      ORDER BY v.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -53,9 +59,11 @@ async function list(query, { limit, offset }) {
   const [rows] = await pool.query(
     `SELECT v.*, u.full_name AS owner_name, u.avatar_url AS owner_avatar, u.phone AS owner_phone,
        (SELECT AVG(rating) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS avg_rating,
-       (SELECT COUNT(*) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS review_count
+       (SELECT COUNT(*) FROM reviews WHERE target_type = 'vehicle' AND target_id = v.id AND deleted_at IS NULL) AS review_count,
+       ${member.selectSql}
      FROM vehicles v
      JOIN users u ON u.id = v.owner_id
+     ${member.joinSql}
      WHERE v.id = ? AND v.deleted_at IS NULL
        AND ((v.status = 'available' AND v.admin_hidden_at IS NULL) OR v.owner_id = ?)
      LIMIT 1`,

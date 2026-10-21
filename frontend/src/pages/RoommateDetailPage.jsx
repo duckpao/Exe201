@@ -8,6 +8,7 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getRoommate } from '../services/roommateService.js'
+import MemberBadge from '../components/site/MemberBadge.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -138,6 +139,7 @@ export default function RoommateDetailPage() {
                 <PlaceholderImage src={roommate.avatar} alt={roommate.name} className="owner-avatar" />
                 <div>
                   <p className="owner-name">{roommate.name}</p>
+                  <MemberBadge member={roommate.member} />
                   <p className="owner-joined">Đăng ngày {roommate.date}</p>
                 </div>
               </div>

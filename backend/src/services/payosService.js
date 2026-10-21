@@ -40,10 +40,8 @@ async function payosRequest(path, options = {}) {
   return data.data
 }
 
-async function createPaymentLink({ orderCode, amount, description }) {
+async function createPaymentLink({ orderCode, amount, description, itemName = 'Lượt đăng bài RentMate Hola', returnUrl = process.env.PAYOS_RETURN_URL, cancelUrl = process.env.PAYOS_CANCEL_URL }) {
   const { checksumKey } = getConfig()
-  const returnUrl = process.env.PAYOS_RETURN_URL
-  const cancelUrl = process.env.PAYOS_CANCEL_URL
   if (!returnUrl || !cancelUrl) {
     throw Object.assign(new Error('Chưa cấu hình PAYOS_RETURN_URL hoặc PAYOS_CANCEL_URL'), { http_code: 503 })
   }
@@ -52,7 +50,7 @@ async function createPaymentLink({ orderCode, amount, description }) {
     orderCode,
     amount,
     description,
-    items: [{ name: 'Lượt đăng bài RentMate Hola', quantity: 1, price: amount }],
+    items: [{ name: itemName, quantity: 1, price: amount }],
     cancelUrl,
     returnUrl,
     expiredAt: Math.floor(Date.now() / 1000) + 15 * 60,

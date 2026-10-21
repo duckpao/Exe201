@@ -1,5 +1,9 @@
 const pool = require('../config/db')
+const { buildMemberSql } = require('./subscriptionModel')
+const { LISTING_TYPES } = require('./listingRegistry')
 const { buildMediaRows } = require('../utils/media')
+
+const member = buildMemberSql(LISTING_TYPES.item, 'it')
 
 function buildListFilters(query) {
   const where = ["it.deleted_at IS NULL", "it.status IN ('available','urgent')", 'it.admin_hidden_at IS NULL']
@@ -34,9 +38,11 @@ async function list(query, { limit, offset }) {
 
   const [rows] = await pool.query(
     `SELECT it.*, a.province, a.district, a.ward,
-       (SELECT media_url FROM item_images WHERE item_listing_id = it.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM item_images WHERE item_listing_id = it.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
+       ${member.selectSql}
      FROM item_listings it
      JOIN addresses a ON a.id = it.address_id
+     ${member.joinSql}
      WHERE ${whereSql}
      ORDER BY it.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -54,10 +60,12 @@ async function list(query, { limit, offset }) {
   async function findById(id, viewerId = null) {
   const [rows] = await pool.query(
     `SELECT it.*, a.province, a.district, a.ward, a.street_address, a.latitude, a.longitude,
-       u.full_name AS poster_name, u.avatar_url AS poster_avatar
+       u.full_name AS poster_name, u.avatar_url AS poster_avatar,
+       ${member.selectSql}
      FROM item_listings it
      JOIN addresses a ON a.id = it.address_id
      JOIN users u ON u.id = it.posted_by
+     ${member.joinSql}
      WHERE it.id = ? AND it.deleted_at IS NULL
        AND ((it.status IN ('available','urgent') AND it.admin_hidden_at IS NULL) OR it.posted_by = ?)
      LIMIT 1`,

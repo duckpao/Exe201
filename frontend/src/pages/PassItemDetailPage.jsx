@@ -8,6 +8,7 @@ import MessageOwnerButton from '../components/site/MessageOwnerButton.jsx'
 import FavoriteButton from '../components/site/FavoriteButton.jsx'
 import { useListingDetail } from '../hooks/useListingDetail.js'
 import { getItem } from '../services/itemService.js'
+import MemberBadge from '../components/site/MemberBadge.jsx'
 import ListingVideo from '../components/site/ListingVideo.jsx'
 import ListingReviews from '../components/site/ListingReviews.jsx'
 import '../styles/site.css'
@@ -123,6 +124,7 @@ export default function PassItemDetailPage() {
                 <PlaceholderImage src={item.poster.avatar} alt={item.poster.name} className="owner-avatar" />
                 <div>
                   <p className="owner-name">{item.poster.name}</p>
+                  <MemberBadge member={item.member} />
                   <p className="owner-joined">Người đăng bài</p>
                 </div>
               </div>

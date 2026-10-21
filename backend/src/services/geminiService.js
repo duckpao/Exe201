@@ -10,13 +10,13 @@ function redactSensitiveText(value) {
 function getConfig() {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw Object.assign(new Error('Máy chủ chưa cấu hình GEMINI_API_KEY'), { http_code: 503 })
-  return { apiKey, model: process.env.GEMINI_MODEL || 'gemini-3.6-flash' }
+  return { apiKey, model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite' }
 }
 
 function getStatus() {
   return {
     available: Boolean(process.env.GEMINI_API_KEY),
-    model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
   }
 }
 
@@ -64,8 +64,13 @@ Trả lời bằng tiếng Việt, thân thiện, súc tích, dùng gạch đầ
 
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
-    const detail = data?.error?.message || `Gemini trả về HTTP ${response.status}`
-    throw Object.assign(new Error(detail), { http_code: response.status === 429 ? 429 : 502 })
+    // Không chuyển nguyên văn lỗi tiếng Anh của Google lên giao diện.
+    const overloaded = response.status === 503 || response.status === 429
+    const message = overloaded
+      ? 'Trợ lý AI đang quá tải, vui lòng thử lại sau ít phút.'
+      : `Trợ lý AI gặp lỗi (HTTP ${response.status}), vui lòng thử lại.`
+    console.error('Gemini lỗi:', response.status, data?.error?.message)
+    throw Object.assign(new Error(message), { http_code: response.status === 429 ? 429 : 502 })
   }
   const answer = textFromResponse(data)
   if (!answer) throw Object.assign(new Error('Gemini không trả về nội dung phù hợp'), { http_code: 502 })

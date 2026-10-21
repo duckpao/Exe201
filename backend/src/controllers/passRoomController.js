@@ -6,10 +6,13 @@ const { normalizePropertyType, PASS_ROOM_STATUS_LABELS } = require('../utils/enu
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 const { splitGallery } = require('../utils/media')
+const { memberFromRank } = require('../models/subscriptionModel')
+const { trackView } = require('../models/viewModel')
 
 function toPassRoomCard(row) {
   return {
     id: row.id,
+    member: memberFromRank(row.member_rank),
     title: row.title,
     price: formatVnd(row.monthly_price, '/tháng'),
     area: formatArea(row.area_m2),
@@ -46,11 +49,14 @@ async function getPassRoom(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy bài pass phòng' })
   }
 
+  trackView(request, 'pass_room', passRoom.id, passRoom.posted_by)
+
   const { images, videoUrl } = splitGallery(await passRoomModel.getGallery(passRoom.id))
   const statusLabel = PASS_ROOM_STATUS_LABELS[passRoom.status] || passRoom.status
 
   response.json({
     id: passRoom.id,
+    member: memberFromRank(passRoom.member_rank),
     ownerId: passRoom.posted_by,
     title: passRoom.title,
     price: formatVnd(passRoom.monthly_price, '/tháng'),

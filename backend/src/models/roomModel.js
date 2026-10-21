@@ -1,6 +1,10 @@
 const pool = require('../config/db')
+const { buildMemberSql } = require('./subscriptionModel')
+const { LISTING_TYPES } = require('./listingRegistry')
 const { buildMediaRows } = require('../utils/media')
 const { queryWithRetry } = pool
+
+const member = buildMemberSql(LISTING_TYPES.room, 'rl')
 
 function buildListFilters(query) {
   const where = ["rl.deleted_at IS NULL", "rl.status IN ('available','rented')", 'rl.admin_hidden_at IS NULL']
@@ -47,11 +51,13 @@ async function list(query, { limit, offset }) {
 
   const [rows] = await queryWithRetry(
     `SELECT rl.*, a.province, a.district, a.ward,
-       (SELECT media_url FROM room_images WHERE room_listing_id = rl.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image
+       (SELECT media_url FROM room_images WHERE room_listing_id = rl.id AND media_type = 'image' ORDER BY is_primary DESC, id ASC LIMIT 1) AS primary_image,
+       ${member.selectSql}
      FROM room_listings rl
      JOIN addresses a ON a.id = rl.address_id
+     ${member.joinSql}
      WHERE ${whereSql}
-     ORDER BY (rl.status = 'available') DESC, rl.created_at DESC
+     ORDER BY (rl.status = 'available') DESC, (CASE WHEN rl.status = 'available' THEN member_rank ELSE 0 END) DESC, rl.created_at DESC
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   )
@@ -68,10 +74,12 @@ async function list(query, { limit, offset }) {
   const [rows] = await pool.query(
     `SELECT rl.*, a.province, a.district, a.ward, a.street_address, a.formatted_address, a.latitude, a.longitude,
        u.id AS landlord_user_id, u.full_name AS landlord_name, u.avatar_url AS landlord_avatar, u.created_at AS landlord_created_at,
-       u.phone AS landlord_phone, u.email AS landlord_email
+       u.phone AS landlord_phone, u.email AS landlord_email,
+       ${member.selectSql}
      FROM room_listings rl
      JOIN addresses a ON a.id = rl.address_id
      JOIN users u ON u.id = rl.landlord_id
+     ${member.joinSql}
      WHERE rl.id = ? AND rl.deleted_at IS NULL
        AND ((rl.status IN ('available','rented') AND rl.admin_hidden_at IS NULL) OR rl.landlord_id = ?)
      LIMIT 1`,

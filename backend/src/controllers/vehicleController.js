@@ -5,6 +5,8 @@ const { formatVnd, formatJoinedDuration } = require('../utils/format')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 const { consumePostingCredit } = require('../middleware/postingPaymentMiddleware')
 const { splitGallery } = require('../utils/media')
+const { memberFromRank } = require('../models/subscriptionModel')
+const { trackView } = require('../models/viewModel')
 
 function priceOf(row) {
   if (row.price_per_trip) return formatVnd(row.price_per_trip, '/chuyến')
@@ -15,6 +17,7 @@ function priceOf(row) {
 function toVehicleCard(row, isLoggedIn) {
   return {
     id: row.id,
+    member: memberFromRank(row.member_rank),
     title: row.name,
     rating: row.avg_rating ? Number(row.avg_rating).toFixed(1) : null,
     tags: row.tags || [],
@@ -49,10 +52,13 @@ async function getVehicle(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy dịch vụ vận chuyển' })
   }
 
+  trackView(request, 'vehicle', vehicle.id, vehicle.owner_id)
+
   const { images, videoUrl } = splitGallery(await vehicleModel.getGallery(vehicle.id))
 
   response.json({
     id: vehicle.id,
+    member: memberFromRank(vehicle.member_rank),
     ownerId: vehicle.owner_id,
     title: vehicle.name,
     licensePlate: vehicle.license_plate,

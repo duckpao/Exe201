@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
+import MemberBadge from './MemberBadge.jsx'
 
 export default function RoommateCard({ roommate }) {
   return (
@@ -14,6 +15,7 @@ export default function RoommateCard({ roommate }) {
             {roommate.age ? `· ${roommate.age} tuổi ` : ''}· {roommate.gender}
           </span>
         </h3>
+        <MemberBadge member={roommate.member} />
         <p className="roommate-card-desc">{roommate.description}</p>
         <p className="roommate-card-price">{roommate.price || 'Chưa có ngân sách'}</p>
         <p className="roommate-card-date">Đăng ngày {roommate.date}</p>

@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import PlaceholderImage from './PlaceholderImage.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSocket } from '../../context/SocketContext.jsx'
+import { useMySubscription } from '../../hooks/useMySubscription.js'
+import MemberBadge from './MemberBadge.jsx'
 import { listConversations } from '../../services/conversationService.js'
 import { Bell, Menu, Settings, X } from 'lucide-react';
 
@@ -23,6 +25,7 @@ export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const subscription = useMySubscription(user?.id)
 
   useEffect(() => {
     if (!user) {
@@ -56,6 +59,13 @@ export default function SiteHeader() {
     setMobileNavOpen(false)
     setMenuOpen(false)
   }, [pathname])
+
+  const current = subscription?.current || null
+  const expiresOn = current ? new Date(current.expiresAt).toLocaleDateString('vi-VN') : ''
+  const planHint = current ? `Hết hạn ${expiresOn}` : 'Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu'
+  const planDetail = current
+    ? `Gói ${current.tierLabel} theo ${current.cycle === 'yearly' ? 'năm' : 'tháng'}, hết hạn ${expiresOn}.`
+    : 'Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu.'
 
   const navLinks =
     user?.role === 'landlord' ? [...NAV_LINKS, { to: '/phong-tro/dang-bai', label: 'Đăng phòng' }] : NAV_LINKS
@@ -97,6 +107,13 @@ export default function SiteHeader() {
             <Settings size={16} />
           </Link>
           {user ? (
+            <>
+            {subscription && (
+              <Link to="/goi-dang-ky" className="site-plan" aria-label={planDetail}>
+                <span className="site-plan-hint">{planHint}</span>
+                {current ? <MemberBadge member={current} /> : <span className="member-badge member-badge-free">Miễn phí</span>}
+              </Link>
+            )}
             <div className="site-avatar-menu">
               <button
                 type="button"
@@ -121,6 +138,10 @@ export default function SiteHeader() {
                       Quản lý trọ
                     </Link>
                   )}
+                  <Link to="/goi-dang-ky" onClick={() => setMenuOpen(false)}>
+                    Gói đăng ký
+                    {subscription && <small>{planDetail}</small>}
+                  </Link>
                   <Link to="/settings" onClick={() => setMenuOpen(false)}>
                     Cài đặt
                   </Link>
@@ -130,6 +151,7 @@ export default function SiteHeader() {
                 </div>
               )}
             </div>
+            </>
           ) : (
             <Link to="/login" className="site-header-login-btn" aria-label="Đăng nhập">
               Đăng nhập
