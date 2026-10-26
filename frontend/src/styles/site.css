@@ -1832,7 +1832,7 @@
 
 .payos-checkout-panel {
   min-width: 0;
-  padding: 24px;
+  overflow: hidden;
   background: #f7f8f5;
 }
 
@@ -1840,7 +1840,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 16px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid var(--brand-border);
   color: var(--brand-text-soft);
   font-size: 14px;
@@ -1859,7 +1859,7 @@
   align-content: center;
   justify-items: center;
   gap: 16px;
-  padding: 24px 12px;
+  padding: 24px;
   text-align: center;
 }
 
@@ -1883,14 +1883,22 @@
   text-decoration: none;
 }
 
+/* Script payOS đặt iframe height 100%, nên khung phải có chiều cao cố định và đủ cao để trang thanh toán không tự cuộn. */
 .payos-checkout-frame {
   display: none;
   width: 100%;
-  min-height: 540px;
+  height: 780px;
 }
 
 .payos-checkout-frame.is-open {
   display: block;
+}
+
+.payos-checkout-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .payment-terms {
@@ -1979,12 +1987,12 @@
     border-bottom: 1px solid var(--brand-border);
   }
 
-  .payos-checkout-panel {
-    padding: 18px;
+  .payos-panel-heading {
+    padding: 16px 18px 14px;
   }
 
   .payos-checkout-frame {
-    min-height: 500px;
+    height: 860px;
   }
 }
 
