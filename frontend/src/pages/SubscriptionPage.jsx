@@ -9,7 +9,7 @@ import { useToast } from '../context/ToastContext.jsx'
 import { getPayosPaymentStatus } from '../services/paymentService.js'
 import { SUBSCRIPTION_CHANGED_EVENT } from '../hooks/useMySubscription.js'
 import { usePayosWatcher } from '../hooks/usePayosWatcher.js'
-import { safeReturnPath } from '../utils/safeReturnPath.js'
+import { recallReturnTo, rememberReturnTo, safeReturnPath } from '../utils/safeReturnPath.js'
 import { checkoutSubscription, getMySubscription, getSubscriptionStats, listPlans } from '../services/subscriptionService.js'
 import '../styles/site.css'
 
@@ -103,7 +103,8 @@ export default function SubscriptionPage() {
   // Màn hình trước khi vào trang gói: ưu tiên returnTo do payOS gọi lại, rồi tới nơi người dùng bấm vào.
   const returnTo =
     safeReturnPath(new URLSearchParams(location.search).get('returnTo')) ||
-    safeReturnPath(location.state?.from)
+    safeReturnPath(location.state?.from) ||
+    recallReturnTo(new URLSearchParams(location.search).get('orderCode'))
   const backTo = returnTo && !returnTo.startsWith('/goi-dang-ky') ? returnTo : null
 
   const reload = useCallback(() => {
@@ -154,7 +155,9 @@ export default function SubscriptionPage() {
   async function handleBuy(plan) {
     setCreatingCode(plan.code)
     try {
-      setPayment(await checkoutSubscription(plan.code, backTo || undefined))
+      const data = await checkoutSubscription(plan.code)
+      rememberReturnTo(data.orderCode, backTo)
+      setPayment(data)
     } catch (error) {
       toast.error(error.message)
     } finally {

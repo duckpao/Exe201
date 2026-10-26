@@ -8,8 +8,8 @@ export function getMySubscription(options = {}) {
   return getJson('/api/subscriptions/me', {}, options)
 }
 
-export function checkoutSubscription(planCode, returnTo) {
-  return postJson('/api/subscriptions/checkout', { planCode, returnTo })
+export function checkoutSubscription(planCode) {
+  return postJson('/api/subscriptions/checkout', { planCode })
 }
 
 export function getSubscriptionStats(options = {}) {

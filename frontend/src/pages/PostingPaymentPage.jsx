@@ -7,7 +7,7 @@ import PayosCheckoutPanel from '../components/site/PayosCheckoutPanel.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { createPayosPayment, getPayosPaymentStatus, getPostingStatus } from '../services/paymentService.js'
 import { usePayosWatcher } from '../hooks/usePayosWatcher.js'
-import { safeReturnPath } from '../utils/safeReturnPath.js'
+import { recallReturnTo, rememberReturnTo, safeReturnPath } from '../utils/safeReturnPath.js'
 import '../styles/site.css'
 
 export default function PostingPaymentPage() {
@@ -21,7 +21,9 @@ export default function PostingPaymentPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
-  const returnTo = safeReturnPath(new URLSearchParams(location.search).get('returnTo'), '/')
+  const searchParams = new URLSearchParams(location.search)
+  const returnTo =
+    safeReturnPath(searchParams.get('returnTo')) || recallReturnTo(searchParams.get('orderCode')) || '/'
 
   useEffect(() => {
     getPostingStatus()
@@ -68,7 +70,8 @@ export default function PostingPaymentPage() {
   async function handleCreatePayment() {
     setCreating(true)
     try {
-      const data = await createPayosPayment(returnTo === '/' ? undefined : returnTo)
+      const data = await createPayosPayment()
+      rememberReturnTo(data.orderCode, returnTo)
       setPayment(data)
       toast.success('Đã tạo mã QR thanh toán payOS')
     } catch (error) {

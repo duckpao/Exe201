@@ -93,7 +93,7 @@ async function checkout(request, response) {
     })
   }
 
-  const { returnUrl, cancelUrl } = buildPayosUrls('/goi-dang-ky', request.body?.returnTo)
+  const { returnUrl, cancelUrl } = buildPayosUrls('/goi-dang-ky')
   const orderCode = Date.now()
   const paymentLink = await payosService.createPaymentLink({
     orderCode,

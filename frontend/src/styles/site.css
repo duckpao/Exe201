@@ -3818,21 +3818,15 @@
 .sub-table th, .sub-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--brand-border); }
 @media (max-width: 720px) { .sub-plans, .sub-checkout { grid-template-columns: 1fr; } }
 
-/* Trạng thái gói cạnh avatar. Dòng gợi ý chỉ hiện khi đủ chỗ; hẹp hơn thì còn badge, mô tả đầy đủ nằm trong menu avatar. */
-.site-plan { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; min-width: 44px; color: var(--brand-text-soft); font-size: 13px; text-decoration: none; }
-.site-plan-hint { white-space: nowrap; }
-.site-plan:hover .site-plan-hint { text-decoration: underline; }
-.site-plan .member-badge { margin: 0; align-self: center; }
-.member-badge-free { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
 .site-avatar-dropdown { max-width: min(280px, calc(100vw - 24px)); }
 .site-avatar-dropdown a small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--brand-text-soft); }
-@media (max-width: 1100px) { .site-plan-hint { display: none; } }
 @media (max-width: 600px) {
-  .site-plan .member-badge { font-size: 10.5px; padding: 1px 5px; }
   .site-header-actions .icon-btn[aria-label="Cài đặt"] { display: none; }
 }
 
-/* Thành viên trả phí: vòng vàng quanh avatar, nhãn gói nằm đè mép dưới. Không glow; chữ tối trên nền vàng để đủ tương phản. */
+/* Vòng quanh avatar, nhãn gói đè mép dưới: vàng cho thành viên trả phí, xám cho tài khoản Free. Không glow. */
 .site-avatar-menu.has-plan .site-avatar { box-shadow: 0 0 0 2px var(--brand-white, #fff), 0 0 0 5px #f59e0b; }
 .site-avatar-plan { position: absolute; left: 50%; bottom: -11px; transform: translateX(-50%); padding: 0 6px; border-radius: 4px; background: #f59e0b; color: #451a03; font-size: 10px; font-weight: 800; line-height: 16px; letter-spacing: 0.02em; white-space: nowrap; pointer-events: none; }
 .site-avatar-menu.has-plan .site-avatar-dropdown { top: 64px; }
+.site-avatar-menu.is-free .site-avatar { box-shadow: 0 0 0 2px var(--brand-white, #fff), 0 0 0 5px #94a3b8; }
+.site-avatar-menu.is-free .site-avatar-plan { background: #64748b; color: #fff; }

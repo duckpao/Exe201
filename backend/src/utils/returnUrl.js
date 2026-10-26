@@ -1,16 +1,8 @@
-// Chỉ nhận đường dẫn nội bộ để returnTo không thành open redirect.
-function safeReturnPath(value) {
-  const path = String(value || '')
-  return path.startsWith('/') && !path.startsWith('//') && path.length <= 300 ? path : null
-}
-
-// payOS gọi lại đúng returnUrl/cancelUrl này, nên returnTo đi kèm để quay về màn hình trước khi thanh toán.
-function buildPayosUrls(pagePath, returnTo) {
+// Script nhúng của payOS ghép returnUrl vào địa chỉ iframe mà không mã hóa, nên returnUrl phải là
+// địa chỉ thuần, không có query. Nơi quay về sau thanh toán do giao diện tự nhớ, không đi qua payOS.
+function buildPayosUrls(pagePath) {
   const origin = new URL(process.env.PAYOS_RETURN_URL || 'http://localhost:5173').origin
-  const safe = safeReturnPath(returnTo)
-  const query = safe ? `?returnTo=${encodeURIComponent(safe)}` : ''
-  const cancelQuery = safe ? `${query}&cancel=true` : '?cancel=true'
-  return { returnUrl: `${origin}${pagePath}${query}`, cancelUrl: `${origin}${pagePath}${cancelQuery}` }
+  return { returnUrl: `${origin}${pagePath}`, cancelUrl: `${origin}${pagePath}?cancel=true` }
 }
 
-module.exports = { safeReturnPath, buildPayosUrls }
+module.exports = { buildPayosUrls }

@@ -8,8 +8,8 @@ export function getPostingStatus(options = {}) {
   return getJson('/api/payments/posting-status', {}, options)
 }
 
-export function createPayosPayment(returnTo) {
-  return postJson('/api/payments/payos/create', { returnTo })
+export function createPayosPayment() {
+  return postJson('/api/payments/payos/create', {})
 }
 
 export function getPayosPaymentStatus(orderCode, options = {}) {

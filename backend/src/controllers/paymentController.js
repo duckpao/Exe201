@@ -30,7 +30,7 @@ async function createPayosPayment(request, response) {
   const orderCode = Date.now()
   const txnRef = `PAYOS${orderCode}`
   const description = `POST${request.user.id}`.slice(0, 9)
-  const { returnUrl, cancelUrl } = buildPayosUrls('/thanh-toan/dang-bai', request.body?.returnTo)
+  const { returnUrl, cancelUrl } = buildPayosUrls('/thanh-toan/dang-bai')
   const paymentLink = await payosService.createPaymentLink({ orderCode, amount: LISTING_FEE, description, returnUrl, cancelUrl })
 
   await paymentModel.createPending({

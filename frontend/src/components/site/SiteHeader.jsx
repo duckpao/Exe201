@@ -62,7 +62,7 @@ export default function SiteHeader() {
   }, [pathname])
 
   const current = subscription?.current || null
-  const planLabel = current ? PLAN_LABELS[current.tier] : null
+  const planLabel = current ? PLAN_LABELS[current.tier] : subscription ? 'Free' : null
   const planDetail = current
     ? `Gói ${planLabel} theo ${current.cycle === 'yearly' ? 'năm' : 'tháng'}, hết hạn ${new Date(current.expiresAt).toLocaleDateString('vi-VN')}.`
     : 'Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu.'
@@ -108,18 +108,12 @@ export default function SiteHeader() {
           </Link>
           {user ? (
             <>
-            {subscription && !current && (
-              <Link to="/goi-dang-ky" state={{ from: `${pathname}${search}` }} className="site-plan" aria-label={planDetail}>
-                <span className="site-plan-hint">Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu</span>
-                <span className="member-badge member-badge-free">Miễn phí</span>
-              </Link>
-            )}
-            <div className={`site-avatar-menu${current ? ' has-plan' : ''}`}>
+            <div className={`site-avatar-menu${planLabel ? ' has-plan' : ''}${subscription && !current ? ' is-free' : ''}`}>
               <button
                 type="button"
                 className="site-avatar"
                 onClick={() => setMenuOpen((prev) => !prev)}
-                aria-label={current ? `Tài khoản, gói ${planLabel}` : 'Tài khoản'}
+                aria-label={planLabel ? `Tài khoản, gói ${current ? planLabel : 'miễn phí'}` : 'Tài khoản'}
               >
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt="Avatar" style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}} />
@@ -127,7 +121,7 @@ export default function SiteHeader() {
                   <span>{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
                 )}
               </button>
-              {current && <span className="site-avatar-plan" aria-hidden="true">{planLabel}</span>}
+              {planLabel && <span className="site-avatar-plan" aria-hidden="true">{planLabel}</span>}
               {menuOpen && (
                 <div className="site-avatar-dropdown">
                   <p className="site-avatar-dropdown-name">{user.full_name}</p>
