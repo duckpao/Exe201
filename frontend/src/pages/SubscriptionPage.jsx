@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { getPayosPaymentStatus } from '../services/paymentService.js'
 import { SUBSCRIPTION_CHANGED_EVENT } from '../hooks/useMySubscription.js'
+import { usePayosWatcher } from '../hooks/usePayosWatcher.js'
+import { safeReturnPath } from '../utils/safeReturnPath.js'
 import { checkoutSubscription, getMySubscription, getSubscriptionStats, listPlans } from '../services/subscriptionService.js'
 import '../styles/site.css'
 
@@ -98,6 +100,12 @@ export default function SubscriptionPage() {
   const [checking, setChecking] = useState(false)
   const [notice, setNotice] = useState(null)
 
+  // Màn hình trước khi vào trang gói: ưu tiên returnTo do payOS gọi lại, rồi tới nơi người dùng bấm vào.
+  const returnTo =
+    safeReturnPath(new URLSearchParams(location.search).get('returnTo')) ||
+    safeReturnPath(location.state?.from)
+  const backTo = returnTo && !returnTo.startsWith('/goi-dang-ky') ? returnTo : null
+
   const reload = useCallback(() => {
     return Promise.all([listPlans(), getMySubscription()])
       .then(([planData, mineData]) => {
@@ -132,9 +140,9 @@ export default function SubscriptionPage() {
         if (ignore) return
         if (data.paid) {
           setNotice({ type: 'success', text: 'Thanh toán đã được xác nhận. Gói của bạn đã được kích hoạt.' })
-          reload()
+          reload().then(() => backTo && navigate(backTo, { replace: true }))
         } else {
-          setNotice({ type: 'pending', text: 'Chưa nhận được xác nhận từ payOS. Trạng thái sẽ cập nhật khi webhook đến.' })
+          setNotice({ type: 'pending', text: 'payOS chưa ghi nhận thanh toán. Hệ thống sẽ tự kiểm tra lại, bạn có thể chờ ở trang này.' })
         }
       })
       .catch((error) => !ignore && setNotice({ type: 'pending', text: error.message }))
@@ -146,7 +154,7 @@ export default function SubscriptionPage() {
   async function handleBuy(plan) {
     setCreatingCode(plan.code)
     try {
-      setPayment(await checkoutSubscription(plan.code))
+      setPayment(await checkoutSubscription(plan.code, backTo || undefined))
     } catch (error) {
       toast.error(error.message)
     } finally {
@@ -154,15 +162,29 @@ export default function SubscriptionPage() {
     }
   }
 
+  // Gói đã kích hoạt: làm mới trạng thái rồi quay về màn hình trước đó (nếu biết).
+  async function finishPaid() {
+    toast.success('Thanh toán thành công. Gói của bạn đã được kích hoạt.')
+    setPayment(null)
+    await reload()
+    if (backTo) navigate(backTo, { replace: true })
+  }
+
+  usePayosWatcher(payment?.orderCode, {
+    onPaid: finishPaid,
+    onEnded: () => {
+      toast.info('Giao dịch đã bị hủy hoặc hết hạn. Bạn có thể chọn gói lại.')
+      setPayment(null)
+    },
+  })
+
   async function handleCheck() {
     if (!payment) return
     setChecking(true)
     try {
       const data = await getPayosPaymentStatus(payment.orderCode)
       if (data.paid) {
-        toast.success('Thanh toán thành công. Gói của bạn đã được kích hoạt.')
-        setPayment(null)
-        await reload()
+        await finishPaid()
       } else {
         toast.info(data.status === 'cancelled' ? 'Giao dịch đã bị hủy.' : 'Chưa ghi nhận thanh toán. Vui lòng kiểm tra lại sau ít phút.')
       }
@@ -264,7 +286,7 @@ export default function SubscriptionPage() {
                 <PayosCheckoutPanel
                   payment={payment}
                   onSuccess={handleCheck}
-                  onCancel={() => toast.info('Bạn đã đóng giao diện thanh toán. Trạng thái giao dịch vẫn được xác nhận qua webhook.')}
+                  onCancel={() => toast.info('Bạn đã đóng giao diện thanh toán. Hệ thống vẫn theo dõi giao dịch và sẽ tự cập nhật.')}
                 />
               </div>
             )}

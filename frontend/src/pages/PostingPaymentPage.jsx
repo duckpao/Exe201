@@ -6,6 +6,8 @@ import SiteFooter from '../components/site/SiteFooter.jsx'
 import PayosCheckoutPanel from '../components/site/PayosCheckoutPanel.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { createPayosPayment, getPayosPaymentStatus, getPostingStatus } from '../services/paymentService.js'
+import { usePayosWatcher } from '../hooks/usePayosWatcher.js'
+import { safeReturnPath } from '../utils/safeReturnPath.js'
 import '../styles/site.css'
 
 export default function PostingPaymentPage() {
@@ -19,7 +21,7 @@ export default function PostingPaymentPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
-  const returnTo = safeReturnPath(new URLSearchParams(location.search).get('returnTo'))
+  const returnTo = safeReturnPath(new URLSearchParams(location.search).get('returnTo'), '/')
 
   useEffect(() => {
     getPostingStatus()
@@ -47,12 +49,12 @@ export default function PostingPaymentPage() {
       .then((data) => {
         if (ignore) return
         if (data.paid) {
-          setReturnNotice({ type: 'success', text: 'Thanh toán đã được webhook xác nhận. Lượt đăng bài đã sẵn sàng.' })
+          setReturnNotice({ type: 'success', text: 'Thanh toán đã được xác nhận. Lượt đăng bài đã sẵn sàng.' })
           getPostingStatus().then(setStatus).catch(() => {})
         } else if (wasCancelled) {
           setReturnNotice({ type: 'cancelled', text: 'Giao dịch đã được hủy. Bạn có thể tạo giao dịch mới.' })
         } else {
-          setReturnNotice({ type: 'pending', text: 'PayOS chưa gửi xác nhận thanh toán. Trạng thái sẽ cập nhật sau khi webhook đến.' })
+          setReturnNotice({ type: 'pending', text: 'payOS chưa ghi nhận thanh toán. Hệ thống sẽ tự kiểm tra lại, bạn có thể chờ ở trang này.' })
         }
       })
       .catch((error) => {
@@ -66,7 +68,7 @@ export default function PostingPaymentPage() {
   async function handleCreatePayment() {
     setCreating(true)
     try {
-      const data = await createPayosPayment()
+      const data = await createPayosPayment(returnTo === '/' ? undefined : returnTo)
       setPayment(data)
       toast.success('Đã tạo mã QR thanh toán payOS')
     } catch (error) {
@@ -75,6 +77,17 @@ export default function PostingPaymentPage() {
       setCreating(false)
     }
   }
+
+  usePayosWatcher(payment?.orderCode, {
+    onPaid: () => {
+      toast.success('Thanh toán thành công. Bạn đã có 1 lượt đăng bài.')
+      navigate(returnTo, { replace: true })
+    },
+    onEnded: () => {
+      toast.info('Giao dịch đã bị hủy hoặc hết hạn. Bạn có thể tạo giao dịch mới.')
+      setPayment(null)
+    },
+  })
 
   async function handleCheckStatus() {
     if (!payment?.orderCode) return
@@ -119,7 +132,7 @@ export default function PostingPaymentPage() {
                 <strong>{Number(status?.fee || 0).toLocaleString('vi-VN')}<small>đ</small></strong>
               </div>
               <div className="payment-benefits">
-                <span><CheckCircle2 size={17} /> Cấp lượt sau khi webhook xác nhận</span>
+                <span><CheckCircle2 size={17} /> Tự cấp lượt khi payOS xác nhận giao dịch</span>
                 <span><CheckCircle2 size={17} /> Không tự động gia hạn</span>
                 <span><CheckCircle2 size={17} /> Miễn phí đăng bài trong 2 tháng đầu</span>
               </div>
@@ -156,20 +169,15 @@ export default function PostingPaymentPage() {
               <PayosCheckoutPanel
                 payment={payment}
                 onSuccess={handleCheckStatus}
-                onCancel={() => toast.info('Bạn đã đóng hoặc hủy giao diện thanh toán. Trạng thái giao dịch vẫn được xác nhận qua webhook.')}
+                onCancel={() => toast.info('Bạn đã đóng giao diện thanh toán. Hệ thống vẫn theo dõi giao dịch và sẽ tự cập nhật.')}
               />
             </div>
           )}
 
-          <p className="payment-terms">Lượt đăng chỉ được cấp sau khi máy chủ nhận và xác minh webhook từ payOS. <Link to="/dieu-khoan">Điều khoản sử dụng</Link>.</p>
+          <p className="payment-terms">Lượt đăng chỉ được cấp sau khi máy chủ đối soát và xác nhận giao dịch với payOS. <Link to="/dieu-khoan">Điều khoản sử dụng</Link>.</p>
         </section>
       </main>
       <SiteFooter />
     </div>
   )
-}
-
-function safeReturnPath(value) {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/'
-  return value
 }

@@ -313,7 +313,7 @@ CREATE TABLE vehicle_bookings (
 CREATE TABLE reviews (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id     BIGINT UNSIGNED NOT NULL,
-  target_type ENUM('room_listing','vehicle','landlord') NOT NULL,
+  target_type ENUM('room_listing','vehicle','landlord','roommate','pass_room','item') NOT NULL,
   target_id   BIGINT UNSIGNED NOT NULL,
   rating      TINYINT UNSIGNED NOT NULL,
   comment     TEXT NULL,
@@ -321,6 +321,7 @@ CREATE TABLE reviews (
   updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at  TIMESTAMP NULL,
   KEY idx_review_target (target_type, target_id),
+  UNIQUE KEY uq_review_user_target (user_id, target_type, target_id),
   KEY idx_review_user (user_id),
   CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users(id),
   CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5)

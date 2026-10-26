@@ -4,7 +4,8 @@ import PlaceholderImage from './PlaceholderImage.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useSocket } from '../../context/SocketContext.jsx'
 import { useMySubscription } from '../../hooks/useMySubscription.js'
-import MemberBadge from './MemberBadge.jsx'
+
+const PLAN_LABELS = { basic: 'Basic', pro: 'Premium' }
 import { listConversations } from '../../services/conversationService.js'
 import { Bell, Menu, Settings, X } from 'lucide-react';
 
@@ -18,7 +19,7 @@ const NAV_LINKS = [
 ]
 
 export default function SiteHeader() {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const socket = useSocket()
@@ -61,10 +62,9 @@ export default function SiteHeader() {
   }, [pathname])
 
   const current = subscription?.current || null
-  const expiresOn = current ? new Date(current.expiresAt).toLocaleDateString('vi-VN') : ''
-  const planHint = current ? `Hết hạn ${expiresOn}` : 'Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu'
+  const planLabel = current ? PLAN_LABELS[current.tier] : null
   const planDetail = current
-    ? `Gói ${current.tierLabel} theo ${current.cycle === 'yearly' ? 'năm' : 'tháng'}, hết hạn ${expiresOn}.`
+    ? `Gói ${planLabel} theo ${current.cycle === 'yearly' ? 'năm' : 'tháng'}, hết hạn ${new Date(current.expiresAt).toLocaleDateString('vi-VN')}.`
     : 'Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu.'
 
   const navLinks =
@@ -108,18 +108,18 @@ export default function SiteHeader() {
           </Link>
           {user ? (
             <>
-            {subscription && (
-              <Link to="/goi-dang-ky" className="site-plan" aria-label={planDetail}>
-                <span className="site-plan-hint">{planHint}</span>
-                {current ? <MemberBadge member={current} /> : <span className="member-badge member-badge-free">Miễn phí</span>}
+            {subscription && !current && (
+              <Link to="/goi-dang-ky" state={{ from: `${pathname}${search}` }} className="site-plan" aria-label={planDetail}>
+                <span className="site-plan-hint">Tài khoản miễn phí. Nâng cấp để được đẩy bài lên đầu</span>
+                <span className="member-badge member-badge-free">Miễn phí</span>
               </Link>
             )}
-            <div className="site-avatar-menu">
+            <div className={`site-avatar-menu${current ? ' has-plan' : ''}`}>
               <button
                 type="button"
                 className="site-avatar"
                 onClick={() => setMenuOpen((prev) => !prev)}
-                aria-label="Tài khoản"
+                aria-label={current ? `Tài khoản, gói ${planLabel}` : 'Tài khoản'}
               >
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt="Avatar" style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}} />
@@ -127,6 +127,7 @@ export default function SiteHeader() {
                   <span>{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
                 )}
               </button>
+              {current && <span className="site-avatar-plan" aria-hidden="true">{planLabel}</span>}
               {menuOpen && (
                 <div className="site-avatar-dropdown">
                   <p className="site-avatar-dropdown-name">{user.full_name}</p>
@@ -138,7 +139,7 @@ export default function SiteHeader() {
                       Quản lý trọ
                     </Link>
                   )}
-                  <Link to="/goi-dang-ky" onClick={() => setMenuOpen(false)}>
+                  <Link to="/goi-dang-ky" state={{ from: `${pathname}${search}` }} onClick={() => setMenuOpen(false)}>
                     Gói đăng ký
                     {subscription && <small>{planDetail}</small>}
                   </Link>

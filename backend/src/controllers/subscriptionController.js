@@ -5,6 +5,7 @@ const viewModel = require('../models/viewModel')
 const pool = require('../config/db')
 const payosService = require('../services/payosService')
 const { notifyUser } = require('../services/notifyService')
+const { buildPayosUrls } = require('../utils/returnUrl')
 const { PLANS, TIER_LABELS, CYCLE_LABELS, BASIC_BOOST_LIMIT, getPlan } = require('../config/plans')
 
 const REMINDER_DAYS = 3
@@ -92,15 +93,15 @@ async function checkout(request, response) {
     })
   }
 
-  const returnBase = new URL(process.env.PAYOS_RETURN_URL || 'http://localhost:5173').origin
+  const { returnUrl, cancelUrl } = buildPayosUrls('/goi-dang-ky', request.body?.returnTo)
   const orderCode = Date.now()
   const paymentLink = await payosService.createPaymentLink({
     orderCode,
     amount: plan.price,
     description: `SUB${request.user.id}`.slice(0, 9),
     itemName: `Gói ${TIER_LABELS[plan.tier]} theo ${CYCLE_LABELS[plan.cycle]} RentMate Hola`,
-    returnUrl: `${returnBase}/goi-dang-ky`,
-    cancelUrl: `${returnBase}/goi-dang-ky?cancel=true`,
+    returnUrl,
+    cancelUrl,
   })
 
   await paymentModel.createPending({
@@ -120,7 +121,7 @@ async function checkout(request, response) {
     checkoutUrl: paymentLink.checkoutUrl,
     qrCode: paymentLink.qrCode,
     paymentLinkId: paymentLink.paymentLinkId,
-    returnUrl: `${returnBase}/goi-dang-ky`,
+    returnUrl,
     plan: toPlan(plan),
   })
 }

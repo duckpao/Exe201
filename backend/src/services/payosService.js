@@ -35,7 +35,7 @@ async function payosRequest(path, options = {}) {
   })
   const data = await response.json().catch(() => ({}))
   if (!response.ok || data.code !== '00') {
-    throw Object.assign(new Error(data.desc || `payOS trả về HTTP ${response.status}`), { http_code: response.status >= 500 ? 502 : response.status })
+    throw Object.assign(new Error(data.desc || `payOS trả về HTTP ${response.status}`), { http_code: response.ok || response.status >= 500 ? 502 : response.status })
   }
   return data.data
 }

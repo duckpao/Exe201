@@ -4,10 +4,10 @@ import { ExternalLink } from 'lucide-react'
 const PAYOS_SCRIPT_URL = 'https://cdn.payos.vn/payos-checkout/v1/stable/payos-initialize.js'
 
 // Khung thanh toán payOS nhúng sẵn. payment cần có checkoutUrl và returnUrl.
-// onSuccess chạy khi payOS báo thành công; trạng thái thật vẫn do webhook xác nhận.
+// onSuccess chạy khi payOS báo thành công; trạng thái thật do máy chủ đối soát với payOS.
 export default function PayosCheckoutPanel({ payment, onSuccess, onCancel }) {
   const [scriptReady, setScriptReady] = useState(Boolean(window.PayOSCheckout))
-  const [initialized, setInitialized] = useState(false)
+  const [initializedOrder, setInitializedOrder] = useState(null)
   const [open, setOpen] = useState(false)
   const checkoutRef = useRef(null)
   const callbacksRef = useRef({ onSuccess, onCancel })
@@ -54,7 +54,7 @@ export default function PayosCheckoutPanel({ payment, onSuccess, onCancel }) {
       },
       onExit: () => setOpen(false),
     })
-    setInitialized(true)
+    setInitializedOrder(payment.orderCode)
   }, [payment, scriptReady])
 
   function openCheckout() {
@@ -62,6 +62,14 @@ export default function PayosCheckoutPanel({ payment, onSuccess, onCancel }) {
     setOpen(true)
     checkoutRef.current.open()
   }
+
+  // Mỗi giao dịch mới tự mở khung payOS; nút bên dưới chỉ để mở lại khi người dùng đã đóng.
+  useEffect(() => {
+    if (initializedOrder && initializedOrder === payment.orderCode) openCheckout()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initializedOrder])
+
+  const initialized = initializedOrder === payment.orderCode
 
   return (
     <section className="payos-checkout-panel" aria-label="Thanh toán qua payOS">
@@ -74,7 +82,7 @@ export default function PayosCheckoutPanel({ payment, onSuccess, onCancel }) {
         <div className="payos-checkout-start">
           <p>Quét mã QR bằng ứng dụng ngân hàng hoặc chọn ngân hàng để chuyển khoản.</p>
           <button type="button" className="btn btn-primary" onClick={openCheckout} disabled={!initialized}>
-            {initialized ? 'Mở giao diện thanh toán' : 'Đang tải payOS...'}
+            {initialized ? 'Mở lại giao diện thanh toán' : 'Đang tải payOS...'}
           </button>
           <a className="payos-hosted-link" href={payment.checkoutUrl} target="_blank" rel="noreferrer">
             Mở trang thanh toán payOS <ExternalLink size={15} />

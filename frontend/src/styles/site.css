@@ -3831,3 +3831,8 @@
   .site-plan .member-badge { font-size: 10.5px; padding: 1px 5px; }
   .site-header-actions .icon-btn[aria-label="Cài đặt"] { display: none; }
 }
+
+/* Thành viên trả phí: vòng vàng quanh avatar, nhãn gói nằm đè mép dưới. Không glow; chữ tối trên nền vàng để đủ tương phản. */
+.site-avatar-menu.has-plan .site-avatar { box-shadow: 0 0 0 2px var(--brand-white, #fff), 0 0 0 5px #f59e0b; }
+.site-avatar-plan { position: absolute; left: 50%; bottom: -11px; transform: translateX(-50%); padding: 0 6px; border-radius: 4px; background: #f59e0b; color: #451a03; font-size: 10px; font-weight: 800; line-height: 16px; letter-spacing: 0.02em; white-space: nowrap; pointer-events: none; }
+.site-avatar-menu.has-plan .site-avatar-dropdown { top: 64px; }

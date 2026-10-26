@@ -1,8 +1,7 @@
 const paymentModel = require('../models/paymentModel')
 const payosService = require('../services/payosService')
-const subscriptionModel = require('../models/subscriptionModel')
-const { notifyUser } = require('../services/notifyService')
-const { getPlan, TIER_LABELS, CYCLE_LABELS } = require('../config/plans')
+const { settle, reconcile } = require('../services/paymentReconciler')
+const { buildPayosUrls } = require('../utils/returnUrl')
 const { parsePagination, buildPagination } = require('../utils/pagination')
 
 const LISTING_FEE = Number(process.env.LISTING_FEE_VND) || 20000
@@ -31,7 +30,8 @@ async function createPayosPayment(request, response) {
   const orderCode = Date.now()
   const txnRef = `PAYOS${orderCode}`
   const description = `POST${request.user.id}`.slice(0, 9)
-  const paymentLink = await payosService.createPaymentLink({ orderCode, amount: LISTING_FEE, description })
+  const { returnUrl, cancelUrl } = buildPayosUrls('/thanh-toan/dang-bai', request.body?.returnTo)
+  const paymentLink = await payosService.createPaymentLink({ orderCode, amount: LISTING_FEE, description, returnUrl, cancelUrl })
 
   await paymentModel.createPending({
     userId: request.user.id,
@@ -53,21 +53,7 @@ async function createPayosPayment(request, response) {
     description: paymentLink.description,
     paymentLinkId: paymentLink.paymentLinkId,
     status: paymentLink.status,
-    returnUrl: process.env.PAYOS_RETURN_URL,
-  })
-}
-
-// Gọi lại nhiều lần vẫn an toàn: activateFromPayment trả null khi payment_id đã có gói.
-async function activateSubscription(payment) {
-  const periodId = await subscriptionModel.activateFromPayment(payment)
-  if (!periodId) return
-  const plan = getPlan(payment.plan_code)
-  await notifyUser({
-    userId: payment.user_id,
-    type: 'subscription',
-    title: `Gói ${TIER_LABELS[plan.tier]} theo ${CYCLE_LABELS[plan.cycle]} đã được kích hoạt`,
-    body: 'Bài đăng của bạn đã có badge thành viên. Xem thời hạn tại mục Gói đăng ký.',
-    emailSubject: 'Gói đăng ký RentMate Hola đã được kích hoạt',
+    returnUrl,
   })
 }
 
@@ -84,16 +70,12 @@ async function payosWebhook(request, response) {
   }
 
   const paid = request.body.success === true && data.code === '00'
-  const updated = await paymentModel.markPayosResult({
+  await settle({
     orderCode: data.orderCode,
     status: paid ? 'paid' : 'failed',
     providerTransaction: data.reference,
     paymentLinkId: data.paymentLinkId,
   })
-
-  if (updated?.purpose === 'subscription' && updated.status === 'paid') {
-    await activateSubscription(updated)
-  }
   response.json({ success: true })
 }
 
@@ -104,7 +86,8 @@ async function getPayosStatus(request, response) {
     return response.status(404).json({ message: 'Không tìm thấy giao dịch' })
   }
 
-  response.json({ orderCode, status: payment.status, paid: payment.status === 'paid' })
+  const settled = await reconcile(payment)
+  response.json({ orderCode, status: settled.status, paid: settled.status === 'paid', purpose: settled.purpose })
 }
 
 async function confirmPayosWebhook(request, response) {
